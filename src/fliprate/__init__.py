@@ -68,7 +68,7 @@ from .aksharantar import (
 from .events import drain, make_event, to_sse
 
 __version__ = "0.2.1"
-__author__ = "Shiv Supane"
+__author__ = "Shivprasad Supane"
 
 __all__ = [
     # ── Test & measure ──────────────────────────────────────────────────────

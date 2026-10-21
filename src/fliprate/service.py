@@ -39,6 +39,8 @@ class Settings:
             max_jobs=int(e.get("FLIPRATE_MAX_JOBS", 500)),
             job_ttl_seconds=int(e.get("FLIPRATE_JOB_TTL", 300)),
             max_concurrent_runs=int(e.get("FLIPRATE_MAX_CONCURRENT", 2)),
+            max_text_chars=int(e.get("FLIPRATE_MAX_TEXT_CHARS", 2000)),
+            max_rows=int(e.get("FLIPRATE_MAX_ROWS", 2000)),
         )
 
 
@@ -78,11 +80,13 @@ class JobStore:
 
 
 class RateLimiter:
-    """Sliding-window limiter, per key. In-memory, so per process: use a shared store if you scale out."""
+    """Sliding-window limiter, per key. In-memory, so per process: use a shared store if you scale out.
+    Old keys are evicted after 2 minutes of inactivity to prevent unbounded memory growth."""
 
     def __init__(self, limit_per_min: int, clock: Callable[[], float] = time.monotonic):
         self.limit, self.clock = limit_per_min, clock
         self._hits: Dict[str, Deque[float]] = defaultdict(deque)
+        self._last_seen: Dict[str, float] = {}
         self._lock = threading.Lock()
 
     def allow(self, key: str) -> bool:
@@ -90,6 +94,12 @@ class RateLimiter:
             return True
         now = self.clock()
         with self._lock:
+            # Evict keys not seen in the last 2 minutes
+            stale = [k for k, t in self._last_seen.items() if now - t > 120]
+            for k in stale:
+                self._hits.pop(k, None)
+                self._last_seen.pop(k, None)
+            self._last_seen[key] = now
             q = self._hits[key]
             while q and now - q[0] > 60:
                 q.popleft()
