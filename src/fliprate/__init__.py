@@ -1,4 +1,4 @@
-﻿"""FlipRate: measure and reduce how often an NLP model changes its answer
+"""FlipRate: measure and reduce how often an NLP model changes its answer
 on messy romanized Hindi / Marathi / Tamil / Telugu and other Indian-language text.
 
     import fliprate as fr

@@ -1,4 +1,4 @@
-﻿# Release and deploy checklist
+# Release and deploy checklist
 
 **Author: Shiv Supane**
 

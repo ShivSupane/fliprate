@@ -1,4 +1,4 @@
-﻿# FlipRate
+# FlipRate
 
 **Does your NLP model change its answer when the same message is typed differently?**
 
