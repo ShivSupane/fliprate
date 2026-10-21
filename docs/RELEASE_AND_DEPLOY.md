@@ -7,8 +7,7 @@
 ## A. Before anything public
 
 1. `pyproject.toml` is already set correctly:
-   - `name = "Shiv Supane"`
-   - `email = "shiv.supane777@gmail.com"`
+   - `authors = [{ name = "Shiv Supane", email = "shiv.supane777@gmail.com" }]`
    - `Homepage = "https://github.com/ShivSupane/fliprate"`
 
 2. Check the PyPI name is free: open `https://pypi.org/project/fliprate/`.
@@ -17,7 +16,7 @@
 3. Do **not** ship third-party datasets. The package ships only the 40-message demo sample.
    Dakshina (CC BY-SA 4.0) and Aksharantar (CC BY 4.0) must be downloaded separately.
 
-4. Run `python -m pytest tests/ -q` and confirm 80 tests pass.
+4. Run `python -m pytest tests/ -q` and confirm 86 tests pass.
 
 ---
 
@@ -29,7 +28,9 @@ git remote add origin https://github.com/ShivSupane/fliprate.git
 git push -u origin main
 ```
 
-The CI workflow (`ci.yml`) runs automatically on every push across Python 3.9–3.12.
+The CI workflow (`ci.yml`) runs automatically on every push across Python 3.9–3.13.
+
+> **Windows tip:** If the `fliprate` console script is not found on your `PATH`, run `python -m fliprate.cli <command>`.
 
 ---
 

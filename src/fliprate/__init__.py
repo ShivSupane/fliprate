@@ -106,7 +106,6 @@ __all__ = [
     "from_sklearn",
     "twitter_preprocess",
     "with_retries",
-    "protect",
     "ProtectedModel",
     "Predictor",
 

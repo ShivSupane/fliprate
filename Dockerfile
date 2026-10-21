@@ -11,7 +11,8 @@ ARG EXTRAS=api
 
 # Install CPU-only torch when hf extra is requested to keep image size reasonable.
 # The default torch wheel includes CUDA (~2 GB); torch-cpu is ~200 MB.
-RUN if echo "${EXTRAS}" | grep -q "hf"; then \
+RUN pip install --no-cache-dir --upgrade pip && \
+    if echo "${EXTRAS}" | grep -q "hf"; then \
       pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu; \
     fi && \
     pip install --no-cache-dir ".[${EXTRAS}]"
