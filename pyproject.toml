@@ -1,5 +1,5 @@
-﻿[build-system]
-requires = ["setuptools>=68"]
+[build-system]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,12 +9,12 @@ description = "Measure and reduce how often an NLP model changes its answer on m
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Shiv Supane", email = "shiv.supane777@gmail.com" }]
 keywords = ["nlp", "robustness", "hinglish", "marathi", "indic", "romanized", "testing", "transliteration", "code-mixed"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -26,21 +26,22 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-api = ["fastapi>=0.100", "uvicorn>=0.23"]
+api     = ["fastapi>=0.100", "uvicorn>=0.23"]
 sklearn = ["scikit-learn>=1.3"]
-hf = ["transformers>=4.36", "torch>=2.1"]
-dev = ["pytest>=7", "scikit-learn>=1.3"]
+hf      = ["transformers>=4.36", "torch>=2.1"]
+dev     = ["pytest>=7", "scikit-learn>=1.3"]
+all     = ["fastapi>=0.100", "uvicorn>=0.23", "scikit-learn>=1.3", "transformers>=4.36", "torch>=2.1"]
 
 [project.scripts]
 fliprate = "fliprate.cli:main"
+
+[project.urls]
+Homepage  = "https://github.com/ShivSupane/fliprate"
+Issues    = "https://github.com/ShivSupane/fliprate/issues"
+Changelog = "https://github.com/ShivSupane/fliprate/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 fliprate = ["data/*.csv", "web/*.html", "py.typed"]
-
-[project.urls]
-Homepage = "https://github.com/ShivSupane/fliprate"
-Issues = "https://github.com/ShivSupane/fliprate/issues"
-Changelog = "https://github.com/ShivSupane/fliprate/blob/main/CHANGELOG.md"

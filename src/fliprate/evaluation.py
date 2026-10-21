@@ -25,7 +25,10 @@ Row = Tuple[str, Any]
 
 # ----------------------------------------------------------------------------- data
 def read_csv_text(content: str) -> List[Row]:
-    """Parse CSV text with header columns `text` and `label`."""
+    """Parse CSV text with header columns `text` and `label`.
+    Handles UTF-8 BOM (Excel-saved CSVs) transparently.
+    """
+    content = content.lstrip("\ufeff")  # strip BOM if present
     reader = csv.DictReader(io.StringIO(content))
     if not reader.fieldnames or "text" not in reader.fieldnames or "label" not in reader.fieldnames:
         raise ValueError("CSV needs a header row with columns: text,label")
@@ -35,7 +38,7 @@ def read_csv_text(content: str) -> List[Row]:
 def load_dataset(source: Any) -> List[Row]:
     """Accept a CSV path, or a list of (text, label) pairs, or a list of {text, label} dicts."""
     if isinstance(source, (str, os.PathLike)):
-        with open(source, encoding="utf-8", newline="") as f:
+        with open(source, encoding="utf-8-sig", newline="") as f:  # utf-8-sig strips Excel BOM automatically
             rows = read_csv_text(f.read())
     else:
         rows = []
