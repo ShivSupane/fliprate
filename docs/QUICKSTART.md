@@ -173,7 +173,7 @@ import fliprate as fr
 rules_ta = fr.dakshina_rules("ta")          # Tamil
 rules_hi = fr.dakshina_rules("hi", "mr")   # Hindi + Marathi
 
-# Aksharantar: 428K+ groups, 21 languages (use 3-letter codes)
+# Aksharantar: 428K+ groups, 20 languages (use 3-letter codes)
 rules_hin = fr.aksharantar_rules("hin")         # Hindi
 rules_all = fr.aksharantar_rules("tam", "tel", "kan", "mal")  # South India
 
@@ -212,7 +212,7 @@ result = fr.gate(my_model, "vanakkam nalla irukku", rules=rules)
 
 ```bash
 python -m pytest tests/ -q
-# 80 passed
+# 86 passed
 ```
 
 ---
@@ -236,7 +236,7 @@ docker run -p 7860:7860 -e FLIPRATE_MODEL=fliprate.hf_models:xlmt_sentiment flip
 # From Dakshina (12 languages)
 python scripts/build_rules_from_dakshina.py
 
-# From Aksharantar (21 languages)
+# From Aksharantar (20 languages)
 python scripts/build_rules_from_aksharantar.py
 
 # Specific languages only

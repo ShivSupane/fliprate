@@ -86,9 +86,10 @@ print(f"95% CI: {diff['ci']}")
 
 ```python
 result = fr.gate(my_model, "mala product avadlaaa nahi")
-print(result.decision)     # PASS / TRANSFORM / REVIEW
-print(result.prediction)   # model's answer on the (possibly normalized) text
-print(result.reason)       # human-readable explanation
+print(result.decision)          # PASS / TRANSFORM / REVIEW
+print(result.prediction)        # model's answer on the (possibly normalized) text
+print(result.reason)            # human-readable explanation
+print(result.flipped_variants)  # variants that caused model flip (if unstable)
 ```
 
 ---
@@ -151,6 +152,10 @@ FlipRate ships with 73 core HIGH-confidence groups for immediate use.
 For broader coverage, load from two research datasets:
 
 ```python
+# Built-in per-language groups (12 Indian languages + 1 shared cross-lingual group)
+# hindi, urdu, marathi, bengali, tamil, telugu, kannada, malayalam, gujarati, punjabi, odia, assamese, shared
+tamil_rules = fr.DEFAULT_RULES.extended(groups=fr.LANGUAGE_GROUPS["tamil"])
+
 # Dakshina (Google Research, CC BY-SA 4.0) — 225K groups, 12 languages
 # Codes: hi ur mr bn ta te kn ml gu pa sd si
 rules = fr.dakshina_rules("ta")           # Tamil

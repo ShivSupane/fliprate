@@ -2,7 +2,7 @@
 Loader for the Aksharantar dataset spelling variant groups.
 
 The Aksharantar dataset (AI4Bharat, 2022, CC BY 4.0) contains 24M+ native-script
-→ romanization word pairs for 21 Indian languages, sourced from IndicCorp,
+→ romanization word pairs for 20 Indian languages, sourced from IndicCorp,
 Samanantar, Dakshina, and other curated Indian language corpora.
 
 Reference
@@ -26,7 +26,7 @@ Usage
     # Multiple languages
     rules = aksharantar_rules("ta", "kn", "te")
 
-    # All 21 languages
+    # All 20 languages
     rules = aksharantar_rules()
 
     # Just the groups (for manual inspection or further filtering)
@@ -199,7 +199,7 @@ def load_aksharantar_groups(
     ----------
     *languages : str
         Language codes (e.g. "hin", "tam", "tel").
-        Pass no arguments to load all 21 supported languages.
+        Pass no arguments to load all 20 supported languages.
     min_variants : int
         Minimum number of distinct romanizations per group (default 2).
     aksharantar_path : str, optional
@@ -256,7 +256,7 @@ def aksharantar_rules(
     Parameters
     ----------
     *languages : str
-        Language codes. Pass none for all 21 languages.
+        Language codes. Pass none for all 20 languages.
     base : RuleSet, optional
         Base rules to combine with (default: DEFAULT_RULES).
     min_variants : int

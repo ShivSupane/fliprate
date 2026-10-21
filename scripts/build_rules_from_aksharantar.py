@@ -2,7 +2,7 @@
 Build FlipRate SAFE_GROUPS from the Aksharantar dataset.
 
 Aksharantar (AI4Bharat, 2022) contains 24M+ native-script → romanization
-word pairs for 21 Indian languages. Unlike Dakshina, each line has exactly
+word pairs for 20 Indian languages. Unlike Dakshina, each line has exactly
 one romanization for one native word, but the same native word appears
 multiple times across different sources with different romanizations.
 

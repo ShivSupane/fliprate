@@ -246,7 +246,7 @@ Build a RuleSet with Aksharantar groups. Uses 3-letter language codes.
 ```python
 rules = fr.aksharantar_rules("hin")              # Hindi (58K groups)
 rules = fr.aksharantar_rules("tam", "tel", "kan") # South India
-rules = fr.aksharantar_rules()                    # all 21 languages
+rules = fr.aksharantar_rules()                    # all 20 languages
 ```
 
 Language codes: `hin`, `guj`, `tam`, `tel`, `kan`, `mal`, `mar`, `pan`, `ben`, `urd`, `ori`, `asm`, `kas`, `kok`, `mai`, `mni`, `nep`, `san`, `brx`, `sid`
@@ -313,14 +313,13 @@ safe_llm = fr.with_retries(llm)
 
 ## Dataset tools
 
-### `fr.read_csv_text(text_or_path)`
+### `fr.read_csv_text(content)`
 
-Load a dataset from a CSV string, file path, or file-like object.
-Returns `list[tuple[str, str]]` — list of `(text, label)` pairs.
+Parse CSV formatted text (a string, not a path) with headers into a list of `(text, label)` Row objects.
 
 ### `fr.load_dataset(source)`
 
-Like `read_csv_text` but also accepts a list of tuples directly.
+Load a dataset from a CSV file path, a raw CSV string, or directly pass a list of tuples/dicts. Returns `list[tuple[str, str]]`.
 
 ---
 

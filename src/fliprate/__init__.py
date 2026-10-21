@@ -15,7 +15,7 @@ on messy romanized Hindi / Marathi / Tamil / Telugu and other Indian-language te
     result = fr.gate(my_model, "mala product avadlaaa nahi")
     print(result.decision)   # PASS / TRANSFORM / REVIEW
 
-    # Multi-language rules from Aksharantar (428K groups, 21 languages)
+    # Multi-language rules from Aksharantar (428K groups, 20 languages)
     rules = fr.aksharantar_rules("tam", "tel")
     report = fr.test(my_model, "data/test.csv", rules=rules)
 
