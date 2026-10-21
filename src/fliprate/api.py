@@ -128,4 +128,8 @@ _WEB = Path(__file__).parent / "web" / "index.html"
 
 @app.get("/", include_in_schema=False)
 def console():
-    return FileResponse(_WEB)
+    return FileResponse(
+        _WEB,
+        media_type="text/html; charset=utf-8",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+    )

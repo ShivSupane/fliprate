@@ -5,897 +5,560 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlipRate Console</title>
 <style>
-/* ── design tokens ─────────────────────────────────────────────────────── */
 :root {
-  --bg:       #f5f4ef;
-  --surface:  #ffffff;
-  --surface2: #f0efea;
-  --border:   #dddcd6;
-  --text:     #1a1a18;
-  --muted:    #72716b;
-  --accent:   #2563eb;
-  --accent-h: #1d4ed8;
-  --pass:     #16a34a;
-  --pass-bg:  #dcfce7;
-  --transform:#b45309;
-  --transform-bg:#fef3c7;
-  --review:   #dc2626;
-  --review-bg:#fee2e2;
-  --radius:   10px;
-  --shadow:   0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --bg:#f5f4ef; --surface:#fff; --surface2:#f0efea; --border:#dddcd6;
+  --text:#1a1a18; --muted:#72716b; --accent:#2563eb; --accent-h:#1d4ed8;
+  --pass:#16a34a; --pass-bg:#dcfce7; --xform:#b45309; --xform-bg:#fef3c7;
+  --review:#dc2626; --review-bg:#fee2e2; --r:10px;
 }
-@media (prefers-color-scheme:dark){
-  :root {
-    --bg:       #111110;
-    --surface:  #1c1c1a;
-    --surface2: #252523;
-    --border:   #2e2e2b;
-    --text:     #eae9e4;
-    --muted:    #8a8982;
-    --accent:   #60a5fa;
-    --accent-h: #93c5fd;
-    --pass:     #4ade80;
-    --pass-bg:  #052e16;
-    --transform:#fbbf24;
-    --transform-bg:#431407;
-    --review:   #f87171;
-    --review-bg:#450a0a;
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#111110;--surface:#1c1c1a;--surface2:#252523;--border:#2e2e2b;
+    --text:#eae9e4;--muted:#8a8982;--accent:#60a5fa;--accent-h:#93c5fd;
+    --pass:#4ade80;--pass-bg:#052e16;--xform:#fbbf24;--xform-bg:#431407;
+    --review:#f87171;--review-bg:#450a0a;
   }
 }
-
-/* ── reset / base ───────────────────────────────────────────────────────── */
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html { font-size:15px; }
-body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.55;
-  min-height: 100vh;
-}
-
-/* ── layout ─────────────────────────────────────────────────────────────── */
-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 56px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-shadow: var(--shadow);
-}
-header h1 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-header h1 .logo { font-size: 1.3rem; }
-header .tagline {
-  color: var(--muted);
-  font-size: .82rem;
-  border-left: 1px solid var(--border);
-  padding-left: 16px;
-  display: none;
-}
-@media (min-width:560px){ header .tagline { display:block; } }
-
-main { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
-
-/* ── tabs ────────────────────────────────────────────────────────────────── */
-.tabs { display: flex; gap: 4px; margin-bottom: 20px; }
-.tab {
-  padding: 7px 16px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: .88rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .12s;
-}
-.tab:hover { background: var(--surface2); color: var(--text); }
-.tab.active {
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--accent);
-  box-shadow: var(--shadow);
-}
-
-/* ── card ────────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-.card-title {
-  font-size: .8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--muted);
-  margin-bottom: 12px;
-}
-
-/* ── form controls ───────────────────────────────────────────────────────── */
-label { font-size: .88rem; color: var(--muted); display: block; margin-bottom: 6px; }
-input[type=text], textarea, input[type=number] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: .92rem;
-  outline: none;
-  transition: border-color .12s;
-}
-input[type=text]:focus, textarea:focus, input[type=number]:focus {
-  border-color: var(--accent);
-}
-textarea { resize: vertical; min-height: 70px; }
-input[type=number] { width: 90px; }
-
-.input-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
-.input-row input[type=text] { flex: 1; min-width: 0; }
-
-/* ── buttons ─────────────────────────────────────────────────────────────── */
-.btn {
-  padding: 9px 18px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  font: inherit;
-  font-size: .9rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background .12s, opacity .12s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.btn:hover:not(:disabled) { background: var(--accent-h); }
-.btn:disabled { opacity: .5; cursor: wait; }
-.btn-secondary {
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-.btn-secondary:hover:not(:disabled) { background: var(--border); }
-
-/* ── verdict badge ───────────────────────────────────────────────────────── */
-.verdict-wrap { display:flex; align-items:center; gap:14px; margin-top:14px; flex-wrap:wrap; }
-.verdict-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-}
-.verdict-badge.PASS      { background: var(--pass-bg);      color: var(--pass); }
-.verdict-badge.TRANSFORM { background: var(--transform-bg); color: var(--transform); }
-.verdict-badge.REVIEW    { background: var(--review-bg);    color: var(--review); }
-.verdict-reason { color: var(--muted); font-size: .88rem; max-width: 480px; }
-
-/* ── event log ───────────────────────────────────────────────────────────── */
-.log-wrap {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin-top: 14px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-.log-wrap ol { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-.log-item {
-  font-size: .84rem;
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  line-height: 1.4;
-}
-.log-item .ev-icon { flex-shrink: 0; width: 18px; text-align: center; }
-.log-item .ev-text { color: var(--text); }
-.log-item.ev-flip   .ev-text { color: var(--review); font-weight: 500; }
-.log-item.ev-pass   .ev-text { color: var(--pass); }
-.log-item.ev-info   .ev-text { color: var(--muted); }
-.log-item.ev-error  .ev-text { color: var(--review); font-weight: 600; }
-
-/* ── warnings ────────────────────────────────────────────────────────────── */
-.warn-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-.warn-item {
-  background: var(--transform-bg);
-  color: var(--transform);
-  border-radius: 7px;
-  padding: 7px 12px;
-  font-size: .84rem;
-  display: flex;
-  gap: 7px;
-  align-items: flex-start;
-}
-
-/* ── transform info ──────────────────────────────────────────────────────── */
-.transform-info {
-  background: var(--surface2);
-  border-left: 3px solid var(--transform);
-  border-radius: 0 8px 8px 0;
-  padding: 10px 14px;
-  margin-top: 10px;
-  font-size: .85rem;
-  color: var(--text);
-}
-.transform-info strong { color: var(--transform); }
-code {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-family: "SF Mono", ui-monospace, monospace;
-  font-size: .88em;
-}
-
-/* ── progress & chart ────────────────────────────────────────────────────── */
-.progress-track {
-  height: 8px;
-  background: var(--surface2);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 12px;
-}
-.progress-fill {
-  height: 100%;
-  width: 0;
-  background: var(--accent);
-  border-radius: 6px;
-  transition: width .2s;
-}
-.progress-label {
-  color: var(--muted);
-  font-size: .82rem;
-  margin-top: 6px;
-  min-height: 18px;
-}
-
-.chart-wrap {
-  margin-top: 14px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  position: relative;
-}
-.chart-title { font-size: .78rem; color: var(--muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing:.05em; }
-svg.chart { width: 100%; height: 110px; display: block; }
-
-/* ── stats grid ──────────────────────────────────────────────────────────── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.stat-box {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px;
-}
-.stat-box .stat-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
-.stat-box .stat-value { font-size: 1.4rem; font-weight: 700; line-height: 1; }
-.stat-box .stat-ci { font-size: .75rem; color: var(--muted); margin-top: 3px; }
-.stat-box.highlight { background: var(--surface); border-color: var(--accent); }
-.stat-box.highlight .stat-value { color: var(--accent); }
-
-/* ── kind bar chart ──────────────────────────────────────────────────────── */
-.kind-bars { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
-.kind-row { display: grid; grid-template-columns: 110px 1fr 60px; gap: 8px; align-items: center; font-size: .84rem; }
-.kind-name { color: var(--muted); font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.kind-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
-.kind-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .4s; }
-.kind-pct { color: var(--text); font-weight: 600; text-align: right; }
-
-/* ── flip table ──────────────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; margin-top: 4px; }
-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
-thead th {
-  text-align: left;
-  padding: 8px 10px;
-  border-bottom: 2px solid var(--border);
-  color: var(--muted);
-  font-size: .76rem;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  white-space: nowrap;
-}
-tbody td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-  line-height: 1.4;
-}
-tbody tr:last-child td { border-bottom: 0; }
-tbody tr:hover { background: var(--surface2); }
-.change-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--review-bg);
-  color: var(--review);
-  border-radius: 4px;
-  padding: 1px 7px;
-  font-size: .8rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ── upload zone ─────────────────────────────────────────────────────────── */
-.upload-zone {
-  border: 2px dashed var(--border);
-  border-radius: 8px;
-  padding: 18px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .12s, background .12s;
-  color: var(--muted);
-  font-size: .88rem;
-  margin-bottom: 14px;
-  position: relative;
-}
-.upload-zone:hover, .upload-zone.dragover {
-  border-color: var(--accent);
-  background: var(--surface2);
-  color: var(--accent);
-}
-.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.upload-filename { color: var(--pass); font-size: .82rem; margin-top: 6px; font-weight: 500; }
-
-/* ── helpers ─────────────────────────────────────────────────────────────── */
-.row-gap { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.muted { color: var(--muted); font-size: .84rem; }
-.mt8 { margin-top: 8px; }
-.mt14 { margin-top: 14px; }
-[hidden] { display: none !important; }
-
-/* ── about tab ───────────────────────────────────────────────────────────── */
-.about-section { margin-bottom: 20px; }
-.about-section h2 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
-.about-section p, .about-section li { font-size: .9rem; color: var(--muted); line-height: 1.65; }
-.about-section ul { padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
-.decision-table { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 10px; }
-.decision-table th, .decision-table td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
-.decision-table th { background: var(--surface2); font-weight: 600; color: var(--muted); }
-
-/* ── spinner ─────────────────────────────────────────────────────────────── */
-@keyframes spin { to { transform:rotate(360deg); } }
-.spinner {
-  width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35);
-  border-top-color: #fff; border-radius: 50%;
-  animation: spin .7s linear infinite; display: inline-block; flex-shrink: 0;
-}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font:15px/1.55 system-ui,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:9;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+header .sub{color:var(--muted);font-size:.82rem;border-left:1px solid var(--border);padding-left:12px}
+main{max-width:880px;margin:0 auto;padding:20px 16px 60px}
+.tabs{display:flex;gap:4px;margin-bottom:18px}
+.tab{padding:7px 15px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:.87rem;font-weight:500;cursor:pointer}
+.tab:hover{background:var(--surface2);color:var(--text)}
+.tab.on{background:var(--surface);border-color:var(--border);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px}
+label{font-size:.87rem;color:var(--muted);display:block;margin-bottom:5px}
+input[type=text],input[type=number],textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:.9rem;outline:none}
+input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
+input[type=number]{width:90px}
+textarea{resize:vertical;min-height:60px}
+.row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.row input[type=text]{flex:1;min-width:0}
+.btn{padding:9px 17px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover:not(:disabled){background:var(--accent-h)}
+.btn:disabled{opacity:.5;cursor:wait}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:1.05rem;font-weight:700}
+.PASS{background:var(--pass-bg);color:var(--pass)}
+.TRANSFORM{background:var(--xform-bg);color:var(--xform)}
+.REVIEW{background:var(--review-bg);color:var(--review)}
+.log-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:12px;max-height:300px;overflow-y:auto}
+.log-box ol{list-style:none;display:flex;flex-direction:column;gap:4px}
+.ev{font-size:.83rem;display:flex;gap:8px}
+.ev .icon{flex-shrink:0;width:16px;text-align:center}
+.ev.flip .text{color:var(--review);font-weight:500}
+.ev.ok .text{color:var(--pass)}
+.ev.err .text{color:var(--review);font-weight:600}
+.ev.info .text{color:var(--muted)}
+.warn{background:var(--xform-bg);color:var(--xform);border-radius:7px;padding:6px 11px;font-size:.83rem;margin-top:6px}
+.xform-box{background:var(--surface2);border-left:3px solid var(--xform);border-radius:0 8px 8px 0;padding:8px 12px;margin-top:8px;font-size:.84rem}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-family:ui-monospace,monospace;font-size:.87em}
+.prog-track{height:8px;background:var(--surface2);border-radius:6px;overflow:hidden;margin-top:10px}
+.prog-fill{height:100%;width:0;background:var(--accent);border-radius:6px;transition:width .2s}
+.prog-lbl{color:var(--muted);font-size:.81rem;margin-top:5px;min-height:16px}
+.chart-box{margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px}
+svg.chart{width:100%;height:100px;display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px}
+.stat .lbl{font-size:.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.stat .val{font-size:1.35rem;font-weight:700}
+.stat .ci{font-size:.73rem;color:var(--muted);margin-top:2px}
+.stat.hi{background:var(--surface);border-color:var(--accent)}
+.stat.hi .val{color:var(--accent)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.bar-row{display:grid;grid-template-columns:100px 1fr 55px;gap:7px;align-items:center;font-size:.83rem}
+.bar-name{color:var(--muted);font-size:.81rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s}
+.bar-pct{font-weight:600;text-align:right}
+.tbl-wrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{text-align:left;padding:7px 9px;border-bottom:2px solid var(--border);color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:var(--surface2)}
+.pill{display:inline-flex;background:var(--review-bg);color:var(--review);border-radius:4px;padding:1px 6px;font-size:.79rem;font-weight:600;white-space:nowrap}
+.drop-zone{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--muted);font-size:.87rem;margin-bottom:12px;position:relative}
+.drop-zone:hover,.drop-zone.over{border-color:var(--accent);background:var(--surface2);color:var(--accent)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.fname{color:var(--pass);font-size:.81rem;margin-top:5px;font-weight:500}
+.mt8{margin-top:8px}
+.muted{color:var(--muted);font-size:.83rem}
+[hidden]{display:none!important}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
 </style>
 </head>
 <body>
 
 <header>
-  <h1><span class="logo">🔁</span> FlipRate</h1>
-  <span class="tagline">Model robustness for romanized Hindi / Marathi / English</span>
+  <h1><span>&#x1F501;</span> FlipRate</h1>
+  <span class="sub">Model robustness for romanized Indian language text</span>
 </header>
 
 <main>
-  <!-- Tab bar -->
   <div class="tabs">
-    <button class="tab active" data-tab="play">Playground</button>
+    <button class="tab on" data-tab="play">Playground</button>
     <button class="tab" data-tab="lab">Robustness Lab</button>
     <button class="tab" data-tab="about">About</button>
   </div>
 
-  <!-- ═══════════════════ PLAYGROUND ═══════════════════ -->
+  <!-- PLAYGROUND -->
   <div id="tab-play">
     <div class="card">
       <div class="card-title">Gate analysis</div>
       <label for="msg">Customer message (romanized Hindi / Marathi / English)</label>
-      <div class="input-row mt8">
+      <div class="row mt8">
         <input type="text" id="msg" value="mala product avadlaaa nahi" autocomplete="off" spellcheck="false">
-        <button class="btn" id="run-play">
-          <span id="run-play-label">Run gate</span>
-        </button>
+        <button class="btn" id="btn-play">Run gate</button>
       </div>
-      <p class="muted mt8">Try spelling variants like <em>nahi → nhi → nahin</em>, stretched letters like <em>avadlaaa</em>, or all-caps.</p>
+      <p class="muted mt8">Try: <em>nahi / nhi / nahin</em>, stretched letters <em>avadlaaa</em>, all-caps, or different spellings.</p>
     </div>
 
-    <!-- Verdict -->
-    <div id="verdict-card" class="card" hidden>
+    <div id="verdict-box" class="card" hidden>
       <div class="card-title">Decision</div>
-      <div class="verdict-wrap">
-        <div id="verdict-badge" class="verdict-badge"></div>
-        <span id="verdict-reason" class="verdict-reason"></span>
-      </div>
-      <div id="transform-info" hidden class="transform-info mt8"></div>
-      <div id="warn-list" class="warn-list"></div>
+      <div id="badge"></div>
+      <div id="reason" class="muted mt8"></div>
+      <div id="xform-box" hidden class="xform-box mt8"></div>
+      <div id="warns"></div>
     </div>
 
-    <!-- Event log -->
-    <div id="log-card" class="card" hidden>
+    <div id="log-box" class="card" hidden>
       <div class="card-title">Analysis log</div>
-      <div class="log-wrap"><ol id="log"></ol></div>
+      <div class="log-box"><ol id="log"></ol></div>
     </div>
   </div>
 
-  <!-- ═══════════════════ ROBUSTNESS LAB ═══════════════════ -->
+  <!-- ROBUSTNESS LAB -->
   <div id="tab-lab" hidden>
-
     <div class="card">
       <div class="card-title">Dataset</div>
-      <div class="upload-zone" id="drop-zone">
-        <div>📄 Drop a labeled CSV here or click to browse</div>
-        <div class="muted mt8">Columns required: <code>text</code>, <code>label</code> — leave empty to use the bundled 40-message sample</div>
+      <div class="drop-zone" id="drop-zone">
+        <div>Drop a labeled CSV here or click to browse</div>
+        <div class="muted mt8">Columns needed: <code>text</code>, <code>label</code> &mdash; leave empty to use the built-in sample</div>
         <input type="file" id="csv-file" accept=".csv">
       </div>
-      <div id="upload-filename" class="upload-filename" hidden></div>
-
-      <div class="row-gap mt8">
+      <div id="fname" class="fname" hidden></div>
+      <div class="row mt8">
         <div>
-          <label for="nv" style="margin-bottom:4px">Variants per message</label>
+          <label for="nv">Variants per message</label>
           <input type="number" id="nv" value="5" min="1" max="20">
         </div>
         <div style="margin-top:auto">
-          <button class="btn" id="run-lab">
-            <span id="run-lab-label">Run robustness test</span>
-          </button>
+          <button class="btn" id="btn-lab">Run robustness test</button>
         </div>
       </div>
     </div>
 
-    <!-- Progress -->
-    <div id="lab-progress" class="card" hidden>
+    <div id="prog-box" class="card" hidden>
       <div class="card-title">Progress</div>
-      <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
-      <div class="progress-label" id="prog-text"></div>
-
-      <div class="chart-wrap">
-        <div class="chart-title">Flip rate over time</div>
-        <svg class="chart" id="chart" viewBox="0 0 400 100" preserveAspectRatio="none"
-             aria-label="Flip rate over time" role="img"></svg>
+      <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+      <div class="prog-lbl" id="prog-lbl"></div>
+      <div class="chart-box">
+        <svg class="chart" id="chart" viewBox="0 0 400 100" preserveAspectRatio="none"></svg>
       </div>
     </div>
 
-    <!-- Results -->
-    <div id="lab-results" hidden>
-
-      <div class="stats-grid" id="stats-grid"></div>
-
+    <div id="results-box" hidden>
+      <div class="stats" id="stats"></div>
       <div class="card">
         <div class="card-title">Flip rate by change type</div>
-        <div class="kind-bars" id="kind-bars"></div>
+        <div class="bars" id="bars"></div>
       </div>
-
       <div class="card">
         <div class="card-title">Flip examples <span id="flip-count" class="muted"></span></div>
-        <div class="table-wrap">
-          <table id="flip-table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Original message</th>
-                <th>Variant</th>
-                <th>Answer changed</th>
-              </tr>
-            </thead>
+        <div class="tbl-wrap">
+          <table id="flip-tbl">
+            <thead><tr><th>Type</th><th>Original</th><th>Variant</th><th>Answer changed</th></tr></thead>
             <tbody id="flip-body"></tbody>
           </table>
         </div>
-        <p id="no-flips" class="muted mt8" hidden>No flips recorded — model was stable on every variant.</p>
+        <p id="no-flips" class="muted mt8" hidden>No flips recorded.</p>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════ ABOUT ═══════════════════ -->
+  <!-- ABOUT -->
   <div id="tab-about" hidden>
-    <div class="card about-section">
-      <h2>What is FlipRate?</h2>
-      <p>FlipRate measures how often an NLP model changes its answer when the same message is typed differently.
-         People write "nahi", "nhi", "nahin" and "avadlaaa" for the same meaning. Many models answer differently for each.
-         FlipRate calls this a <strong>flip</strong>.</p>
-      <p class="mt8">A <strong>safe variant</strong> is a rewritten version of a message that provably keeps the same words
-         (up to reviewed equivalent spellings) and the same negations. Flip rate is the share of safe variants
-         for which the model's answer differs from its answer on the original.</p>
-      <p class="mt8"><strong>Flip rate measures instability, not wrongness.</strong> A model can flip toward the right answer.</p>
+    <div class="card">
+      <div class="card-title">What is FlipRate?</div>
+      <p style="font-size:.9rem;color:var(--muted);line-height:1.6">
+        FlipRate measures how often an NLP model changes its answer when the same message is typed differently.
+        People write "nahi", "nhi", "nahin" and "avadlaaa" for the same meaning.
+        Many models answer differently for each variant. FlipRate calls this a <strong>flip</strong>.
+      </p>
     </div>
-
-    <div class="card about-section">
-      <h2>Gate decisions</h2>
-      <table class="decision-table">
+    <div class="card">
+      <div class="card-title">Gate decisions</div>
+      <table>
         <thead><tr><th>Decision</th><th>Meaning</th></tr></thead>
         <tbody>
-          <tr><td><span class="verdict-badge PASS" style="font-size:.85rem;padding:4px 10px">PASS</span></td>
-              <td>Stable across safe variants (or mostly stable, with a warning listing what flipped).</td></tr>
-          <tr><td><span class="verdict-badge TRANSFORM" style="font-size:.85rem;padding:4px 10px">TRANSFORM</span></td>
-              <td>Some variants flip, and approved normalization makes the pipeline stable. The cleaned text is used; the original is kept.</td></tr>
-          <tr><td><span class="verdict-badge REVIEW" style="font-size:.85rem;padding:4px 10px">REVIEW</span></td>
-              <td>Empty input, mostly non-Latin script, or unstable and normalization does not fix it. Route to a human.</td></tr>
+          <tr><td><span class="badge PASS">PASS</span></td><td style="font-size:.87rem">Stable across safe variants.</td></tr>
+          <tr><td><span class="badge TRANSFORM">TRANSFORM</span></td><td style="font-size:.87rem">Unstable, but normalization fixes it.</td></tr>
+          <tr><td><span class="badge REVIEW">REVIEW</span></td><td style="font-size:.87rem">Unstable and normalization does not help.</td></tr>
         </tbody>
       </table>
     </div>
-
-    <div class="card about-section">
-      <h2>Change types tested</h2>
-      <ul>
-        <li><strong>spelling</strong> — swaps a word for another member of its safe-spelling group (e.g. "bahut" ↔ "bohot" ↔ "bhut")</li>
-        <li><strong>repetition</strong> — stretches a vowel ("nahi" → "naahii", simulating emphasis)</li>
-        <li><strong>punctuation</strong> — strips or doubles trailing punctuation</li>
-        <li><strong>case</strong> — lowercases, uppercases, or capitalises the whole message</li>
+    <div class="card">
+      <div class="card-title">API endpoints</div>
+      <ul style="font-size:.87rem;color:var(--muted);padding-left:16px;display:flex;flex-direction:column;gap:5px">
+        <li><code>POST /jobs/analyze</code> &mdash; start gate analysis, get job_id</li>
+        <li><code>POST /jobs/test</code> &mdash; start robustness test</li>
+        <li><code>GET /jobs/{id}/stream</code> &mdash; Server-Sent Events stream</li>
+        <li><code>GET /health</code> &mdash; {"status":"ok"}</li>
+        <li><code>GET /ready</code> &mdash; 503 until model loads</li>
+        <li><code>GET /metrics</code> &mdash; Prometheus counters</li>
       </ul>
-    </div>
-
-    <div class="card about-section">
-      <h2>API</h2>
-      <ul>
-        <li><code>POST /jobs/analyze</code> — start a gate analysis, returns <code>{"job_id":"…"}</code></li>
-        <li><code>POST /jobs/test</code> — start a robustness test (optional <code>rows</code> array)</li>
-        <li><code>GET /jobs/{id}/stream</code> — Server-Sent Events stream of progress</li>
-        <li><code>GET /health</code> — <code>{"status":"ok"}</code></li>
-        <li><code>GET /ready</code> — 503 until model is warmed up</li>
-        <li><code>GET /metrics</code> — Prometheus counters</li>
-      </ul>
-      <p class="mt8">Set <code>FLIPRATE_API_KEY</code> to require a key on POST endpoints. Set <code>FLIPRATE_MODEL=pkg:fn</code> to use your own model.</p>
     </div>
   </div>
-
 </main>
 
 <script>
+(function() {
 "use strict";
 
-/* ── utils ────────────────────────────────────────────────────────────── */
-const $ = id => document.getElementById(id);
-const pct = x => x == null ? "n/a" : (x * 100).toFixed(1) + "%";
-const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+// --- helpers ---
+function $(id) { return document.getElementById(id); }
+function pct(x) { return x == null ? "n/a" : (x * 100).toFixed(1) + "%"; }
 
-/* ── tabs ─────────────────────────────────────────────────────────────── */
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    ["play","lab","about"].forEach(t => {
-      const el = $("tab-" + t);
+// --- tabs ---
+document.querySelectorAll(".tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".tab").forEach(function(b) { b.classList.remove("on"); });
+    btn.classList.add("on");
+    var tabs = ["play","lab","about"];
+    tabs.forEach(function(t) {
+      var el = $("tab-" + t);
       if (el) el.hidden = (t !== btn.dataset.tab);
     });
   });
 });
 
-/* ── API key handling ─────────────────────────────────────────────────── */
+// --- API helpers ---
 async function startJob(path, body) {
-  const attempt = () => {
-    const h = { "Content-Type": "application/json" };
-    const k = sessionStorage.getItem("fliprate_key");
-    if (k) h["X-API-Key"] = k;
-    return fetch(path, { method:"POST", headers:h, body:JSON.stringify(body) });
-  };
-  let r = await attempt();
+  var headers = { "Content-Type": "application/json" };
+  var key = sessionStorage.getItem("fr_key");
+  if (key) headers["X-API-Key"] = key;
+  var r = await fetch(path, { method: "POST", headers: headers, body: JSON.stringify(body) });
   if (r.status === 401) {
-    const k = prompt("This server requires an API key — enter it here:");
-    if (k) { sessionStorage.setItem("fliprate_key", k); r = await attempt(); }
+    var k = prompt("API key required:");
+    if (k) {
+      sessionStorage.setItem("fr_key", k);
+      headers["X-API-Key"] = k;
+      r = await fetch(path, { method: "POST", headers: headers, body: JSON.stringify(body) });
+    }
   }
   if (!r.ok) {
-    const msg = r.status === 429 ? "Rate limit reached — wait a moment and try again" : await r.text();
+    var msg = r.status === 429 ? "Rate limit reached, wait a moment" : await r.text();
     throw new Error(msg);
   }
-  return (await r.json()).job_id;
+  var data = await r.json();
+  return data.job_id;
 }
 
-function listen(jobId, onEvent) {
-  return new Promise(resolve => {
-    const es = new EventSource("/jobs/" + jobId + "/stream");
-    es.onmessage = e => {
-      const ev = JSON.parse(e.data);
+function listenJob(jobId, onEvent) {
+  return new Promise(function(resolve) {
+    var es = new EventSource("/jobs/" + jobId + "/stream");
+    es.onmessage = function(e) {
+      var ev = JSON.parse(e.data);
       onEvent(ev);
       if (ev.stage === "end") { es.close(); resolve(); }
     };
-    es.onerror = () => { es.close(); resolve(); };
+    es.onerror = function() { es.close(); resolve(); };
   });
 }
 
-/* ── Playground ───────────────────────────────────────────────────────── */
-function addLog(text, cls) {
-  const li = document.createElement("li");
-  li.className = "log-item" + (cls ? " " + cls : "");
-  const icon = document.createElement("span");
-  icon.className = "ev-icon";
-  const icons = { "ev-flip":"✕", "ev-pass":"✓", "ev-info":"·", "ev-error":"!" };
-  icon.textContent = icons[cls] || "·";
-  const body = document.createElement("span");
-  body.className = "ev-text";
-  body.textContent = text;
-  li.append(icon, body);
+// --- Playground ---
+function addLog(text, type) {
+  var li = document.createElement("li");
+  li.className = "ev " + (type || "info");
+  var icon = document.createElement("span");
+  icon.className = "icon";
+  var icons = { flip: "x", ok: "v", err: "!", info: "." };
+  icon.textContent = icons[type] || ".";
+  var span = document.createElement("span");
+  span.className = "text";
+  span.textContent = text;
+  li.appendChild(icon);
+  li.appendChild(span);
   $("log").appendChild(li);
-  li.scrollIntoView({ block:"nearest" });
+  li.scrollIntoView({ block: "nearest" });
 }
 
-function setRunBtn(btn, labelEl, busy, text) {
-  btn.disabled = busy;
-  labelEl.innerHTML = busy ? '<span class="spinner"></span>' + text : text;
-}
+$("btn-play").addEventListener("click", async function() {
+  var btn = $("btn-play");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Analyzing...';
 
-$("run-play").addEventListener("click", async () => {
-  const btn = $("run-play"), lbl = $("run-play-label");
-  setRunBtn(btn, lbl, true, "Analyzing…");
-
-  // reset
-  $("log").replaceChildren();
-  $("verdict-card").hidden = true;
-  $("log-card").hidden = false;
-  $("verdict-badge").textContent = "";
-  $("verdict-badge").className = "verdict-badge";
-  $("verdict-reason").textContent = "";
-  $("transform-info").hidden = true;
-  $("warn-list").replaceChildren();
+  $("log").innerHTML = "";
+  $("verdict-box").hidden = true;
+  $("log-box").hidden = false;
+  $("badge").textContent = "";
+  $("badge").className = "badge";
+  $("reason").textContent = "";
+  $("xform-box").hidden = true;
+  $("warns").innerHTML = "";
 
   try {
-    const id = await startJob("/jobs/analyze", { text: $("msg").value, n_variants: 8 });
-
-    await listen(id, ev => {
-      const s = ev.stage;
+    var text = $("msg").value;
+    var jobId = await startJob("/jobs/analyze", { text: text, n_variants: 8 });
+    await listenJob(jobId, function(ev) {
+      var s = ev.stage;
       if (s === "received") {
-        addLog("Input received (" + ev.chars + " characters)", "ev-info");
+        addLog("Input received (" + ev.chars + " characters)", "info");
       } else if (s === "script_check") {
-        addLog("Script check: " + pct(ev.latin_ratio) + " Latin letters", "ev-info");
+        addLog("Script check: " + pct(ev.latin_ratio) + " Latin letters", "info");
       } else if (s === "variants") {
-        addLog("Generated " + ev.count + " safe variants — model says "" + ev.prediction + "" on the original", "ev-info");
+        addLog("Generated " + ev.count + " safe variants. Model says: " + ev.prediction, "info");
       } else if (s === "prediction") {
-        const changed = !ev.same;
-        addLog(ev.kind + ":  "" + ev.variant + ""  →  " + ev.label + (changed ? "  (changed!)" : ""),
-               changed ? "ev-flip" : "ev-pass");
+        var changed = !ev.same;
+        addLog(ev.kind + ":  \"" + ev.variant + "\"  ->  " + ev.label + (changed ? "  (CHANGED!)" : ""), changed ? "flip" : "ok");
       } else if (s === "raw_stability") {
-        addLog("Stability on raw message: " + pct(ev.value), "ev-info");
+        addLog("Stability on raw message: " + pct(ev.value), "info");
       } else if (s === "normalized") {
-        addLog("Normalized to: "" + ev.text + """, "ev-info");
+        addLog("Normalized to: \"" + ev.text + "\"", "info");
       } else if (s === "normalized_stability") {
-        addLog("Stability after normalization: " + pct(ev.value), "ev-info");
+        addLog("Stability after normalization: " + pct(ev.value), "info");
       } else if (s === "gate") {
-        const badge = $("verdict-badge");
-        badge.textContent = { PASS:"✓  PASS", TRANSFORM:"⟳  TRANSFORM", REVIEW:"⚑  REVIEW" }[ev.decision] || ev.decision;
-        badge.className = "verdict-badge " + ev.decision;
-        $("verdict-reason").textContent = ev.reason;
-        $("verdict-card").hidden = false;
+        var badge = $("badge");
+        var labels = { PASS: "PASS", TRANSFORM: "TRANSFORM", REVIEW: "REVIEW" };
+        badge.textContent = labels[ev.decision] || ev.decision;
+        badge.className = "badge " + ev.decision;
+        $("reason").textContent = ev.reason;
+        $("verdict-box").hidden = false;
       } else if (s === "done") {
-        const res = ev.result;
+        var res = ev.result;
         if (res.decision === "TRANSFORM" && res.text_used !== res.original_text) {
-          const info = $("transform-info");
-          info.hidden = false;
-          info.textContent = "";
-          const line1 = document.createElement("div");
-          const line2 = document.createElement("div");
-          line1.innerHTML = "Text sent to model: <code></code>";
-          line2.innerHTML = "Original kept: <code></code>";
-          line1.querySelector("code").textContent = res.text_used;
-          line2.querySelector("code").textContent = res.original_text;
-          info.append(line1, line2);
+          var xb = $("xform-box");
+          xb.hidden = false;
+          xb.innerHTML = "";
+          var d1 = document.createElement("div");
+          d1.innerHTML = "Sent to model: ";
+          var c1 = document.createElement("code");
+          c1.textContent = res.text_used;
+          d1.appendChild(c1);
+          var d2 = document.createElement("div");
+          d2.innerHTML = "Original kept: ";
+          var c2 = document.createElement("code");
+          c2.textContent = res.original_text;
+          d2.appendChild(c2);
+          xb.appendChild(d1);
+          xb.appendChild(d2);
         }
-        const wl = $("warn-list");
-        (res.warnings || []).forEach(w => {
-          const d = document.createElement("div");
-          d.className = "warn-item";
-          d.textContent = "⚠ " + w;
-          wl.appendChild(d);
+        var warns = $("warns");
+        (res.warnings || []).forEach(function(w) {
+          var d = document.createElement("div");
+          d.className = "warn";
+          d.textContent = "Warning: " + w;
+          warns.appendChild(d);
         });
       } else if (s === "error") {
-        addLog("Error: " + ev.message, "ev-error");
+        addLog("Error: " + ev.message, "err");
       }
     });
   } catch (err) {
-    $("log-card").hidden = false;
-    addLog("Error: " + err.message, "ev-error");
+    $("log-box").hidden = false;
+    addLog("Error: " + err.message, "err");
   }
-  setRunBtn(btn, lbl, false, "Run gate");
+
+  btn.disabled = false;
+  btn.textContent = "Run gate";
 });
 
-/* ── CSV upload ───────────────────────────────────────────────────────── */
-let uploadedCsv = null;
+// --- CSV upload ---
+var uploadedCsv = null;
 
-$("csv-file").addEventListener("change", e => {
-  const f = e.target.files[0];
+$("csv-file").addEventListener("change", function(e) {
+  var f = e.target.files[0];
   if (!f) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
     uploadedCsv = ev.target.result;
-    $("upload-filename").textContent = "✓ " + f.name + "  (" + f.size.toLocaleString() + " bytes)";
-    $("upload-filename").hidden = false;
+    $("fname").textContent = "File: " + f.name + " (" + f.size.toLocaleString() + " bytes)";
+    $("fname").hidden = false;
   };
   reader.readAsText(f);
 });
 
-const dz = $("drop-zone");
-dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("dragover"); });
-dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
-dz.addEventListener("drop", e => {
+var dz = $("drop-zone");
+dz.addEventListener("dragover", function(e) { e.preventDefault(); dz.classList.add("over"); });
+dz.addEventListener("dragleave", function() { dz.classList.remove("over"); });
+dz.addEventListener("drop", function(e) {
   e.preventDefault();
-  dz.classList.remove("dragover");
-  const f = e.dataTransfer.files[0];
+  dz.classList.remove("over");
+  var f = e.dataTransfer.files[0];
   if (!f || !f.name.endsWith(".csv")) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
     uploadedCsv = ev.target.result;
-    $("upload-filename").textContent = "✓ " + f.name + "  (" + f.size.toLocaleString() + " bytes)";
-    $("upload-filename").hidden = false;
+    $("fname").textContent = "File: " + f.name;
+    $("fname").hidden = false;
   };
   reader.readAsText(f);
 });
 
-/* ── Robustness Lab ───────────────────────────────────────────────────── */
+// --- Chart ---
 function drawChart(series) {
-  const svg = $("chart");
-  svg.replaceChildren();
+  var svg = $("chart");
+  svg.innerHTML = "";
   if (series.length < 2) return;
-  const W = 400, H = 100, pad = 5;
-  const max = Math.max(0.01, ...series);
-  const pts = series.map((v, i) => {
-    const x = pad + (i / (series.length - 1)) * (W - 2 * pad);
-    const y = H - pad - (v / max) * (H - 2 * pad);
+  var W = 400, H = 100, pad = 5;
+  var max = Math.max(0.01, Math.max.apply(null, series));
+  var pts = series.map(function(v, i) {
+    var x = pad + (i / (series.length - 1)) * (W - 2 * pad);
+    var y = H - pad - (v / max) * (H - 2 * pad);
     return x.toFixed(1) + "," + y.toFixed(1);
   }).join(" ");
-
-  const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-  polyline.setAttribute("points", pts);
-  polyline.setAttribute("fill", "none");
-  polyline.setAttribute("stroke", getComputedStyle(document.documentElement).getPropertyValue("--accent").trim());
-  polyline.setAttribute("stroke-width", "2");
-  polyline.setAttribute("vector-effect", "non-scaling-stroke");
-  polyline.setAttribute("stroke-linejoin", "round");
-  polyline.setAttribute("stroke-linecap", "round");
-
-  // fill under line
-  const fill = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-  const firstX = (pad).toFixed(1), lastX = (pad + (W - 2 * pad)).toFixed(1);
-  fill.setAttribute("points", firstX + "," + (H - pad) + " " + pts + " " + lastX + "," + (H - pad));
-  fill.setAttribute("fill", getComputedStyle(document.documentElement).getPropertyValue("--accent").trim());
-  fill.setAttribute("fill-opacity", "0.12");
-
-  svg.append(fill, polyline);
+  var ns = "http://www.w3.org/2000/svg";
+  var accentColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+  var poly = document.createElementNS(ns, "polyline");
+  poly.setAttribute("points", pts);
+  poly.setAttribute("fill", "none");
+  poly.setAttribute("stroke", accentColor);
+  poly.setAttribute("stroke-width", "2");
+  poly.setAttribute("vector-effect", "non-scaling-stroke");
+  var fg = document.createElementNS(ns, "polygon");
+  var fp = (pad).toFixed(1) + "," + (H-pad) + " " + pts + " " + (pad+(W-2*pad)).toFixed(1) + "," + (H-pad);
+  fg.setAttribute("points", fp);
+  fg.setAttribute("fill", accentColor);
+  fg.setAttribute("fill-opacity", "0.12");
+  svg.appendChild(fg);
+  svg.appendChild(poly);
 }
 
+// --- Results render ---
 function renderResults(r) {
-  // Stats grid
-  const grid = $("stats-grid");
-  grid.replaceChildren();
-  const stats = [
-    { label:"Messages", value: r.n_messages, ci: null, hi: false },
-    { label:"Variants tested", value: r.n_variants, ci: null, hi: false },
-    { label:"Flip rate", value: pct(r.flip_rate),
-      ci: r.flip_rate_ci ? "95% CI " + pct(r.flip_rate_ci[0]) + " – " + pct(r.flip_rate_ci[1]) : null, hi: true },
-    { label:"Accuracy (originals)", value: pct(r.accuracy_original), ci: null, hi: false },
-    { label:"Accuracy (variants)", value: pct(r.accuracy_variants), ci: null, hi: false },
-    { label:"Macro-F1 (variants)", value: r.macro_f1_variants != null ? r.macro_f1_variants.toFixed(3) : "n/a", ci: null, hi: false },
+  var statsEl = $("stats");
+  statsEl.innerHTML = "";
+  var items = [
+    { lbl:"Messages", val: r.n_messages, ci: null, hi: false },
+    { lbl:"Variants tested", val: r.n_variants, ci: null, hi: false },
+    { lbl:"Flip rate", val: pct(r.flip_rate),
+      ci: r.flip_rate_ci ? "95% CI " + pct(r.flip_rate_ci[0]) + " to " + pct(r.flip_rate_ci[1]) : null, hi: true },
+    { lbl:"Accuracy (original)", val: pct(r.accuracy_original), ci: null, hi: false },
+    { lbl:"Accuracy (variants)", val: pct(r.accuracy_variants), ci: null, hi: false },
+    { lbl:"Macro-F1 (variants)", val: r.macro_f1_variants != null ? r.macro_f1_variants.toFixed(3) : "n/a", ci: null, hi: false },
   ];
-  stats.forEach(s => {
-    const box = document.createElement("div");
-    box.className = "stat-box" + (s.hi ? " highlight" : "");
-    box.innerHTML = '<div class="stat-label"></div><div class="stat-value"></div>' + (s.ci ? '<div class="stat-ci"></div>' : "");
-    box.querySelector(".stat-label").textContent = s.label;
-    box.querySelector(".stat-value").textContent = s.value;
-    if (s.ci) box.querySelector(".stat-ci").textContent = s.ci;
-    grid.appendChild(box);
+  items.forEach(function(item) {
+    var box = document.createElement("div");
+    box.className = "stat" + (item.hi ? " hi" : "");
+    var lbl = document.createElement("div"); lbl.className = "lbl"; lbl.textContent = item.lbl;
+    var val = document.createElement("div"); val.className = "val"; val.textContent = item.val;
+    box.appendChild(lbl);
+    box.appendChild(val);
+    if (item.ci) {
+      var ci = document.createElement("div"); ci.className = "ci"; ci.textContent = item.ci;
+      box.appendChild(ci);
+    }
+    statsEl.appendChild(box);
   });
 
-  // Kind bars
-  const bars = $("kind-bars");
-  bars.replaceChildren();
-  const maxFr = Math.max(0.01, ...Object.values(r.by_kind).map(k => k.flip_rate));
-  Object.entries(r.by_kind).sort((a,b) => b[1].flip_rate - a[1].flip_rate).forEach(([name, kd]) => {
-    const row = document.createElement("div");
-    row.className = "kind-row";
-    const namEl = document.createElement("div"); namEl.className = "kind-name"; namEl.textContent = name; namEl.title = name;
-    const track = document.createElement("div"); track.className = "kind-track";
-    const fill = document.createElement("div"); fill.className = "kind-fill";
-    fill.style.width = ((kd.flip_rate / maxFr) * 100).toFixed(1) + "%";
+  var barsEl = $("bars");
+  barsEl.innerHTML = "";
+  var kinds = Object.entries(r.by_kind).sort(function(a,b){ return b[1].flip_rate - a[1].flip_rate; });
+  var maxFr = Math.max(0.01, kinds.length ? kinds[0][1].flip_rate : 0.01);
+  kinds.forEach(function(entry) {
+    var name = entry[0], kd = entry[1];
+    var row = document.createElement("div"); row.className = "bar-row";
+    var nm = document.createElement("div"); nm.className = "bar-name"; nm.textContent = name; nm.title = name;
+    var track = document.createElement("div"); track.className = "bar-track";
+    var fill = document.createElement("div"); fill.className = "bar-fill";
+    fill.style.width = ((kd.flip_rate / maxFr) * 100).toFixed(0) + "%";
     track.appendChild(fill);
-    const pctEl = document.createElement("div"); pctEl.className = "kind-pct"; pctEl.textContent = pct(kd.flip_rate);
-    row.append(namEl, track, pctEl);
-    bars.appendChild(row);
+    var pp = document.createElement("div"); pp.className = "bar-pct"; pp.textContent = pct(kd.flip_rate);
+    row.appendChild(nm); row.appendChild(track); row.appendChild(pp);
+    barsEl.appendChild(row);
   });
 
-  // Flip table
-  const tbody = $("flip-body");
-  tbody.replaceChildren();
-  const flips = (r.flips || []).slice(0, 20);
-  $("flip-count").textContent = r.flips && r.flips.length ? "— showing " + Math.min(r.flips.length, 20) + " of " + r.flips.length : "";
+  var tbody = $("flip-body");
+  tbody.innerHTML = "";
+  var flips = (r.flips || []).slice(0, 20);
+  $("flip-count").textContent = r.flips && r.flips.length ? "(showing " + Math.min(r.flips.length,20) + " of " + r.flips.length + ")" : "";
   if (!flips.length) {
     $("no-flips").hidden = false;
-    $("flip-table").hidden = true;
+    $("flip-tbl").hidden = true;
   } else {
     $("no-flips").hidden = true;
-    $("flip-table").hidden = false;
-    flips.forEach(f => {
-      const tr = document.createElement("tr");
-      const cells = [f.kind, f.original, f.variant];
-      cells.forEach(c => {
-        const td = document.createElement("td"); td.textContent = c; tr.appendChild(td);
+    $("flip-tbl").hidden = false;
+    flips.forEach(function(f) {
+      var tr = document.createElement("tr");
+      [f.kind, f.original, f.variant].forEach(function(c) {
+        var td = document.createElement("td"); td.textContent = c; tr.appendChild(td);
       });
-      const tdC = document.createElement("td");
-      const pill = document.createElement("span");
-      pill.className = "change-pill";
-      pill.textContent = f.original_pred + " → " + f.variant_pred;
-      tdC.appendChild(pill);
-      tr.appendChild(tdC);
+      var td = document.createElement("td");
+      var pill = document.createElement("span"); pill.className = "pill";
+      pill.textContent = f.original_pred + " -> " + f.variant_pred;
+      td.appendChild(pill); tr.appendChild(td);
       tbody.appendChild(tr);
     });
   }
-
-  $("lab-results").hidden = false;
+  $("results-box").hidden = false;
 }
 
-$("run-lab").addEventListener("click", async () => {
-  const btn = $("run-lab"), lbl = $("run-lab-label");
-  setRunBtn(btn, lbl, true, "Running…");
-  $("lab-progress").hidden = false;
-  $("lab-results").hidden = true;
+// --- Robustness Lab ---
+$("btn-lab").addEventListener("click", async function() {
+  var btn = $("btn-lab");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Running...';
+  $("prog-box").hidden = false;
+  $("results-box").hidden = true;
   $("prog").style.width = "0";
-  $("prog-text").textContent = "";
-  $("chart").replaceChildren();
+  $("prog-lbl").textContent = "";
+  $("chart").innerHTML = "";
 
-  const series = [];
-  const body = { n_variants: parseInt($("nv").value) || 5 };
+  var series = [];
+  var body = { n_variants: parseInt($("nv").value) || 5 };
 
   if (uploadedCsv) {
-    // Parse CSV client-side and send rows
     try {
-      const lines = uploadedCsv.trim().split("\n");
-      const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g,""));
-      const ti = headers.indexOf("text"), li = headers.indexOf("label");
+      var lines = uploadedCsv.trim().split("\n");
+      var headers = lines[0].split(",").map(function(h){ return h.trim().replace(/^"|"$/g,""); });
+      var ti = headers.indexOf("text"), li = headers.indexOf("label");
       if (ti === -1 || li === -1) throw new Error("CSV must have columns: text, label");
-      const rows = lines.slice(1).map(l => {
-        // simple CSV parse: handles quoted commas
-        const m = l.match(/("(?:[^"]|"")*"|[^,]*),("(?:[^"]|"")*"|[^,]*)/);
-        if (m) return { text: m[1].replace(/^"|"$/g,"").replace(/""/g,'"'), label: m[2].replace(/^"|"$/g,"").replace(/""/g,'"') };
-        const p = l.split(","); return { text: p[ti] || "", label: p[li] || "" };
-      }).filter(r => r.text && r.label);
-      if (!rows.length) throw new Error("No valid rows found in CSV");
+      var rows = [];
+      for (var i = 1; i < lines.length; i++) {
+        var parts = lines[i].split(",");
+        var t = (parts[ti] || "").trim().replace(/^"|"$/g,"");
+        var l = (parts[li] || "").trim().replace(/^"|"$/g,"");
+        if (t && l) rows.push({ text: t, label: l });
+      }
+      if (!rows.length) throw new Error("No valid rows in CSV");
       body.rows = rows;
-    } catch (e) {
-      $("prog-text").textContent = "CSV error: " + e.message;
-      setRunBtn(btn, lbl, false, "Run robustness test");
+    } catch(e) {
+      $("prog-lbl").textContent = "CSV error: " + e.message;
+      btn.disabled = false;
+      btn.textContent = "Run robustness test";
       return;
     }
   }
 
   try {
-    const id = await startJob("/jobs/test", body);
-    await listen(id, ev => {
+    var jobId = await startJob("/jobs/test", body);
+    await listenJob(jobId, function(ev) {
       if (ev.stage === "progress") {
-        const frac = ev.done / ev.total;
-        $("prog").style.width = (frac * 100).toFixed(1) + "%";
-        $("prog-text").textContent = ev.done + " / " + ev.total + " messages  •  Flip rate so far: " + pct(ev.flip_rate);
+        $("prog").style.width = ((ev.done / ev.total) * 100).toFixed(1) + "%";
+        $("prog-lbl").textContent = ev.done + " / " + ev.total + " messages  |  Flip rate: " + pct(ev.flip_rate);
         series.push(ev.flip_rate);
         drawChart(series);
       } else if (ev.stage === "done") {
         $("prog").style.width = "100%";
         renderResults(ev.report);
       } else if (ev.stage === "error") {
-        $("prog-text").textContent = "Error: " + ev.message;
+        $("prog-lbl").textContent = "Error: " + ev.message;
       }
     });
-  } catch (err) {
-    $("prog-text").textContent = "Error: " + err.message;
+  } catch(err) {
+    $("prog-lbl").textContent = "Error: " + err.message;
   }
-  setRunBtn(btn, lbl, false, "Run robustness test");
+
+  btn.disabled = false;
+  btn.textContent = "Run robustness test";
 });
+
+})(); // end IIFE
 </script>
 </body>
 </html>
