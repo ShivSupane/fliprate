@@ -4,7 +4,7 @@ import pathlib
 ROOT = pathlib.Path(__file__).parent.parent
 SKIP = {".git", "__pycache__", ".pytest_cache", "dakshina_dataset_v1.0",
         "Aksharantar_All_Languages", "data", "dakshina_dataset_v1.0.tar",
-        "Aksharantar_All_Languages.zip"}
+        "Aksharantar_All_Languages.zip", ".venv", "dist"}
 PATTERNS = ["YOUR NAME", "YOUR-USERNAME", "your@example", "you@example",
             "AUTHOR NAME", "shiv@example.com", "TODO", "FIXME", "DRAFT"]
 EXTS = {".py", ".toml", ".md", ".yml", ".yaml", ".txt"}
@@ -32,4 +32,7 @@ if not found:
     print("No remaining placeholders found!")
 else:
     for path, ln, line in found:
-        print(f"{path}:{ln}  {line}")
+        try:
+            print(f"{path}:{ln}  {line}")
+        except UnicodeEncodeError:
+            print(f"{path}:{ln}  {line.encode('ascii', 'replace').decode('ascii')}")
