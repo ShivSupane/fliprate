@@ -1,0 +1,27 @@
+__pycache__/
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+experiments/results/
+.DS_Store
+
+# Large datasets — download separately, do not commit
+dakshina_dataset_v1.0/
+dakshina_dataset_v1.0.tar
+Aksharantar_All_Languages/
+Aksharantar_All_Languages.zip
+
+# SentiMix / kaggle data files — not for public repo
+*.zip
+kaggle*.zip
+output.csv
+
+# Generated rules output (large, reproducible from source data)
+data/rules_from_dakshina/
+data/rules_from_aksharantar/
+
+# Environment and secrets
+.env
+*.env

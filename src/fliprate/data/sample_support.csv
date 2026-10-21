@@ -1,0 +1,41 @@
+text,label
+mera order cancel ho gaya bina bataye,order_issue
+maine galat size ka order kar diya change kar do,order_issue
+order place nahi ho raha app me,order_issue
+mazi order cancel jhali aahe ka,order_issue
+order me ek item missing hai,order_issue
+mala dusra item pathavla order madhe,order_issue
+order confirm nahi hua abhi tak,order_issue
+wrong product mila hai order galat aaya,order_issue
+paise kat gaye par order nahi bana,payment_issue
+payment fail ho gaya but amount deduct hua,payment_issue
+refund abhi tak nahi aaya,payment_issue
+mazhe paise kaple pan payment fail dakhavtay,payment_issue
+upi se payment nahi ho raha,payment_issue
+double payment ho gaya hai,payment_issue
+mala refund ajun milala nahi,payment_issue
+card se paise do baar kat gaye,payment_issue
+mala order ajun milala nahi,delivery_complaint
+delivery bahut late hui,delivery_complaint
+parcel kal aana tha abhi tak nahi aaya,delivery_complaint
+delivery boy ne call nahi uthaya,delivery_complaint
+courier ajun pohchala nahi,delivery_complaint
+package damaged halat me aaya,delivery_complaint
+delivery 5 din se late hai,delivery_complaint
+tracking me delivered dikha raha hai par mujhe nahi mila,delivery_complaint
+product bahut accha hai mala avadla,product_feedback
+quality ekdum bekar hai,product_feedback
+mala product avadla nahi,product_feedback
+mast product hai paisa vasool,product_feedback
+yeh kapda bahut patla hai mujhe pasand nahi aaya,product_feedback
+chhan quality aahe thanks,product_feedback
+product ki quality thik nahi hai,product_feedback
+bahut badhiya product loved it,product_feedback
+mujhe kisi insaan se baat karni hai,human_support
+customer care number do please,human_support
+mala manager shi bolaycha aahe,human_support
+agent se baat karwao,human_support
+kripya koi senior se call karwao,human_support
+mala koni tari phone kara,human_support
+I want to talk to a human,human_support
+bot se kuch nahi hoga representative chahiye,human_support

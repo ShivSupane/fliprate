@@ -1,0 +1,11 @@
+{
+  "n_messages": 2845,
+  "n_variants": 5,
+  "seed": 0,
+  "rules_fingerprint": "7c63bddd679f",
+  "dataset_sha256_16": "ac80b13b0464db64",
+  "models": [
+    "tfidf-word",
+    "tfidf-char"
+  ]
+}

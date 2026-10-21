@@ -1,0 +1,7670 @@
+{
+  "n_messages": 1085,
+  "n_variants": 5425,
+  "accuracy_original": 0.695852534562212,
+  "macro_f1_original": 0.6659031252779568,
+  "accuracy_variants": 0.6936405529953917,
+  "macro_f1_variants": 0.6641627523037527,
+  "flip_rate": 0.025069124423963134,
+  "flip_rate_ci": [
+    0.020276497695852536,
+    0.03023041474654378
+  ],
+  "accuracy_drop": 0.0022119815668202314,
+  "accuracy_drop_ci": [
+    -0.0027649769585254003,
+    0.007188940092165863
+  ],
+  "by_kind": {
+    "repetition": {
+      "variants": 2592,
+      "flip_rate": 0.05246913580246913,
+      "accuracy": 0.6971450617283951
+    },
+    "punctuation": {
+      "variants": 1385,
+      "flip_rate": 0.0,
+      "accuracy": 0.6924187725631769
+    },
+    "case": {
+      "variants": 1119,
+      "flip_rate": 0.0,
+      "accuracy": 0.6916890080428955
+    },
+    "spelling": {
+      "variants": 329,
+      "flip_rate": 0.0,
+      "accuracy": 0.6778115501519757
+    }
+  },
+  "flips": [
+    {
+      "original": "company ki nee pariyojna men kul 2500 locals men se 300 expatriates the aur baki 2200 log including",
+      "variant": "company ki nee pariyojna men kul 2500 locals men se 300 expatriates the aur baaaki 2200 log including",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "mumbai men historical structures jahan governor residence karte the.",
+      "variant": "mumbai meeen historical structures jahan governor residence karte the.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "mumbai men historical structures jahan governor residence karte the.",
+      "variant": "mumbai men historical structures jahan governor residence kaaarte the.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "prtibimbit lake ke back walking path",
+      "variant": "prtibimbit lakeeee ke back walking path",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "awareness among farmers shri ki ritiyon evn taknikon ke bare men jagrookta paida ki jani chahie, kyonki usmen parampragat vidhi ki tulna men change of practices ho jata hai,",
+      "variant": "awareness among farmers shri ki ritiyon evn taknikon ke bare men jagrookta paida ki jani chahie, kyonki uuusmen parampragat vidhi ki tulna men change of practices ho jata hai,",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "awareness among farmers shri ki ritiyon evn taknikon ke bare men jagrookta paida ki jani chahie, kyonki usmen parampragat vidhi ki tulna men change of practices ho jata hai,",
+      "variant": "awareness among farmers shri ki ritiyon evn taknikon ke bare men jagrookta paida ki jani chahie, kyonki usmen parampragat vidhi ki tulna men change of practices ho jaaata hai,",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "column stnbh ko startup par disk show dikhaen",
+      "variant": "column stnbh ko startup par disk shoooow dikhaen",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "in laboratories men total men 131 lakh samples ki janch karne ki capacity hai.",
+      "variant": "in laboraaatories men total men 131 lakh samples ki janch karne ki capacity hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "in laboratories men total men 131 lakh samples ki janch karne ki capacity hai.",
+      "variant": "in laboratories men total men 131 lakh samples ki janch karneeee ki capacity hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "varsh 2010-11 ke dauran , hincol ka production 15939 lakh mt tha.",
+      "variant": "varsh 2010-11 ke dauran , hincol ka produuuction 15939 lakh mt tha.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "varsh 2010-11 ke dauran , hincol ka production 15939 lakh mt tha.",
+      "variant": "varsh 2010-11 ke dauran , hincol ka productioooon 15939 lakh mt tha.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "vah mohan par jhuk gayi aur hilak uthi.",
+      "variant": "vah mohan par jhuk gayi aaaaur hilak uthi.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "is bookmark ko new window men kholen",
+      "variant": "is bookmark ko new wiiiindow men kholen",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "jo vastav men strict rules ka anusaran karta hai.",
+      "variant": "jo vastav meeeen strict rules ka anusaran karta hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "ab , tum shuroo karne ke lie ek simple way",
+      "variant": "ab , tum shuroo karne ke liiiie ek simple way",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "child 3 : phir sunao , grandpa !",
+      "variant": "child 3 : phiiir sunao , grandpa !",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "child 3: phir sunao, grandpa!",
+      "variant": "child 3: phiiiir sunao, grandpa!",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "ji right , 10 karor dlarz -",
+      "variant": "ji right , 10 kaaaaror dlarz -",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "stock deposits ki prakriya prescribed rules ke anusar hogi.",
+      "variant": "stock deposits ki prakriya preeeescribed rules ke anusar hogi.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "stock deposits ki prakriya prescribed rules ke anusar hogi.",
+      "variant": "stock depooosits ki prakriya prescribed rules ke anusar hogi.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "stock deposits ki prakriya prescribed rules ke anusar hogi.",
+      "variant": "stock deposits ki prakriya preeescribed rules ke anusar hogi.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "maile ki basin extent of land men hoti hai.",
+      "variant": "maile ki baaasin extent of land men hoti hai.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "to 1 times 5 barabar hai 5ke",
+      "variant": "to 1 timeeees 5 barabar hai 5ke",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "to, mujhe decipher ki jarurat hai ki mainne kya likha hai.",
+      "variant": "to, mujhe decipher ki jarurat hai ki mainne kyaaaa likha hai.",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "hotpadan ko products jane accessory hai.",
+      "variant": "hotpadan ko produuucts jane accessory hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "amount 750 tak ki loan ke lie : 10 years",
+      "variant": "amount 750 tak ki loan ke lie : 10 yeaaars",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "amount 750 tak ki loan ke lie : 10 years",
+      "variant": "amouuuunt 750 tak ki loan ke lie : 10 years",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "do consecutive amount of space ki doori",
+      "variant": "do consecutive amount of spaaace ki doori",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "aapka password badla gaya hai",
+      "variant": "aapka passwooord badla gaya hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "aapka password badla gaya hai",
+      "variant": "aapka password badla gayaaaa hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "aapka password badla gaya hai",
+      "variant": "aapka paaaassword badla gaya hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "aap apni query is postcard par likhakar snel snail ke dvara googal office ko bhej den.",
+      "variant": "aap aaapni query is postcard par likhakar snel snail ke dvara googal office ko bhej den.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "manohar ka town couple ha to vahan donon ne shrikakulam district headquarters sthit ammi naidu gym men ayas jari rakha",
+      "variant": "manohar ka town couple ha to vahan donoooon ne shrikakulam district headquarters sthit ammi naidu gym men ayas jari rakha",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "chaynit image ki properties v gun dikhaen",
+      "variant": "chaynit imageee ki properties v gun dikhaen",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "unhonne subhashbabu ko corporation ka chief working officer banaya.",
+      "variant": "unhonne subhashbabu ko corporation ka chief workiiing officer banaya.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "leaves ke kendr jiske small leafy plants ki pattiyon men present hai.",
+      "variant": "leaves ke kendr jiske small leafy plants ki pattiyon meeeen present hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "apne training ke dauran, ek bas ne mujhe takkar mar di.",
+      "variant": "apne training ke daaauran, ek bas ne mujhe takkar mar di.",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "apne training ke dauran, ek bas ne mujhe takkar mar di.",
+      "variant": "apne training ke daaaauran, ek bas ne mujhe takkar mar di.",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "broker ko di jane vali amount of commission",
+      "variant": "broker ko di jane vali amouuunt of commission",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "unke bich pure pey ka passed a cup,",
+      "variant": "unke bich pure peeey ka passed a cup,",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "unke bich pure pey ka passed a cup,",
+      "variant": "unke bich pure peeeey ka passed a cup,",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "phir hamne unke bad ek aur aum ko generation ko paida kiya",
+      "variant": "phiiir hamne unke bad ek aur aum ko generation ko paida kiya",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "1 se 127 tak dhundhla ki degree",
+      "variant": "1 se 127 taaaak dhundhla ki degree",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "time remaining jab action ki jati hai",
+      "variant": "time remaining jab action ki jatiiii hai",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "1 se 127 tak degree of blurring",
+      "variant": "1 se 127 taaaak degree of blurring",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "ek bar aapke nirnay jnjan ho jane ke bad paisa prapt kiya ja sakega.",
+      "variant": "ek bar aapke nirnay jnjan ho jane ke baaad paisa prapt kiya ja sakega.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "ek aur revolutionary action bhi , jo months earlier pahle ki gee thi , place hai",
+      "variant": "ek aur revolutionary action bhiii , jo months earlier pahle ki gee thi , place hai",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "in sabhi forms ka areas evn business activities aayojit karne ke vishishta kshetr own",
+      "variant": "in sabhi forms ka areas evn business activities aayojit karne ke vishishta ksheeetr own",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "is breed is black colour black and white hota hai",
+      "variant": "is breed is black coloooour black and white hota hai",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "new channel ke vimochan ki date tay karne ke lie meeting bulaee gee.",
+      "variant": "new channeeeel ke vimochan ki date tay karne ke lie meeting bulaee gee.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "1 gallon 4 quarts hota hai",
+      "variant": "1 gallon 4 quarts hotaaaa hai",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "1 gallon 4 quarts hota hai",
+      "variant": "1 gallon 4 quarts hotaaa hai",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "choose ki kaun si service to edit haia C",
+      "variant": "choose ki kaun si serviiice to edit haia C",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "janch len ki vartni correct hai aur aapke proxy settings correct hain",
+      "variant": "jaaanch len ki vartni correct hai aur aapke proxy settings correct hain",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "ek corolla ka titli jaisa phool jis ki panch pnkhuriyo men ek sabse upri lnbi patti jo hoti hai dhvaj.",
+      "variant": "ek corolla ka titli jaisa phool jis ki panch pnkhuriyo men ek sabse upri lnbi patti jo hoti haiii dhvaj.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "aur yah hai jiske lie ham designing kar rahe hain",
+      "variant": "aur yah hai jiske lie ham designing kaaar rahe hain",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "thim s correctly se installed hai",
+      "variant": "thim s correctly se iiiinstalled hai",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "neutral"
+    },
+    {
+      "original": "to mere rab! mujhe un wrongdoing logon lot sammilit n put",
+      "variant": "to mereeee rab! mujhe un wrongdoing logon lot sammilit n put",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "to mere rab! mujhe un wrongdoing logon lot sammilit n put",
+      "variant": "to meeeere rab! mujhe un wrongdoing logon lot sammilit n put",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "kisi proposal, speech, book athva presentation ityadi ke lie taiyar kiya gaya prarambhik khakapraroop.",
+      "variant": "kisi proposal, speech, book athva presentation ityadi ke lie taiyar kiyaaa gaya prarambhik khakapraroop.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "quran itself states hai aur ve ise pane ke adhikar ke sath pate read",
+      "variant": "quran itself states hai aur ve ise pane ke adhiiikar ke sath pate read",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "quran itself states hai aur ve ise pane ke adhikar ke sath pate read",
+      "variant": "quran itself states hai aur ve ise paaaane ke adhikar ke sath pate read",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "usi nagara shreni ka ek dvitala aur hence ashtanga ya ashtavarga , base se shikhar tak square viman , east incomplete valaiyankuttai ratha ke roop men dekha ja sakta hai.",
+      "variant": "usi nagara shreni ka ek dvitala aur hence ashtanga ya ashtavarga , base se shikhar tak square viman , east incomplete valaiyankuttai ratha ke roop men dekha ja saaakta hai.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "selected bookmark ko ne tab men open",
+      "variant": "selected bookmark ko ne taaab men open",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "neutral"
+    },
+    {
+      "original": "ab, tum start karne ke lie ek simple tarika",
+      "variant": "ab, tum start karneeee ke lie ek simple tarika",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "ab, tum start karne ke lie ek simple tarika",
+      "variant": "ab, tuuuum start karne ke lie ek simple tarika",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "neutral"
+    },
+    {
+      "original": "farmaya tum daro nahin i tumhare sath see sab kuchh sunta aur dekhta see",
+      "variant": "farmaya tum daro nahin i tumhare sath see sab kuchh sunta auuuur dekhta see",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "kya aap nishchit hain ki aap in 0 tasks ko delete chahte hain",
+      "variant": "kyaaa aap nishchit hain ki aap in 0 tasks ko delete chahte hain",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "jab labour ke benevolent aspects par vichar kiya jata ho.",
+      "variant": "jab labour ke benevolent aspects par vichar kiya jataaa ho.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "jab labour ke benevolent aspects par vichar kiya jata ho.",
+      "variant": "jab labour ke benevolent aspects par viiichar kiya jata ho.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "third paksh guarantee agar disbursement ke time ya isse pahle mortgage ka srijan nahin kiya ja saka hai .",
+      "variant": "third paksh guarantee aaaagar disbursement ke time ya isse pahle mortgage ka srijan nahin kiya ja saka hai .",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "kya aap sure hain ki aap in 0 tasks ko mitana chahte hain",
+      "variant": "kya aap sure hain ki aap in 0 tasks ko mitana chahte haaaain",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "sarah palin is bahas men kal shamil ho gayin. kal ek vyapak charchit sakshatkar men kris vales ke sath unhonne svta hi is vishay ko charcha men la diya ki eeran par bam girakar obama doosra karykal vijit kar sakte hain.",
+      "variant": "sarah palin is bahas men kal shamil ho gayin. kal ek vyapak charchit sakshatkar men kris vales ke sath unhonne svta hi is vishay ko charcha men la diya ki eeran par bam girakar obaaama doosra karykal vijit kar sakte hain.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "philosophy se unka vishvas aur bhi dri ho gaya faith",
+      "variant": "philosophy se unka vishvas aur bhi dri ho gayaaa faith",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "father aur son jab himalayas ki ghati men time tab aprail ka foot shuroo ho chuka tha",
+      "variant": "father aur son jab himalayas ki ghati men time tab aprail ka foot shuroo ho chuuuuka tha",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "father aur son jab himalayas ki ghati men time tab aprail ka foot shuroo ho chuka tha",
+      "variant": "father aur son jab himalayas ki ghati men tiiime tab aprail ka foot shuroo ho chuka tha",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "aur hamne aasman se ek andaje e sath pani barsaya phir usko zamin men hasab maslehat thahrae rakha aur ham to yainan uske aeb kar dene par bhi aboo rakhte hai",
+      "variant": "aur hamne aasman se ek andaje e saaaath pani barsaya phir usko zamin men hasab maslehat thahrae rakha aur ham to yainan uske aeb kar dene par bhi aboo rakhte hai",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "dihadi workers ko wages ka bhugtan shram-din ke casual par kiya jata man",
+      "variant": "dihadi workers ko wages ka bhugtan shram-din ke casual par kiya jata maaaan",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "antta unhen aesa kar diya, jaise khane ka chewed ho",
+      "variant": "antta unhen aesa kar diyaaa, jaise khane ka chewed ho",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "antta unhen aesa kar diya, jaise khane ka chewed ho",
+      "variant": "anttaaaa unhen aesa kar diya, jaise khane ka chewed ho",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "ata patient se kam lo , uttam patient",
+      "variant": "ata patient se kaaam lo , uttam patient",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "chitrlekha ke ant men pap ki vyakhya karte hue ratnambar kahta haia snsar men pap kuchh bhi nahin hai, vah keval manushy ke drishtikon ki vishamta ka doosra nam hai.",
+      "variant": "chitrlekha ke ant men pap ki vyakhya karte hue ratnambar kahta haia snsar men pap kuchh bhi nahin hai, vah kevaaaal manushy ke drishtikon ki vishamta ka doosra nam hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "fine rasool apni biviyon se life do ki agar o release duniyavi zindgi aur uski finery v zinat ki khvah ho to udhar aao i o logon ko kuchh sazo saman de wives aur unvane shaista se roosat kar wives",
+      "variant": "fine rasool apniii biviyon se life do ki agar o release duniyavi zindgi aur uski finery v zinat ki khvah ho to udhar aao i o logon ko kuchh sazo saman de wives aur unvane shaista se roosat kar wives",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "true possible koee apne sachche nature ka jan sakta hai",
+      "variant": "true possible koee apne saaaachche nature ka jan sakta hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "true possible koee apne sachche nature ka jan sakta hai",
+      "variant": "true possible koee aaaapne sachche nature ka jan sakta hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "true possible koee apne sachche nature ka jan sakta hai",
+      "variant": "true possible koee apne sachche nature ka jan saktaaa hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "aur main aapke poster join vapas bhej groups ikatthe aaiye",
+      "variant": "aur main aapke poster join vapas bhej grouuuups ikatthe aaiye",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "kripya ek float value bharen 1",
+      "variant": "kripyaaa ek float value bharen 1",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "oopar sikhara bhi square raha hoga",
+      "variant": "oopar sikhara bhi square raha hoooga",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "kya har koee apne true nature ka jan sakta hai",
+      "variant": "kya har koee apne truuue nature ka jan sakta hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "kya har koee apne true nature ka jan sakta hai",
+      "variant": "kya har koee apne true nature ka jan saaakta hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "kya har koee apne true nature ka jan sakta hai",
+      "variant": "kya har koee apne true naaaature ka jan sakta hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "vah is earth par prbhuka kingdom god",
+      "variant": "vah is earth par prbhuka kingdom goood",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "vah is earth par prbhuka kingdom god",
+      "variant": "vaaah is earth par prbhuka kingdom god",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "is sahejen , to ek aur banane ke lie :",
+      "variant": "is sahejen , to ek aaaur banane ke lie :",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "is sahejen , to ek aur banane ke lie :",
+      "variant": "is sahejen , to ek aur banane ke liiie :",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "ye ek sath hi pale aur bae aur life friends rahe.",
+      "variant": "ye ek sath hi pale aur bae aur life friends raaaahe.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "hindi ke bare men great personalities ke vachan",
+      "variant": "hindi ke bare men greaaaat personalities ke vachan",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "file v partitions pvaints banane ke lie ready hain",
+      "variant": "file v partitions pvaints banane ke lieeee ready hain",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "file v partitions pvaints banane ke lie ready hain",
+      "variant": "file v partitions pvaints banane ke lieee ready hain",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "file v partitions pvaints banane ke lie ready hain",
+      "variant": "file v partitions pvaints banane ke lie ready haiiin",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "choonki spairulina ko bane men 3-4 din lag jate hain islie pt par soory ki roshni avashy parni chahie.",
+      "variant": "choonki spairulina ko bane men 3-4 din lag jateee hain islie pt par soory ki roshni avashy parni chahie.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "lekin middle men current kaphi sit hai , islie strong hokar baithna.",
+      "variant": "lekin middle men current kaphiii sit hai , islie strong hokar baithna.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "surely day of judgement ek appointed time hai,",
+      "variant": "surely day of judgement ek appointeeeed time hai,",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "positive"
+    },
+    {
+      "original": "par sharirik prem doosre tat-aatm-hanan-par bridge to cross physical love",
+      "variant": "par sharirik prem doosre tat-aatm-hanan-par bridge to cross physicaaal love",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "par sharirik prem doosre tat-aatm-hanan-par bridge to cross physical love",
+      "variant": "par sharirik prem doosre tat-aatm-hanan-par bridge to cross physical looove",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "yah soluble fibre ka best source hai.",
+      "variant": "yah soluble fibre ka beeest source hai.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "bap ke ganl bladar ka ऑpreshan karaya bangur haspital ke peing bed bharti kara kar.",
+      "variant": "bap ke ganl bladar ka ऑpreshan karaya bangur haspital ke peing bed bharti karaaaa kar.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "ye kuchh behad creative kar rahe hain something",
+      "variant": "ye kuchh behad creatiiive kar rahe hain something",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "important speeches men ve in donon ko udghrit karna nahin chance the.",
+      "variant": "important speeches meeeen ve in donon ko udghrit karna nahin chance the.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "nissndeh judgement ka day ek niyat time hai ,",
+      "variant": "nissndeeeh judgement ka day ek niyat time hai ,",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "positive"
+    },
+    {
+      "original": "companies dvara unke dvara kamae ge profitspoonji profits par diya jane vala tax",
+      "variant": "companies dvara unke dvara kamae ge profitspoonji profits par diya jane vala taaax",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "other alava ganesh chaturthi aur janmashtmi kuchh adhik dhoom-dham ke sng janmashtmi jate hain.",
+      "variant": "other alava ganesh chaturthi aur janmashtmi kuchh adhik dhoom-dham ke sng janmashtmi jaaate hain.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "positive",
+      "label": "positive"
+    },
+    {
+      "original": "s ko s men sending men error",
+      "variant": "s ko s men sending men eeerror",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "uda ne pharmaya chal door ho unmen se jo shash teri pairvi karega to yad rahe ki tum sabki allah jahannum hai aur vah bhi thou thou allah hai",
+      "variant": "uda ne pharmaya chal door ho unmen se jo shash teri pairvi karega to yad rahe ki tum sabki allah jahannum hai aur vaaah bhi thou thou allah hai",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "game ke pas koee hal nahin hai vapas le ya phir start karen",
+      "variant": "game ke pas koee hal nahin haaaai vapas le ya phir start karen",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "game ke pas koee hal nahin hai vapas le ya phir start karen",
+      "variant": "game ke pas koee hal nahin hai vaaaapas le ya phir start karen",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "chaynit audio device saphaltapoorvak khola gaya lekin is device se data pana impossible hai us case men yadi yah ek pluggable device hai yah sufficient hoga ise phir kanekt karna yadi nahin , ya yadi yah abhi bhi pahunch yogy nahin hai , kripya apna audio setup janchen",
+      "variant": "chaynit audio device saphaltapoorvak khola gaya lekin is device se data pana impossible hai us case men yadi yah ek pluggable device hai yah sufficient hoga ise phir kanekt karna yadi nahin , ya yadi yah abhi bhi pahunch yogy nahin hai , kripyaaaa apna audio setup janchen",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "neutral",
+      "label": "negative"
+    },
+    {
+      "original": "magar ye surely n hoga",
+      "variant": "maaagar ye surely n hoga",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "proxy ke madhyam se connection se inkar kar diya",
+      "variant": "proxy ke madhyam se connection se inkar kar diyaaaa",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "aur jinke deeds light ke palle halke hogen to unhin logon ne hamari aayat se napharmani karne ki vajah se yainan apna aap nusan kiya",
+      "variant": "aur jinke deeds light ke palle halke hogen to unhin logon ne hamari aayat se napharmani karne ki vaaajah se yainan apna aap nusan kiya",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "ODD 2 ka returns hoga 3",
+      "variant": "OOODD 2 ka returns hoga 3",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "ODD 2 ka returns hoga 3",
+      "variant": "ODD 2 ka returns hogaaaa 3",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "neutral",
+      "label": "negative"
+    },
+    {
+      "original": "snapped men jaon , ullas chikha aur uthakar dharam se door bnd karke chala gaya.",
+      "variant": "snapped men jaon , ullas chikha aur uthakar dharam se door bnd kaaaarke chala gaya.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "infectious disease ke spread ko niyntrit karne ke lie compulsory isolation ki period",
+      "variant": "infectious disease ke spread ko niyntrit karne ke lie compulsory isooolation ki period",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "koee conflict ya disagreement originates hoti hai ya astitv men aati hai.",
+      "variant": "koee conflict ya disagreement originates hooooti hai ya astitv men aati hai.",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "court ne kaha ki ve words sirph laughable the aur readers par koee effect dalne men incapable the.",
+      "variant": "court ne kaha ki ve words sirph laughable the aur readers paaaar koee effect dalne men incapable the.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "aur jinke nek amal ke deeds weigh light to unhin logon ne hamari aayat se napharmani karne ki vajah se yainan apna aap nusan kiya",
+      "variant": "aur jinke nek amal ke deeds weigh light to uuuunhin logon ne hamari aayat se napharmani karne ki vajah se yainan apna aap nusan kiya",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "kuchh nahin, jab pran reaches ko aa lagenge,",
+      "variant": "kuchh nahin, jab praaaan reaches ko aa lagenge,",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "neutral",
+      "label": "negative"
+    },
+    {
+      "original": "je pi aur vinoba donon ne us war ka samarthan kiya.",
+      "variant": "je pi aur vinoba donon ne us war ka samarthaaan kiya.",
+      "kind": "repetition",
+      "original_pred": "positive",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "game ke pas koee solution nahin hai vapas le ya phir shuroo karen",
+      "variant": "game ke pas koee solution nahin hai vapas le ya phir shuroo kaaaaren",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "isi tarah vishv-chitr bhi keval self ignorance ke world ke picture aatma ke reflected light men hi dikhaee parta hai.",
+      "variant": "isi tarah vishv-chiiitr bhi keval self ignorance ke world ke picture aatma ke reflected light men hi dikhaee parta hai.",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "phir hamne bai logon ko tabah v barbad kar diya",
+      "variant": "phir hamne bai logon ko tabah v barbad kar diyaaa",
+      "kind": "repetition",
+      "original_pred": "negative",
+      "variant_pred": "positive",
+      "label": "negative"
+    },
+    {
+      "original": "sab thik hai, yah ek aur ek ki cut and pasted jana chahie cut",
+      "variant": "sab thik hai, yah ek aur ek ki cut aaaand pasted jana chahie cut",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "internal error : invalid format men UID : uid",
+      "variant": "internal error : invalid formaaat men UID : uid",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    },
+    {
+      "original": "internal error : invalid format men UID : uid",
+      "variant": "internal error : invaaalid format men UID : uid",
+      "kind": "repetition",
+      "original_pred": "neutral",
+      "variant_pred": "negative",
+      "label": "negative"
+    }
+  ],
+  "seed": 0,
+  "transitions": {
+    "positive -> neutral": 41,
+    "neutral -> positive": 38,
+    "negative -> positive": 19,
+    "neutral -> negative": 17,
+    "positive -> negative": 16,
+    "negative -> neutral": 5
+  },
+  "metadata": {
+    "fliprate_version": "0.2.0",
+    "python": "3.12.3",
+    "timestamp_utc": "2026-10-18T08:43:29+00:00",
+    "model": "protected(tfidf-word)",
+    "dataset_sha256_16": "a75723158d0bc005",
+    "rules_fingerprint": "7c63bddd679f",
+    "variants_per_message": 5,
+    "kinds": [
+      "spelling",
+      "repetition",
+      "punctuation",
+      "case"
+    ],
+    "bootstrap_resamples": 1000,
+    "model_calls": 6510,
+    "cache_hits": 0,
+    "seconds": 1.46
+  },
+  "message_stats": [
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      2,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      3,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      3,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      3,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      3,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      3,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      2,
+      3
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      1,
+      4
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      1,
+      1
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      0,
+      5,
+      2,
+      2
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ],
+    [
+      0,
+      5,
+      0,
+      0
+    ],
+    [
+      1,
+      5,
+      0,
+      5
+    ]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "n_messages": 2997,
+  "n_variants": 5,
+  "seed": 0,
+  "rules_fingerprint": "7c63bddd679f",
+  "dataset_sha256_16": "616241c4fef4a4b8",
+  "models": [
+    "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+  ]
+}

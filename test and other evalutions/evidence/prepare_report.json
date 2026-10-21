@@ -1,0 +1,34 @@
+{
+  "rows_raw": {
+    "train": 14594,
+    "valid": 3000,
+    "test": 3000
+  },
+  "train_rows_ending_nan": 0.4374400438536385,
+  "valid_ids_inside_train": 2555,
+  "published_valid_counts": {
+    "positive": 982,
+    "negative": 890,
+    "neutral": 1128
+  },
+  "valid_counts": {
+    "neutral": 1128,
+    "positive": 982,
+    "negative": 890
+  },
+  "test_counts": {
+    "neutral": 1100,
+    "positive": 1000,
+    "negative": 900
+  },
+  "published_test_counts": {
+    "positive": 1000,
+    "negative": 900,
+    "neutral": 1100
+  },
+  "rows_clean": {
+    "train": 14569,
+    "valid": 2999,
+    "test": 2997
+  }
+}
