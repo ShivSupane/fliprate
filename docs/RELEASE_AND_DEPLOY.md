@@ -1,15 +1,15 @@
-# Release and deploy checklist
+﻿# Release and deploy checklist
 
-**Author: Shivprasad Supane**
+**Author: Shiv Supane**
 
 ---
 
 ## A. Before anything public
 
 1. `pyproject.toml` is already set correctly:
-   - `name = "Shivprasad Supane"`
+   - `name = "Shiv Supane"`
    - `email = "shiv.supane777@gmail.com"`
-   - `Homepage = "https://github.com/ShivprasadSupane/fliprate"`
+   - `Homepage = "https://github.com/ShivSupane/fliprate"`
 
 2. Check the PyPI name is free: open `https://pypi.org/project/fliprate/`.
    A 404 page means it is available.
@@ -25,7 +25,7 @@
 
 ```bash
 # One-time: add the remote (use your actual GitHub username)
-git remote add origin https://github.com/ShivprasadSupane/fliprate.git
+git remote add origin https://github.com/ShivSupane/fliprate.git
 git push -u origin main
 ```
 
@@ -47,7 +47,7 @@ No secrets needed. The environment name must match `release.yml` exactly.
 ```
 pypi.org → Your account → Publishing → Add new pending publisher
   Project name:      fliprate
-  GitHub owner:      ShivprasadSupane
+  GitHub owner:      ShivSupane
   Repository name:   fliprate
   Workflow filename: release.yml
   Environment name:  pypi

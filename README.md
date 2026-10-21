@@ -1,12 +1,12 @@
-# FlipRate
+﻿# FlipRate
 
 **Does your NLP model change its answer when the same message is typed differently?**
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Tests](https://github.com/ShivprasadSupane/fliprate/actions/workflows/ci.yml/badge.svg)](https://github.com/ShivprasadSupane/fliprate/actions/workflows/ci.yml)
+[![Tests](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml/badge.svg)](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml)
 
-Built by **Shivprasad Supane**
+Built by **Shiv Supane**
 
 ---
 
@@ -43,7 +43,7 @@ pip install "fliprate[api,hf,sklearn]"  # + scikit-learn baselines
 
 From source:
 ```bash
-git clone https://github.com/ShivprasadSupane/fliprate.git
+git clone https://github.com/ShivSupane/fliprate.git
 cd fliprate
 pip install -e ".[dev,api,hf,sklearn]"
 ```
@@ -280,7 +280,7 @@ If you use the multi-language rules in published work, cite:
 
 ## License
 
-MIT — see [LICENSE](LICENSE). © 2025 Shivprasad Supane
+MIT — see [LICENSE](LICENSE). © 2025 Shiv Supane
 
 The Dakshina dataset is CC BY-SA 4.0. The Aksharantar dataset is CC BY 4.0.
 Neither is included in this package — download separately.
