@@ -18,9 +18,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Refuse to publish with placeholder metadata
+      - name: Validate author metadata
         run: |
           ! grep -qE 'YOUR-USERNAME|YOUR NAME|AUTHOR NAME|example\.com' pyproject.toml
+          grep -qE 'Shiv Supane' pyproject.toml
+          grep -qE 'ShivSupane' pyproject.toml
 
       - name: Install package and test dependencies
         run: pip install -e ".[dev,api]"
