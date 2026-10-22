@@ -137,6 +137,11 @@ print(result.decision)     # PASS | TRANSFORM | REVIEW
 print(result.prediction)   # model's answer on the cleaned text
 print(result.reason)       # why this decision was made
 
+# ── Devanagari & Script Detection (v0.4.0) ─────────────────────────────
+print(fr.detect_script("मला प्रॉडक्ट आवडला"))  # "devanagari"
+result_dev = fr.gate(my_model, "मला प्रॉडक्ट आवडला नाही")
+print(result_dev.decision) # PASS | TRANSFORM | REVIEW
+
 # ── Robustness test ────────────────────────────────────────────────────
 report = fr.test(my_model, "data/test.csv")
 print(report.summary())
@@ -219,7 +224,7 @@ result = fr.gate(my_model, "vanakkam nalla irukku", rules=rules)
 
 ```bash
 python -m pytest tests/ -q
-# 86 passed
+# 110 passed
 ```
 
 ---

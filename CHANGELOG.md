@@ -10,6 +10,7 @@
   - `"punctuation"`: Danda (`।`) and double danda (`॥`) interchange with Western punctuation (`.`, `!`, `...`).
   - `"spelling"`: Curated nukta-safe equivalence groups (`ज़रा`/`जरा`, `फ़ोन`/`फोन`, etc.) avoiding blind substitutions.
 - **Negation Safety in Devanagari**: Extended negation set with Hindi and Marathi negation words (`नहीं`, `नही`, `नहिं`, `मत`, `नाही`, `नाहीं`, `नको`, `नकोस`). Verified over corpus tests that negation counts remain strictly invariant across all perturbations.
+- **Canonical Form Gate Pass**: In `gate()`, when input is already in canonical normalized form (`normalize(text).normalized == text`) and raw variants flip, it now evaluates normalized stability. If normalized variants are stable, returns `PASS` with warning `"input is already in canonical form; model is sensitive to other spellings (protect() recommended)"` instead of `REVIEW`.
 - **Opt-in Cross-Script Transliteration**: Optional `cross_script=True` parameter in `perturb()` and `is_safe_variant()` for deterministic 1-to-1 transliterated word pairs.
 
 ## 0.3.0

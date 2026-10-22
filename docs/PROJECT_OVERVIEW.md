@@ -349,17 +349,18 @@ fliprate/
 9. **Aksharantar integration** (v0.2.1): 428K groups from AI4Bharat Aksharantar (21 languages)
 10. **Improved normalization** (v0.2.1): consonant/vowel run distinction
 11. **New web console** (v0.2.1): replaced Streamlit with built-in zero-dependency console
+12. **Devanagari & Script-Aware Gating** (v0.4.0): native Devanagari support, script detection, unicode/digit/danda/curated spelling perturbations, negation invariance, canonical form gate stability pass, opt-in cross-script transliteration
 
 ---
 
 ## Known Limitations
 
-- Only romanized (Latin-script) text is supported. Devanagari and other native scripts go to REVIEW.
+- Supported scripts: Roman (Latin), Devanagari, and mixed code-switched text. Other Indic scripts (Tamil, Telugu, Bengali native scripts) route to `REVIEW` with an informative reason.
 - Variants are rule-generated, not sampled from real users. Real typing noise is wider than four change types.
 - The built-in customer-support lexicon is domain-specific. Use `--no-lexicon` for other domains.
 - The Dakshina and Aksharantar rules are from Wikipedia text — social-media vocabulary is different.
 - The bundled 40-message sample and toy model are for demos only. Do not publish numbers from them.
-- No verification on Python versions older than 3.12 (CI tests 3.9–3.12 but hasn't run yet).
+- CI tests across Python 3.9–3.13.
 
 ---
 

@@ -16,7 +16,7 @@
 3. Do **not** ship third-party datasets. The package ships only the 40-message demo sample.
    Dakshina (CC BY-SA 4.0) and Aksharantar (CC BY 4.0) must be downloaded separately.
 
-4. Run `python -m pytest tests/ -q` and confirm 86 tests pass.
+4. Run `python -m pytest tests/ -q` and confirm 110 tests pass.
 
 ---
 
@@ -69,7 +69,7 @@ python -m venv /tmp/fr_test
 
 **Step 4 — Real publish**
 ```
-GitHub → Releases → New release → Tag: v0.2.1 → Publish release
+GitHub → Releases → New release → Tag: v0.4.0 → Publish release
 ```
 The `release.yml` workflow runs automatically: installs the package, runs pytest, builds, and uploads.
 

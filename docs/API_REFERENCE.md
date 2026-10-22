@@ -1,6 +1,6 @@
 # FlipRate — API Reference
 
-**Author: Shiv Supane** | Version 0.3.0
+**Author: Shiv Supane** | Version 0.4.0
 
 All public functions are available as `fliprate.<name>` after `import fliprate as fr`.
 
@@ -10,7 +10,7 @@ All public functions are available as `fliprate.<name>` after `import fliprate a
 
 ### `fr.gate(model, text, ...)`
 
-Run the PASS / TRANSFORM / REVIEW quality gate on a single message.
+Run the PASS / TRANSFORM / REVIEW quality gate on a single message. Supports Roman (Latin), Devanagari, and mixed code-switched text.
 
 ```python
 result = fr.gate(my_model, "mala product avadlaaa nahi")
@@ -40,11 +40,14 @@ result.to_json()         # JSON string representation
 | `threshold` | `float` | `0.8` | Minimum stability for PASS/TRANSFORM |
 | `min_variants` | `int` | `3` | Below this count, stability is flagged as weak |
 | `seed` | `int` | `0` | For reproducibility |
-| `kinds` | `list[str]` | all 4 | Restrict to `["spelling","repetition","punctuation","case"]` |
+| `kinds` | `list[str]` | all 4 | Restrict to `["spelling","repetition","punctuation","case"]` (Latin) or Devanagari kinds |
 | `rules` | `RuleSet` | `DEFAULT_RULES` | Language rules to use |
 | `on_event` | `callable` | `None` | Called with each event dict during streaming |
 | `cache` | `bool` | `True` | Cache model predictions |
 | `on_error` | `str` | `"raise"` | `"raise"` to re-raise model exceptions, or `"review"` to yield REVIEW |
+| `script_aware` | `bool` | `True` | Enable script detection and native Devanagari/mixed script support (`False` for legacy Latin-only) |
+
+> **Canonical Form Handling:** When an input is already in canonical normalized form (`normalize(text).normalized == text`) and raw variants cause the model to flip, `gate()` evaluates the stability of the normalized variants. If they are stable, it returns `PASS` with the warning `"input is already in canonical form; model is sensitive to other spellings (protect() recommended)"` rather than routing to `REVIEW`.
 
 ### `fr.agate(model, text, ...)` — async version
 
@@ -136,6 +139,24 @@ print(diff["significant"])       # True if CI excludes 0
 
 ---
 
+## Script Detection
+
+### `fr.detect_script(text)`
+
+Identify the dominant script of an input string for script-aware routing.
+
+```python
+fr.detect_script("मला प्रॉडक्ट आवडला")       # "devanagari"
+fr.detect_script("product bohot accha hai")   # "latin"
+fr.detect_script("ye product बहुत accha hai")  # "mixed"
+fr.detect_script("வணக்கம்")                   # "other"
+```
+
+- Returns: `"latin"`, `"devanagari"`, `"mixed"`, or `"other"`.
+- Robust to punctuation, digits, symbols, emojis, and zero-width characters.
+
+---
+
 ## Normalization
 
 ### `fr.normalize(text, lowercase=True, rules=None)`
@@ -151,11 +172,13 @@ str(r)          # same as r.normalized
 ```
 
 What it does:
+- Unicode NFC normalization and zero-width noise stripping (`\u200B` ZWSP, `\u200C` ZWNJ, `\u200D` ZWJ, `\uFEFF` BOM)
 - Known spelling variants → canonical form (`nhi` → `nahi`)
 - Consonant runs of 3+ → 1 (`avadlaaa` → `avadla`)
 - Vowel runs of 3+ → 2 (`sooooo` → `soo`)
 - Repeated punctuation → 1 (`!!!` → `!`)
 - Extra spaces removed
+- URLs, emails, hashtags, and mentions are preserved byte-for-byte
 
 What it **never** does: add/remove/reorder words, touch ambiguous tokens like `nai`.
 
@@ -163,11 +186,16 @@ What it **never** does: add/remove/reorder words, touch ambiguous tokens like `n
 
 ## Perturbation
 
-### `fr.perturb(text, n=10, kinds=None, seed=0, rules=None)`
+### `fr.perturb(text, n=10, kinds=None, seed=0, rules=None, cross_script=False)`
 
-Generate meaning-preserving spelling variants.
+Generate meaning-preserving spelling variants. Adapts automatically based on the detected script:
+- **Latin text**: kinds include `"spelling"`, `"repetition"`, `"punctuation"`, `"case"`
+- **Devanagari text**: kinds include `"unicode"` (precomposed/decomposed nuktas), `"digits"` (0-9 ↔ ०-९), `"punctuation"` (danda । ॥ ↔ western punctuation), and `"spelling"` (curated nukta variants)
+- **Mixed text**: combines eligible Latin and Devanagari perturbation strategies
+- `cross_script`: boolean (default `False`). When `True`, permits deterministic 1-to-1 transliterated word pairs.
 
 ```python
+# Latin
 variants = fr.perturb("mala delivery nahi milali", n=8)
 for v in variants:
     print(v.kind, v.text)
@@ -175,6 +203,11 @@ for v in variants:
 # repetition  mala deliveeery nahi milali
 # punctuation mala delivery nahi milali!
 # case        MALA DELIVERY NAHI MILALI
+
+# Devanagari
+variants = fr.perturb("मला डिलिव्हरी नाही मिळाली", n=5)
+for v in variants:
+    print(v.kind, v.text)
 ```
 
 Returns `list[Variant]`. Each `Variant` has `.text` and `.kind`.
@@ -202,7 +235,9 @@ safe_model("mala product avadlaaa nhi")   # internally normalized first
 ### `fr.DEFAULT_RULES`
 
 The built-in conservative rule set (73 groups, 224 canonical keys). Covers
-Hindi, Urdu, Marathi, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, Punjabi.
+Hindi, Urdu, Marathi, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, Punjabi,
+as well as Devanagari safe nukta pairs and comprehensive Hindi/Marathi negations
+(`नहीं`, `नही`, `नहिं`, `मत`, `नाही`, `नाहीं`, `नको`, `नकोस`).
 
 ### `fr.RuleSet(groups=None, lexicon=None, negations=None, ambiguous=None)`
 
