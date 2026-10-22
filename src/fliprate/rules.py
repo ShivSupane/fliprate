@@ -1067,6 +1067,10 @@ class RuleSet:
 
     def is_safe_variant(self, original: str, variant: str) -> bool:
         """True if `variant` keeps the same words (up to safe spelling) and same negation count."""
+        if not isinstance(original, str):
+            raise TypeError(f"text must be str, got {type(original).__name__}")
+        if not isinstance(variant, str):
+            raise TypeError(f"text must be str, got {type(variant).__name__}")
         return (self.canonical_tokens(original) == self.canonical_tokens(variant)
                 and self.negation_count(original) == self.negation_count(variant))
 

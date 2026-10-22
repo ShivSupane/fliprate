@@ -1,6 +1,6 @@
 # FlipRate — API Reference
 
-**Author: Shiv Supane** | Version 0.2.1
+**Author: Shiv Supane** | Version 0.3.0
 
 All public functions are available as `fliprate.<name>` after `import fliprate as fr`.
 
@@ -25,6 +25,9 @@ result.normalized_stability  # stability after normalization (or None)
 result.n_variants        # how many safe variants were tested
 result.warnings          # list of warning strings (ambiguous tokens etc.)
 result.flipped_variants  # list of variant texts that changed the answer
+
+result.to_dict()         # dict representation for logging
+result.to_json()         # JSON string representation
 ```
 
 **Parameters:**
@@ -41,6 +44,15 @@ result.flipped_variants  # list of variant texts that changed the answer
 | `rules` | `RuleSet` | `DEFAULT_RULES` | Language rules to use |
 | `on_event` | `callable` | `None` | Called with each event dict during streaming |
 | `cache` | `bool` | `True` | Cache model predictions |
+| `on_error` | `str` | `"raise"` | `"raise"` to re-raise model exceptions, or `"review"` to yield REVIEW |
+
+### `fr.agate(model, text, ...)` — async version
+
+Asynchronous equivalent of `gate()`. Runs in a worker thread via `asyncio.to_thread` to avoid blocking the event loop:
+
+```python
+result = await fr.agate(my_model, "kya haal hai")
+```
 
 ### `fr.iter_gate(model, text, ...)` — streaming version
 
@@ -221,7 +233,7 @@ rules.fingerprint()   # e.g. "7c63bddd679f"
 Dict of hand-curated groups per language. Keys are language names.
 `LANGUAGE_GROUPS["hindi"]`, `LANGUAGE_GROUPS["tamil"]`, etc.
 
-Languages: hindi, urdu, marathi, bengali, tamil, telugu, kannada, malayalam, gujarati, punjabi, odia, assamese.
+Languages (12 languages + shared): hindi, urdu, marathi, bengali, tamil, telugu, kannada, malayalam, gujarati, punjabi, odia, assamese, and shared.
 
 ---
 

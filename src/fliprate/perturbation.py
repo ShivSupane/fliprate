@@ -80,12 +80,16 @@ def perturb(
     Every variant is checked with `is_safe_variant`, so negations are never added or
     removed. Fewer than `n` variants may be returned for short or already-noisy text.
     """
+    if not isinstance(text, str):
+        raise TypeError(f"text must be str, got {type(text).__name__}")
+    if n < 1:
+        raise ValueError(f"n must be >= 1, got {n}")
     rules = rules or DEFAULT_RULES
     kinds = tuple(kinds) if kinds else KINDS
     unknown = [k for k in kinds if k not in _APPLY]
     if unknown:
         raise ValueError(f"Unknown perturbation kinds: {unknown}. Choose from {KINDS}")
-    if not text or not text.strip() or n <= 0:
+    if not text.strip():
         return []
     rng = random.Random(seed)
     seen = {text}

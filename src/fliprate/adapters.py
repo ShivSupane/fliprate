@@ -11,6 +11,8 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 
 def twitter_preprocess(text: str) -> str:
     """The @user / http placeholders that the cardiffnlp Twitter models were trained with."""
+    if not isinstance(text, str):
+        raise TypeError(f"text must be str, got {type(text).__name__}")
     out = []
     for t in text.split(" "):
         t = "@user" if t.startswith("@") and len(t) > 1 else t

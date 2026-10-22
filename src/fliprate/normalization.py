@@ -45,6 +45,15 @@ def _collapse_runs(word: str) -> str:
     return out
 
 
+_PROTECT_RE = re.compile(
+    r"(?:https?://|www\.)\S+|"
+    r"[\w.+-]+@[\w-]+\.[\w.-]+|"
+    r"@\w+|"
+    r"#\w+|"
+    r"\b\d+(?:[.,]\d+)*\b|\d+"
+)
+
+
 def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None) -> NormalizeResult:
     """Return a cleaned copy of `text`. The original is always preserved in the result.
 
@@ -55,12 +64,26 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
         ("avadlaaa" -> "avadlaa" if not in rules, but rule lookup handles "avadla")
       * repeated punctuation collapsed ("!!!" -> "!")
       * extra spaces removed
+      * URLs, emails, @handles, #hashtags, and numbers are protected byte-for-byte
 
     What it never does: add, remove or reorder words, or touch ambiguous tokens like "nai",
     non-ASCII tokens, or tokens containing digits.
     """
+    if not isinstance(text, str):
+        raise TypeError(f"text must be str, got {type(text).__name__}")
+
+    # Mask URLs, emails, @handles, #hashtags, and numbers so normalization does not damage them
+    masks: List[str] = []
+
+    def _mask_match(match: re.Match) -> str:
+        idx = len(masks)
+        masks.append(match.group(0))
+        return f"__FLIPMASK{idx}__"
+
+    masked_text = _PROTECT_RE.sub(_mask_match, text)
+
     rules = rules or DEFAULT_RULES
-    parts = tokenize_keep(text)
+    parts = tokenize_keep(masked_text)
     changes: List[Tuple[str, str]] = []
 
     for i, chunk in enumerate(parts):
@@ -72,7 +95,7 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
             parts[i] = collapsed
             continue
 
-        # Skip non-ASCII tokens (Devanagari etc.) and tokens with digits
+        # Skip non-ASCII tokens (Devanagari etc.) and tokens with digits (including our mask tokens)
         if not chunk.isascii() or any(c.isdigit() for c in chunk):
             continue
 
@@ -91,4 +114,9 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
         parts[i] = new
 
     normalized = _WS_RE.sub(" ", "".join(parts)).strip()
+
+    # Restore masked entities byte-for-byte
+    for idx, original_entity in enumerate(masks):
+        normalized = normalized.replace(f"__FLIPMASK{idx}__", original_entity)
+
     return NormalizeResult(original=text, normalized=normalized, changes=changes)

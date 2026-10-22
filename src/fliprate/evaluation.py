@@ -24,26 +24,96 @@ Row = Tuple[str, Any]
 
 
 # ----------------------------------------------------------------------------- data
-def read_csv_text(content: str) -> List[Row]:
-    """Parse CSV text with header columns `text` and `label`.
-    Handles UTF-8 BOM (Excel-saved CSVs) transparently.
+def read_csv_text(
+    content: str,
+    text_col: str = "text",
+    label_col: str = "label",
+    delimiter: Optional[str] = None,
+) -> List[Row]:
+    """Parse CSV text with header columns into a list of (text, label) rows.
+    Supports auto-detected delimiters (comma, semicolon, tab), custom column names,
+    stripped header spaces, and UTF-8 BOM.
     """
+    if not isinstance(content, str):
+        raise TypeError(f"content must be str, got {type(content).__name__}")
     content = content.lstrip("\ufeff")  # strip BOM if present
-    reader = csv.DictReader(io.StringIO(content))
-    if not reader.fieldnames or "text" not in reader.fieldnames or "label" not in reader.fieldnames:
-        raise ValueError("CSV needs a header row with columns: text,label")
-    return [(r["text"], r["label"]) for r in reader if (r.get("text") or "").strip()]
+    if not content.strip():
+        raise ValueError("CSV is empty")
+
+    if delimiter is None:
+        sample = "\n".join([line for line in content.splitlines() if line.strip()][:10])
+        try:
+            dialect = csv.Sniffer().sniff(sample, delimiters=",;\t|")
+            delimiter = dialect.delimiter
+        except Exception:
+            first_line = next((line for line in content.splitlines() if line.strip()), "")
+            candidates = [",", ";", "\t", "|"]
+            counts = {d: first_line.count(d) for d in candidates}
+            best = max(counts, key=counts.get)
+            delimiter = best if counts[best] > 0 else ","
+
+    reader = csv.reader(io.StringIO(content), delimiter=delimiter)
+    try:
+        raw_headers = next(reader)
+    except StopIteration:
+        raise ValueError("CSV is empty")
+
+    headers = [h.strip() for h in raw_headers]
+    clean_text_col = text_col.strip()
+    clean_label_col = label_col.strip()
+
+    if clean_text_col not in headers or clean_label_col not in headers:
+        raise ValueError(f"CSV needs a header row with columns: {clean_text_col},{clean_label_col}")
+
+    text_idx = headers.index(clean_text_col)
+    label_idx = headers.index(clean_label_col)
+
+    rows: List[Row] = []
+    for line_num, parts in enumerate(reader, start=2):
+        if not parts or not "".join(parts).strip():
+            continue
+        if len(parts) <= max(text_idx, label_idx):
+            raise ValueError(f"row {line_num} must be (text, label) or a dict with '{clean_text_col}' and '{clean_label_col}'")
+        t, l = parts[text_idx].strip(), parts[label_idx].strip()
+        if t:
+            rows.append((t, l))
+    if not rows:
+        raise ValueError("Dataset is empty")
+    return rows
 
 
-def load_dataset(source: Any) -> List[Row]:
-    """Accept a CSV path, or a list of (text, label) pairs, or a list of {text, label} dicts."""
+def load_dataset(
+    source: Any,
+    text_col: str = "text",
+    label_col: str = "label",
+    delimiter: Optional[str] = None,
+) -> List[Row]:
+    """Accept a CSV path or CSV text string, or a list of (text, label) pairs, or a list of dicts."""
+    clean_text_col = text_col.strip()
+    clean_label_col = label_col.strip()
+
     if isinstance(source, (str, os.PathLike)):
-        with open(source, encoding="utf-8-sig", newline="") as f:  # utf-8-sig strips Excel BOM automatically
-            rows = read_csv_text(f.read())
+        # If it's a file on disk or path-like
+        is_path = isinstance(source, os.PathLike) or ("\n" not in str(source) and os.path.exists(source))
+        if is_path:
+            with open(source, encoding="utf-8-sig", newline="") as f:
+                rows = read_csv_text(f.read(), text_col=clean_text_col, label_col=clean_label_col, delimiter=delimiter)
+        else:
+            rows = read_csv_text(str(source), text_col=clean_text_col, label_col=clean_label_col, delimiter=delimiter)
     else:
         rows = []
-        for r in source:
-            rows.append((r["text"], r["label"]) if isinstance(r, dict) else (r[0], r[1]))
+        for i, r in enumerate(source, start=1):
+            if isinstance(r, dict):
+                stripped_r = {k.strip() if isinstance(k, str) else k: v for k, v in r.items()}
+                if clean_text_col not in stripped_r or clean_label_col not in stripped_r:
+                    raise ValueError(f"row {i} must be (text, label) or a dict with '{clean_text_col}' and '{clean_label_col}'")
+                rows.append((str(stripped_r[clean_text_col]), stripped_r[clean_label_col]))
+            elif isinstance(r, (list, tuple)):
+                if len(r) < 2:
+                    raise ValueError(f"row {i} must be (text, label) or a dict with '{clean_text_col}' and '{clean_label_col}'")
+                rows.append((str(r[0]), r[1]))
+            else:
+                raise ValueError(f"row {i} must be (text, label) or a dict with '{clean_text_col}' and '{clean_label_col}'")
     if not rows:
         raise ValueError("Dataset is empty")
     return rows
@@ -238,6 +308,13 @@ def iter_test(
 
     Messages are processed `batch_messages` at a time so batch-capable models (see models.py) stay fast.
     """
+    if n_variants < 1:
+        raise ValueError(f"n_variants must be >= 1, got {n_variants}")
+    if bootstrap < 1:
+        raise ValueError(f"bootstrap must be >= 1, got {bootstrap}")
+    if batch_messages < 1:
+        raise ValueError(f"batch_messages must be >= 1, got {batch_messages}")
+
     rules = rules or DEFAULT_RULES
     rows = load_dataset(dataset)
     predictor = Predictor(model, cache=cache)

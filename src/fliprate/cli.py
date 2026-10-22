@@ -12,8 +12,28 @@ from .evaluation import load_dataset
 from .rules import DEFAULT_RULES, RuleSet
 
 
+import os
+
+
 def _rules(args):
     return RuleSet.from_csv(args.rules) if getattr(args, "rules", None) else DEFAULT_RULES
+
+
+def _load_model(spec: str | None = None):
+    """Load model from 'module:function' string or sklearn pickle/joblib file."""
+    if not spec:
+        return load_model(None)
+    if os.path.exists(spec) or spec.endswith((".pkl", ".pickle", ".joblib")):
+        try:
+            import joblib
+            clf = joblib.load(spec)
+        except Exception:
+            import pickle
+            with open(spec, "rb") as f:
+                clf = pickle.load(f)
+        from .adapters import from_sklearn
+        return from_sklearn(clf)
+    return load_model(spec)
 
 
 def main(argv=None) -> int:
@@ -25,7 +45,7 @@ def main(argv=None) -> int:
         if text:
             sp.add_argument("text")
         if model:
-            sp.add_argument("--model", default=None, help="module:function (default: toy keyword model)")
+            sp.add_argument("--model", default=None, help="module:function or sklearn pickle path (default: toy keyword model)")
         if rules:
             sp.add_argument("--rules", default=None, help="CSV of reviewed spelling groups (see `fliprate mine`)")
         return sp
@@ -43,6 +63,13 @@ def main(argv=None) -> int:
     st.add_argument("--seed", type=int, default=0)
     st.add_argument("--protect", action="store_true", help="put normalization in front of the model")
     st.add_argument("--save", default=None, help="write the full report (JSON) here")
+
+    srep = add("report", "evaluate model on data and write a Markdown report", model=True)
+    srep.add_argument("--data", required=True, help="CSV with columns text,label")
+    srep.add_argument("--out", required=True, help="path to write report.md")
+    srep.add_argument("-n", type=int, default=5, help="variants per message")
+    srep.add_argument("--seed", type=int, default=0)
+    srep.add_argument("--protect", action="store_true", help="put normalization in front of the model")
 
     cd = add("check-data", "find duplicates, label conflicts and tiny classes in a CSV")
     cd.add_argument("data")
@@ -80,7 +107,7 @@ def main(argv=None) -> int:
         for old, new in r.changes:
             print(f"  {old} -> {new}")
     elif args.cmd == "gate":
-        r = gate(load_model(args.model), args.text, rules=rules)
+        r = gate(_load_model(args.model), args.text, rules=rules)
         print(f"{r.decision}: {r.reason}")
         print(f"prediction={r.prediction!r} raw_stability={r.raw_stability} normalized_stability={r.normalized_stability}")
         for v in r.flipped_variants[:5]:
@@ -88,7 +115,7 @@ def main(argv=None) -> int:
         for w in r.warnings:
             print("warning:", w)
     elif args.cmd in ("demo", "test"):
-        model = load_model(args.model)
+        model = _load_model(args.model)
         if args.cmd == "test" and args.protect:
             model = protect(model, rules=rules)
         rows = sample_dataset() if args.cmd == "demo" else load_dataset(args.data)
@@ -102,6 +129,16 @@ def main(argv=None) -> int:
         if getattr(args, "save", None):
             report.save(args.save)
             print(f"saved: {args.save}")
+    elif args.cmd == "report":
+        model = _load_model(args.model)
+        if args.protect:
+            model = protect(model, rules=rules)
+        rows = load_dataset(args.data)
+        rep = test(model, rows, n_variants=args.n, seed=args.seed, rules=rules)
+        md = rep.to_markdown(f"FlipRate Report: {args.data}")
+        with open(args.out, "w", encoding="utf-8") as f:
+            f.write(md)
+        print(f"Report written to {args.out}")
     elif args.cmd == "check-data":
         chk = check_dataset(args.data, rules=rules)
         print(chk.summary())

@@ -94,6 +94,13 @@ fliprate test --data mydata.csv --model mypackage.mymodule:clf --rules approved.
 fliprate test --data mydata.csv --save results/report.json
 ```
 
+### Report — export Markdown report
+
+```bash
+fliprate report --data mydata.csv --model mypackage.mymodule:clf --out report.md
+fliprate report --data mydata.csv --model model.pkl --rules approved.csv --out report.md
+```
+
 ### Data tools
 
 ```bash
