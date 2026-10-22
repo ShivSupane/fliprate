@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Generator, List, Optional, Sequence
 
 from .events import Event, drain, make_event
-from .models import Predictor
+from .models import Predictor, batch_predict
 from .normalization import normalize
 from .perturbation import perturb
 from .rules import DEFAULT_RULES, RuleSet
@@ -63,6 +63,85 @@ def _is_emoji_or_modifier(c: str) -> bool:
     return False
 
 
+def _is_latin_char(c: str) -> bool:
+    cp = ord(c)
+    if (0x0041 <= cp <= 0x005A) or (0x0061 <= cp <= 0x007A):
+        return True
+    if (0x00C0 <= cp <= 0x024F) or (0x1E00 <= cp <= 0x1EFF):
+        return True
+    return unicodedata.name(c, "").startswith("LATIN")
+
+
+def _is_devanagari_char(c: str) -> bool:
+    cp = ord(c)
+    return (0x0900 <= cp <= 0x097F) or (0xA8E0 <= cp <= 0xA8FF)
+
+
+def _detect_primary_script_name(letters: List[str]) -> str:
+    for c in letters:
+        name = unicodedata.name(c, "")
+        if "BENGALI" in name:
+            return "Bengali"
+        if "TAMIL" in name:
+            return "Tamil"
+        if "TELUGU" in name:
+            return "Telugu"
+        if "KANNADA" in name:
+            return "Kannada"
+        if "MALAYALAM" in name:
+            return "Malayalam"
+        if "GUJARATI" in name:
+            return "Gujarati"
+        if "GURMUKHI" in name:
+            return "Gurmukhi"
+        if "ORIYA" in name:
+            return "Odia"
+        if "ARABIC" in name:
+            return "Arabic"
+        if "CYRILLIC" in name:
+            return "Cyrillic"
+    return "non-Latin/non-Devanagari"
+
+
+def detect_script(text: str) -> str:
+    """Classify text script into 'latin' | 'devanagari' | 'mixed' | 'other'.
+
+    Counts Latin letters via str.isalpha() and Devanagari characters via the
+    Unicode block range U+0900–U+097F (which includes consonants, vowels, matras,
+    and combining marks — all of which count as Devanagari script units).
+    Digits, punctuation, and emoji are ignored.
+    Returns 'other' for empty text, digits/symbols only, or unsupported Indic scripts.
+    The 85% rule applies: if >= 85% are one script it is 'latin' or 'devanagari';
+    if both are present and together >= 85% it is 'mixed'; otherwise 'other'.
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"text must be str, got {type(text).__name__}")
+
+    latin_count = 0
+    deva_count = 0
+    for c in text:
+        if _is_emoji_or_modifier(c):
+            continue
+        cp = ord(c)
+        if (0x0900 <= cp <= 0x097F) or (0xA8E0 <= cp <= 0xA8FF):
+            # Any Devanagari block character counts (consonants, matras, anusvara, visarga…)
+            deva_count += 1
+        elif c.isalpha() and _is_latin_char(c):
+            latin_count += 1
+
+    total = latin_count + deva_count
+    if total == 0:
+        return "other"
+
+    if latin_count / total >= 0.85:
+        return "latin"
+    if deva_count / total >= 0.85:
+        return "devanagari"
+    if latin_count > 0 and deva_count > 0:
+        return "mixed"
+    return "other"
+
+
 def _latin_ratio(text: str) -> float:
     # Ignore emoji, variation selectors, ZWJ, and skin tones when evaluating script
     letters = [c for c in text if c.isalpha() and not _is_emoji_or_modifier(c)]
@@ -86,6 +165,7 @@ def iter_gate(
     rules: Optional[RuleSet] = None,
     cache: bool = True,
     on_error: str = "raise",
+    script_aware: bool = True,
 ) -> Generator[Event, None, GateResult]:
     """Decide whether `text` can go to `model` as is (PASS), after cleaning (TRANSFORM), or needs a human (REVIEW).
 
@@ -127,12 +207,25 @@ def iter_gate(
         yield from finish(res)
         return res
 
-    ratio = _latin_ratio(text)
-    yield make_event("script_check", latin_ratio=round(ratio, 2))
-    if ratio < 0.5:
-        res = done(REVIEW, "Mostly non-Latin script; v0.1 supports romanized text only", text, None, None, None, 0)
-        yield from finish(res)
-        return res
+    if not script_aware:
+        ratio = _latin_ratio(text)
+        yield make_event("script_check", latin_ratio=round(ratio, 2))
+        if ratio < 0.5:
+            res = done(REVIEW, "Mostly non-Latin script; v0.1 supports romanized text only", text, None, None, None, 0)
+            yield from finish(res)
+            return res
+    else:
+        script = detect_script(text)
+        yield make_event("script_check", script=script)
+        if script == "other":
+            letters = [c for c in text if c.isalpha() and not _is_emoji_or_modifier(c)]
+            if not letters:
+                res = done(REVIEW, "No script letters found", text, None, None, None, 0)
+            else:
+                sname = _detect_primary_script_name(letters)
+                res = done(REVIEW, f"unsupported script: {sname}", text, None, None, None, 0)
+            yield from finish(res)
+            return res
 
     for tok in rules.ambiguous_tokens(text):
         warnings.append(f"'{tok}' is ambiguous ({rules.ambiguous[tok]}); left unchanged")
@@ -176,6 +269,7 @@ def iter_gate(
     nstab: Optional[float] = None
     nbase = None
     can_transform = False
+    canonical_stable = False
     if norm.normalized != text and rules.is_safe_variant(text, norm.normalized):
         yield make_event("normalized", text=norm.normalized, changes=norm.changes)
         try:
@@ -192,10 +286,28 @@ def iter_gate(
         can_transform = nstab >= threshold and nstab > raw
     elif norm.normalized != text:
         warnings.append("Normalization would change the meaning; it was not applied")
+    elif norm.normalized == text:
+        norm_variants = [normalize(v.text, rules=rules).normalized for v in variants]
+        try:
+            npreds = batch_predict(predictor.model, norm_variants)
+        except Exception as exc:
+            if on_error == "review":
+                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, raw, None, len(variants))
+                yield from finish(res)
+                return res
+            raise
+        nbase = base
+        nstab = sum(p == nbase for p in npreds) / len(variants)
+        yield make_event("normalized_stability", value=nstab)
+        if nstab >= threshold and (raw < threshold or nstab > raw):
+            canonical_stable = True
+            warnings.append("input is already in canonical form; model is sensitive to other spellings (protect() recommended)")
 
     n = len(variants)
     if can_transform:
         res = done(TRANSFORM, "Stable after approved normalization", norm.normalized, nbase, raw, nstab, n, flipped)
+    elif canonical_stable:
+        res = done(PASS, "Input is in canonical form and stable after normalization", text, base, raw, nstab, n, flipped)
     elif raw >= threshold:
         warnings.append(f"{len(flipped)} of {n} safe variants changed the answer; normalization did not improve this")
         res = done(PASS, "Mostly stable across safe variants", text, base, raw, nstab, n, flipped)
@@ -208,8 +320,8 @@ def iter_gate(
 def gate(model: Callable[[str], Any], text: str, n_variants: int = 8, threshold: float = 0.8,
          min_variants: int = 3, seed: int = 0, kinds: Optional[Sequence[str]] = None,
          on_event: Optional[Callable[[Event], None]] = None, rules: Optional[RuleSet] = None,
-         cache: bool = True, on_error: str = "raise") -> GateResult:
-    return drain(iter_gate(model, text, n_variants, threshold, min_variants, seed, kinds, rules, cache, on_error), on_event)
+         cache: bool = True, on_error: str = "raise", script_aware: bool = True) -> GateResult:
+    return drain(iter_gate(model, text, n_variants, threshold, min_variants, seed, kinds, rules, cache, on_error, script_aware), on_event)
 
 
 async def agate(
@@ -224,6 +336,7 @@ async def agate(
     rules: Optional[RuleSet] = None,
     cache: bool = True,
     on_error: str = "raise",
+    script_aware: bool = True,
 ) -> GateResult:
     """Async version of gate(). Runs gate() in a background worker thread via asyncio.to_thread."""
     return await asyncio.to_thread(
@@ -239,4 +352,5 @@ async def agate(
         rules=rules,
         cache=cache,
         on_error=on_error,
+        script_aware=script_aware,
     )

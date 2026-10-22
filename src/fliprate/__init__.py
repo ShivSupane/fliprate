@@ -33,11 +33,19 @@ from .evaluation import (
     read_csv_text,
     test,
 )
-from .gating import GateResult, agate, gate, iter_gate
+from .gating import GateResult, agate, detect_script, gate, iter_gate
 from .models import Predictor, ProtectedModel, protect
 from .normalization import NormalizeResult, normalize
 from .perturbation import KINDS, Variant, perturb
-from .rules import DEFAULT_RULES, LANGUAGE_GROUPS, RuleSet, is_safe_variant
+from .rules import (
+    CROSS_SCRIPT_MAP,
+    CROSS_SCRIPT_REV,
+    DEFAULT_RULES,
+    DEVANAGARI_GROUPS,
+    LANGUAGE_GROUPS,
+    RuleSet,
+    is_safe_variant,
+)
 
 # ── Model adapters ─────────────────────────────────────────────────────────────
 from .adapters import (
@@ -67,7 +75,7 @@ from .aksharantar import (
 # ── Streaming helpers (for building custom event consumers) ───────────────────
 from .events import drain, make_event, to_sse
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "Shiv Supane"
 
 __all__ = [
@@ -77,6 +85,7 @@ __all__ = [
     "gate",
     "iter_gate",
     "agate",
+    "detect_script",
     "Report",
     "GateResult",
     "paired_difference",
@@ -90,6 +99,9 @@ __all__ = [
     # ── Rules ────────────────────────────────────────────────────────────────
     "RuleSet",
     "DEFAULT_RULES",
+    "DEVANAGARI_GROUPS",
+    "CROSS_SCRIPT_MAP",
+    "CROSS_SCRIPT_REV",
     "LANGUAGE_GROUPS",
 
     # ── Multi-language datasets ──────────────────────────────────────────────

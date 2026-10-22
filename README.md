@@ -92,6 +92,28 @@ print(result.reason)            # human-readable explanation
 print(result.flipped_variants)  # variants that caused model flip (if unstable)
 ```
 
+### Devanagari & Script-Aware Gating (v0.4.0)
+
+FlipRate natively supports Devanagari (Hindi, Marathi, etc.) and mixed-script text:
+
+```python
+# Detect script
+fr.detect_script("मला प्रॉडक्ट आवडला")      # "devanagari"
+fr.detect_script("product bohot accha hai")  # "latin"
+fr.detect_script("ye product बहुत accha hai") # "mixed"
+
+# Gate Devanagari and mixed text with safe orthographic perturbations
+result = fr.gate(my_model, "मला प्रॉडक्ट आवडला नाही")
+print(result.decision)   # PASS / TRANSFORM / REVIEW
+```
+
+Devanagari perturbations include:
+- **Unicode normalization**: precomposed vs decomposed nuktas (e.g., U+0958..U+095F vs base + U+093C)
+- **Digits**: bidirectional swap between ASCII (`0-9`) and Devanagari (`०-९`) digits
+- **Punctuation**: danda (`।`) and double danda (`॥`) interchange with Western punctuation
+- **Curated spelling**: meaning-safe nukta variations (`ज़रा`/`जरा`, `फ़ोन`/`फोन`) and Hindi/Marathi negations (`नहीं`, `नाही`, `नको`)
+- **Opt-in cross-script**: optional `cross_script=True` for high-confidence 1-to-1 transliterated pairs
+
 ---
 
 ## Web Console
@@ -264,8 +286,8 @@ docker run -p 7860:7860 \
 
 ## Limitations
 
-- Romanized Latin-script text only. Devanagari and other native scripts go to REVIEW.
-- Rule-generated variants only — real typing noise is wider than 4 change types.
+- Supported scripts: Roman (Latin), Devanagari, and mixed code-switched text. Other Indic scripts (Tamil, Telugu, Bengali script) route to `REVIEW` with an informative reason.
+- Rule-generated variants only — real typing noise is wider than 6 change types.
 - Spelling rules have not been reviewed by a fluent speaker for any language.
 - Customer-support domain lexicon; use `--no-lexicon` for other domains.
 - Dakshina data is from Wikipedia. Aksharantar draws on Wikipedia, IndicCorp, Samanantar, and other corpora — but not all pairs are manually annotated.

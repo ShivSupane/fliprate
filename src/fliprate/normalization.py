@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
@@ -27,6 +28,7 @@ _CONSONANT_RUN_RE = re.compile(r"([^aeiouAEIOU\W_])\1{2,}")   # 3+ identical con
 _VOWEL_RUN_RE     = re.compile(r"([aeiouAEIOU])\1{2,}")        # 3+ identical vowels -> 2
 _PUNC_RUN_RE      = re.compile(r"([^\w\s])\1+")                # repeated punctuation
 _WS_RE            = re.compile(r"\s+")
+_ZERO_WIDTH_RE    = re.compile(r"[\u200B\u200C\u200D\uFEFF]")  # ZWSP, ZWNJ, ZWJ, BOM
 
 
 def _collapse_runs(word: str) -> str:
@@ -58,16 +60,16 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
     """Return a cleaned copy of `text`. The original is always preserved in the result.
 
     What it does:
+      * Unicode NFC normalization and strips stray ZWJ/ZWNJ/zero-width spaces
       * known words and their safe spellings -> one canonical spelling
-        ("nhi" -> "nahi", "avadlaaa" -> "avadla", "bohot" -> "bahut")
+        ("nhi" -> "nahi", "avadlaaa" -> "avadla", "bohot" -> "bahut", "जरा" -> "ज़रा")
       * unknown words: consonant runs of 3+ collapsed to 1, vowel runs of 3+ collapsed to 2
-        ("avadlaaa" -> "avadlaa" if not in rules, but rule lookup handles "avadla")
-      * repeated punctuation collapsed ("!!!" -> "!")
+      * repeated punctuation collapsed ("!!!" -> "!", "।।।" -> "।")
       * extra spaces removed
       * URLs, emails, @handles, #hashtags, and numbers are protected byte-for-byte
 
     What it never does: add, remove or reorder words, or touch ambiguous tokens like "nai",
-    non-ASCII tokens, or tokens containing digits.
+    or tokens containing digits.
     """
     if not isinstance(text, str):
         raise TypeError(f"text must be str, got {type(text).__name__}")
@@ -82,36 +84,46 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
 
     masked_text = _PROTECT_RE.sub(_mask_match, text)
 
+    # Strip zero-width characters and normalize to NFC
+    stripped = _ZERO_WIDTH_RE.sub("", masked_text)
+    nfc_text = unicodedata.normalize("NFC", stripped)
+
     rules = rules or DEFAULT_RULES
-    parts = tokenize_keep(masked_text)
+    parts = tokenize_keep(nfc_text)
     changes: List[Tuple[str, str]] = []
 
     for i, chunk in enumerate(parts):
         if not is_word(chunk):
-            # Collapse repeated punctuation: "!!!" -> "!", "..." -> "." (keep ellipsis as single dot)
+            # Collapse repeated punctuation: "!!!" -> "!", "..." -> ".", "।।।" -> "।"
             collapsed = _PUNC_RUN_RE.sub(r"\1", chunk)
             if collapsed != chunk:
                 changes.append((chunk, collapsed))
             parts[i] = collapsed
             continue
 
-        # Skip non-ASCII tokens (Devanagari etc.) and tokens with digits (including our mask tokens)
-        if not chunk.isascii() or any(c.isdigit() for c in chunk):
+        # Skip tokens with digits (including our mask tokens)
+        if any(c.isdigit() for c in chunk):
             continue
 
-        word = chunk.lower() if lowercase else chunk
+        if chunk.isascii():
+            word = chunk.lower() if lowercase else chunk
+            # 1. Check rules dict first
+            canon = rules.key_to_canon.get(word_key(word))
+            if canon is not None:
+                new = canon
+            else:
+                # 2. Unknown Latin word: collapse character runs conservatively
+                new = _collapse_runs(word)
 
-        # 1. Check the rules dict first (canonical lookup handles run-collapsing internally via word_key)
-        canon = rules.key_to_canon.get(word_key(word))
-        if canon is not None:
-            new = canon
+            if new.lower() != chunk.lower():
+                changes.append((chunk, new))
+            parts[i] = new
         else:
-            # 2. Unknown word: collapse character runs conservatively
-            new = _collapse_runs(word)
-
-        if new.lower() != chunk.lower():
-            changes.append((chunk, new))
-        parts[i] = new
+            # Non-ASCII (e.g. Devanagari)
+            canon = rules.key_to_canon.get(word_key(chunk))
+            if canon is not None and canon != chunk:
+                changes.append((chunk, canon))
+                parts[i] = canon
 
     normalized = _WS_RE.sub(" ", "".join(parts)).strip()
 

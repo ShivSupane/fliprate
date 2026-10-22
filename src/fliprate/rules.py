@@ -56,6 +56,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import unicodedata
 from typing import Dict, Iterable, List, Optional, Tuple
 
 
@@ -886,8 +887,98 @@ _CORE: List[Tuple[str, ...]] = [
     ("amount", "amnt"),
 ]
 
-SAFE_GROUPS: List[Tuple[str, ...]] = _CORE
-CORE_GROUPS: List[Tuple[str, ...]] = _CORE  # public alias
+# =============================================================================
+# DEVANAGARI SAFE GROUPS — curated meaning-safe orthographic & nukta groups
+# Nukta insertion/deletion is only allowed for words where both forms are known
+# to mean the exact same word (e.g. ज़रा/जरा, फ़ोन/फोन). Homographs like
+# सजा (decorated) vs सज़ा (punishment) are excluded.
+# =============================================================================
+DEVANAGARI_GROUPS: List[Tuple[str, ...]] = [
+    # Negation variants
+    ("नहीं", "नही", "नहिं"),
+    ("नाही", "नाहीं"),
+    # Curated safe nukta pairs (meaning preserved identical)
+    ("ज़रा", "जरा"),
+    ("फ़ोन", "फोन"),
+    ("ज़रूर", "जरूर"),
+    ("ज़्यादा", "ज्यादा"),
+    ("साफ़", "साफ"),
+    ("फ़र्क", "फर्क"),
+    ("क़रीब", "करीब"),
+    ("फ़ायदा", "फायदा"),
+    ("माफ़", "माफ"),
+    ("तारीफ़", "तारीफ"),
+    ("काग़ज़", "कागज"),
+    ("बाज़ार", "बाजार"),
+    ("नुक़सान", "नुकसान"),
+    ("मज़बूत", "मजबूत"),
+    ("हफ़्ता", "हफ्ता"),
+    ("तरफ़", "तरफ"),
+    ("क़ीमत", "कीमत"),
+    ("क़ानून", "कानून"),
+    ("फ़िल्म", "फिल्म"),
+    ("ज़िंदगी", "जिंदगी"),
+    ("ख़ास", "खास"),
+    ("ख़बर", "खबर"),
+    ("ख़ुश", "खुश"),
+    ("ग़लत", "गलत"),
+    ("ग़रीब", "गरीब"),
+    ("वज़ह", "वजह"),
+]
+
+# Cross-script 1-to-1 high frequency mappings for opt-in cross_script perturbations
+CROSS_SCRIPT_MAP: Dict[str, str] = {
+    "nahi": "नहीं",
+    "nhi": "नहीं",
+    "nahin": "नहीं",
+    "bahut": "बहुत",
+    "bohot": "बहुत",
+    "accha": "अच्छा",
+    "achha": "अच्छा",
+    "acha": "अच्छा",
+    "theek": "ठीक",
+    "thik": "ठीक",
+    "shukriya": "शुक्रिया",
+    "namaste": "नमस्ते",
+    "dhanyavad": "धन्यवाद",
+    "dhanyavaad": "धन्यवाद",
+    "kya": "क्या",
+    "kyun": "क्यों",
+    "haan": "हाँ",
+    "order": "ऑर्डर",
+    "cancel": "कैंसिल",
+    "delivery": "डिलीवरी",
+    "refund": "रिफंड",
+    "kharab": "खराब",
+    "sahi": "सही",
+    "milala": "मिळाला",
+    "avadla": "आवडला",
+    "pahije": "पाहिजे",
+}
+CROSS_SCRIPT_REV: Dict[str, str] = {
+    "नहीं": "nahi",
+    "बहुत": "bahut",
+    "अच्छा": "accha",
+    "ठीक": "theek",
+    "शुक्रिया": "shukriya",
+    "नमस्ते": "namaste",
+    "धन्यवाद": "dhanyavad",
+    "क्या": "kya",
+    "क्यों": "kyun",
+    "हाँ": "haan",
+    "ऑर्डर": "order",
+    "कैंसिल": "cancel",
+    "डिलीवरी": "delivery",
+    "रिफंड": "refund",
+    "खराब": "kharab",
+    "सही": "sahi",
+    "मिळाला": "milala",
+    "आवडला": "avadla",
+    "पाहिजे": "pahije",
+}
+
+SAFE_GROUPS: List[Tuple[str, ...]] = _CORE + DEVANAGARI_GROUPS
+CORE_GROUPS: List[Tuple[str, ...]] = SAFE_GROUPS  # public alias
 
 # =============================================================================
 # LEXICON — extra single words the normalizer de-stretches ("lateee" → "late")
@@ -902,6 +993,9 @@ LEXICON: List[str] = [
     "milala", "mileli", "pathavla", "aala", "aali", "gela", "geli",
     "sangto", "sangti", "kara", "kela", "keli", "pahije", "nako",
     "ghya", "dya", "thamba", "avadla", "avadli",
+    # Devanagari words
+    "ऑर्डर", "सामान", "पैसा", "पैसे", "मदद", "शिकायत", "वापस", "खराब", "अच्छा", "उत्पाद", "पहुंचा",
+    "डिलीवरी", "रिफंड", "कैंसिल",
     # Bengali
     "bhalo", "dhonnobad", "achi",
     # Tamil
@@ -930,14 +1024,19 @@ AMBIGUOUS: Dict[str, str] = {
     "ki":   "Hindi 'of/that' vs Bengali/Assamese 'what' — context-dependent",
     "ko":   "Hindi postposition 'to' vs other uses",
     "po":   "Tamil/Kannada/Malayalam 'go (imperative)' — too short and ambiguous in mixed text",
+    # Devanagari ambiguous tokens
+    "ना":   "Hindi/Marathi: tag particle vs negation 'na' — ambiguous",
+    "न":    "Hindi/Marathi: single-letter conjunction/filler vs negation 'na' — ambiguous",
 }
 
 # =============================================================================
 # NEGATIONS — safe variants never add or remove these tokens
 # =============================================================================
 NEGATIONS: frozenset = frozenset({
-    # Hindi / Urdu / Marathi
+    # Hindi / Urdu / Marathi (Roman)
     "nahi", "nhi", "nahin", "nahee", "nako", "nko", "mat", "maat",
+    # Hindi / Marathi (Devanagari)
+    "नहीं", "नही", "नहिं", "नाही", "नाहीं", "नको", "नकोस", "नका", "मत", "ना", "न",
     # English
     "not", "no", "never",
     # Dravidian
@@ -951,8 +1050,15 @@ NEGATIONS: frozenset = frozenset({
 # =============================================================================
 # Low-level utilities
 # =============================================================================
-WORD_RE = re.compile(r"\w+", re.UNICODE)
-_SPLIT_RE = re.compile(r"\w+|\W+", re.UNICODE)
+# Devanagari block U+0900–U+097F includes consonants, vowels, matras (combining
+# vowel signs), viramas, anusvara, visarga etc.  Python's \w+ does NOT match
+# combining marks (Unicode category Mn/Mc), so "ऑर्डर" splits at virama into
+# ["ऑर","डर"] and "नहीं" loses its anusvara.  We add the full block first as an
+# alternation so every Devanagari word is captured as one token (excluding
+# danda \u0964 and double danda \u0965 which are punctuation).
+_DEVA_WORD = r"[\u0900-\u0963\u0966-\u097F]+"
+WORD_RE = re.compile(_DEVA_WORD + r"|\w+", re.UNICODE)
+_SPLIT_RE = re.compile(_DEVA_WORD + r"|\w+|\W+", re.UNICODE)
 _RUN_RE = re.compile(r"(.)\1+")
 
 
@@ -965,9 +1071,14 @@ def is_word(chunk: str) -> bool:
     return bool(chunk) and (chunk[0].isalnum() or chunk[0] == "_")
 
 
+_DEVA_TO_ASCII_DIGITS = str.maketrans("०१२३४५६७८९", "0123456789")
+
+
 def word_key(word: str) -> str:
-    """Lowercase + collapse repeated letters: 'Naahi' -> 'nahi', 'avadlaaa' -> 'avadla'."""
-    return _RUN_RE.sub(r"\1", word.lower())
+    """Lowercase + NFC-normalize + digits to ASCII + collapse repeated letters: 'Naahi' -> 'nahi', 'avadlaaa' -> 'avadla'."""
+    nfc = unicodedata.normalize("NFC", word)
+    norm = nfc.translate(_DEVA_TO_ASCII_DIGITS)
+    return _RUN_RE.sub(r"\1", norm.lower())
 
 
 class RuleSet:
@@ -1049,12 +1160,15 @@ class RuleSet:
     def group_of(self, word: str) -> Optional[int]:
         return self.key_to_group.get(word_key(word))
 
-    def canonical_tokens(self, text: str) -> Tuple[str, ...]:
+    def canonical_tokens(self, text: str, cross_script: bool = False) -> Tuple[str, ...]:
         """Meaning skeleton: lowercase, repeats collapsed, safe spellings unified."""
         out = []
         for w in WORD_RE.findall(text):
             k = word_key(w)
-            out.append(self.key_to_canon.get(k, k))
+            canon = self.key_to_canon.get(k, k)
+            if cross_script:
+                canon = CROSS_SCRIPT_MAP.get(canon, canon)
+            out.append(canon)
         return tuple(out)
 
     def negation_count(self, text: str) -> int:
@@ -1065,13 +1179,13 @@ class RuleSet:
                 count += 1
         return count
 
-    def is_safe_variant(self, original: str, variant: str) -> bool:
+    def is_safe_variant(self, original: str, variant: str, cross_script: bool = False) -> bool:
         """True if `variant` keeps the same words (up to safe spelling) and same negation count."""
         if not isinstance(original, str):
             raise TypeError(f"text must be str, got {type(original).__name__}")
         if not isinstance(variant, str):
             raise TypeError(f"text must be str, got {type(variant).__name__}")
-        return (self.canonical_tokens(original) == self.canonical_tokens(variant)
+        return (self.canonical_tokens(original, cross_script=cross_script) == self.canonical_tokens(variant, cross_script=cross_script)
                 and self.negation_count(original) == self.negation_count(variant))
 
     def ambiguous_tokens(self, text: str) -> List[str]:
@@ -1155,8 +1269,8 @@ def negation_count(text: str) -> int:
     return DEFAULT_RULES.negation_count(text)
 
 
-def is_safe_variant(original: str, variant: str) -> bool:
-    return DEFAULT_RULES.is_safe_variant(original, variant)
+def is_safe_variant(original: str, variant: str, cross_script: bool = False) -> bool:
+    return DEFAULT_RULES.is_safe_variant(original, variant, cross_script=cross_script)
 
 
 def ambiguous_tokens(text: str) -> List[str]:

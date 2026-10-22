@@ -1,6 +1,18 @@
 # Changelog
 
-## 0.3.0 (current)
+## 0.4.0
+- **Devanagari & Script-Aware Gating**: Native support for Devanagari (Hindi, Marathi, Nepali) and mixed-script text. Added `detect_script(text)` returning `"latin"`, `"devanagari"`, `"mixed"`, or `"other"`.
+- **Script-Aware Gating Behavior**: `gate()` now evaluates safe orthographic variations for Devanagari and mixed text (`PASS` / `TRANSFORM` / `REVIEW`). Unsupported scripts (e.g. Tamil, Bengali, Telugu script) route to `REVIEW` with reason `"unsupported script: <name>"`. Added `script_aware=True` parameter to `gate()`, `iter_gate()`, and `agate()` (set to `False` to restore legacy Latin-only behavior).
+- **Unicode Normalization & Zero-Width Cleaning**: `normalize()` enforces stable NFC encoding and strips invisible zero-width noise (`\u200B` ZWSP, `\u200C` ZWNJ, `\u200D` ZWJ, `\uFEFF` BOM).
+- **New Perturbation Kinds for Devanagari**:
+  - `"unicode"`: Evaluates precomposed vs decomposed nuktas (e.g. U+0958..U+095F vs base + U+093C).
+  - `"digits"`: Bidirectional conversion between ASCII digits (`0-9`) and Devanagari digits (`०-९`).
+  - `"punctuation"`: Danda (`।`) and double danda (`॥`) interchange with Western punctuation (`.`, `!`, `...`).
+  - `"spelling"`: Curated nukta-safe equivalence groups (`ज़रा`/`जरा`, `फ़ोन`/`फोन`, etc.) avoiding blind substitutions.
+- **Negation Safety in Devanagari**: Extended negation set with Hindi and Marathi negation words (`नहीं`, `नही`, `नहिं`, `मत`, `नाही`, `नाहीं`, `नको`, `नकोस`). Verified over corpus tests that negation counts remain strictly invariant across all perturbations.
+- **Opt-in Cross-Script Transliteration**: Optional `cross_script=True` parameter in `perturb()` and `is_safe_variant()` for deterministic 1-to-1 transliterated word pairs.
+
+## 0.3.0
 - **Enhanced `load_dataset` / `read_csv_text`**: Auto-detect delimiter (comma, semicolon, tab) via `csv.Sniffer` with fallback, support custom column mappings (`text_col`, `label_col`), whitespace-stripped headers, and `utf-8-sig` encoding.
 - **Serialization on `GateResult`**: Added `.to_dict()` and `.to_json()` methods serializing `decision`, `prediction`, `reason`, `raw_stability`, `normalized_stability`, `n_variants`, `warnings`, and `flipped_variants`.
 - **Async Gate API (`fr.agate`)**: Native `async def agate(...)` running gate checks in worker threads via `asyncio.to_thread` for non-blocking integration in asynchronous apps.
