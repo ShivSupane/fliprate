@@ -22,8 +22,11 @@ class GateTests(unittest.TestCase):
         self.assertEqual(r.text_used, "mala product avadla nahi")
 
     def test_review_when_non_latin(self):
-        r = fr.gate(lambda t: "x", "मला ऑर्डर अजून मिळाली नाही")
+        r = fr.gate(lambda t: "x", "मला ऑर्डर अजून मिळाली नाही", script_aware=False)
         self.assertEqual(r.decision, "REVIEW")
+        # Unsupported non-Latin/non-Devanagari script also goes to REVIEW
+        r_other = fr.gate(lambda t: "x", "வணக்கம்")
+        self.assertEqual(r_other.decision, "REVIEW")
 
     def test_review_when_empty(self):
         self.assertEqual(fr.gate(lambda t: "x", "  ").decision, "REVIEW")
