@@ -242,3 +242,21 @@ def test_no_utf8_bom_in_repo():
             except Exception:
                 pass
     assert boms == [], f"Found UTF-8 BOM in files: {boms}"
+
+
+# ── 11. Canonical input pass with warning (Devanagari) ─────────────────────────
+def test_gate_canonical_pass_with_warning_devanagari():
+    text = "ज़रा फ़ोन देखो"
+    assert normalize(text).normalized == text
+
+    # Model only recognizes canonical "ज़रा" and "फ़ोन" (with nukta); flips on "जरा" or "फोन"
+    def strict_deva_model(t: str) -> str:
+        return "ok" if "ज़रा" in t and "फ़ोन" in t else "fail"
+
+    r = fr.gate(strict_deva_model, text, n_variants=6, threshold=0.8, seed=42)
+    assert r.decision == "PASS"
+    assert r.raw_stability < 1.0
+    assert r.normalized_stability >= 0.8
+    assert len(r.flipped_variants) > 0
+    warning_msg = "input is already in canonical form; model is sensitive to other spellings (protect() recommended)"
+    assert warning_msg in r.warnings

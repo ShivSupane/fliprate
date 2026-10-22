@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Generator, List, Optional, Sequence
 
 from .events import Event, drain, make_event
-from .models import Predictor
+from .models import Predictor, batch_predict
 from .normalization import normalize
 from .perturbation import perturb
 from .rules import DEFAULT_RULES, RuleSet
@@ -269,6 +269,7 @@ def iter_gate(
     nstab: Optional[float] = None
     nbase = None
     can_transform = False
+    canonical_stable = False
     if norm.normalized != text and rules.is_safe_variant(text, norm.normalized):
         yield make_event("normalized", text=norm.normalized, changes=norm.changes)
         try:
@@ -285,10 +286,28 @@ def iter_gate(
         can_transform = nstab >= threshold and nstab > raw
     elif norm.normalized != text:
         warnings.append("Normalization would change the meaning; it was not applied")
+    elif norm.normalized == text:
+        norm_variants = [normalize(v.text, rules=rules).normalized for v in variants]
+        try:
+            npreds = batch_predict(predictor.model, norm_variants)
+        except Exception as exc:
+            if on_error == "review":
+                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, raw, None, len(variants))
+                yield from finish(res)
+                return res
+            raise
+        nbase = base
+        nstab = sum(p == nbase for p in npreds) / len(variants)
+        yield make_event("normalized_stability", value=nstab)
+        if nstab >= threshold and (raw < threshold or nstab > raw):
+            canonical_stable = True
+            warnings.append("input is already in canonical form; model is sensitive to other spellings (protect() recommended)")
 
     n = len(variants)
     if can_transform:
         res = done(TRANSFORM, "Stable after approved normalization", norm.normalized, nbase, raw, nstab, n, flipped)
+    elif canonical_stable:
+        res = done(PASS, "Input is in canonical form and stable after normalization", text, base, raw, nstab, n, flipped)
     elif raw >= threshold:
         warnings.append(f"{len(flipped)} of {n} safe variants changed the answer; normalization did not improve this")
         res = done(PASS, "Mostly stable across safe variants", text, base, raw, nstab, n, flipped)

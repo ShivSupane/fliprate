@@ -52,6 +52,17 @@ class GateTests(unittest.TestCase):
         s = fr.to_sse(fr.make_event("x", a=1))
         self.assertTrue(s.startswith("data: ") and s.endswith("\n\n"))
 
+    def test_pass_with_warning_when_canonical_and_variants_stabilize_latin(self):
+        text = "mala order ajun milala nahi"
+        self.assertEqual(fr.normalize(text).normalized, text)
+        r = fr.gate(strict_spelling_model, text, threshold=0.8)
+        self.assertEqual(r.decision, "PASS")
+        self.assertLess(r.raw_stability, 1.0)
+        self.assertGreaterEqual(r.normalized_stability, 0.8)
+        self.assertTrue(r.flipped_variants)
+        warning_msg = "input is already in canonical form; model is sensitive to other spellings (protect() recommended)"
+        self.assertIn(warning_msg, r.warnings)
+
 
 if __name__ == "__main__":
     unittest.main()
