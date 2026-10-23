@@ -418,3 +418,90 @@ result = fr.run_experiment(
 print(result.markdown())
 result.save("experiments/results/run1/")
 ```
+
+---
+
+## Happy-Path & Beginner APIs
+
+### `fr.quick_check(model, text, **kwargs)`
+Quick 1-line check returning a `QuickCheckResult` with `.is_safe` (boolean), `.decision`, `.prediction`, `.suggested_text`, and `.reason`.
+
+```python
+verdict = fr.quick_check(my_model, "mala product avadlaaa nahi")
+if verdict.is_safe:
+    print("Safe to process:", verdict.prediction)
+```
+
+### `fr.normalize_text(text, lowercase=True, rules=None)`
+Direct string-in, string-out text normalizer.
+
+```python
+clean = fr.normalize_text("Mala product avadlaaa nhi", lowercase=False)
+# -> "Mala product avadla nahi"
+```
+
+### `fr.safe_predict(model, text, on_review="normalized", **kwargs)`
+Runs gate check and automatically applies normalizer if `TRANSFORM` or unstable.
+
+```python
+pred = fr.safe_predict(my_model, "ye delivery nhi aayi")
+```
+
+### `fr.check_model(model, dataset, **kwargs)`
+Beginner-friendly wrapper for `fr.test(model, dataset)`.
+
+---
+
+## Production Pipeline
+
+### `fr.runtime_guard(model, text, mode="lenient"|"strict", **kwargs)`
+Production quality gate returning a `RuntimeGuardResult` with `.should_route_to_human`, `.clean_text`, and `.prediction`.
+
+### `fr.batch_guard(model, texts, **kwargs)`
+Evaluates quality gate over a list of messages.
+
+### `fr.evaluate_pipeline(model, dataset, save_path=None, **kwargs)`
+Audits model on a dataset and optionally persists the JSON report.
+
+### `fr.make_protected_model(model, rules=None, lowercase=True)`
+Wraps model with normalizer (production alias for `protect()`).
+
+---
+
+## Explainability & Diagnostics
+
+### `fr.explain_gate_decision(text, model, **kwargs)`
+Returns plain-English summary, recommendation, script detection, and stability breakdown.
+
+### `fr.show_why_it_flipped(text, model, **kwargs)`
+Highlights which variants flipped the model, the change type, and word-level diffs.
+
+### `fr.preview_normalized_variants(text, n=5, **kwargs)`
+Shows generated variants alongside their normalized clean forms.
+
+### `fr.print_rule_hits(text, rules=None)`
+Scans text and lists all word tokens that hit approved canonical rule groups or negation sets.
+
+---
+
+## Validation & Schema Checks
+
+### `fr.validate_text(text, max_length=10000, allow_empty=False)`
+Validates that input is a non-empty string within length bounds.
+
+### `fr.validate_dataset(dataset, text_col="text", label_col="label")`
+Checks dataset for empty rows, duplicate inputs, and conflicting label assignments.
+
+---
+
+## Standardized `ModelAdapter`
+
+Abstract base class `fr.ModelAdapter` with `.predict(text)`, `.predict_batch(texts)`, `.metadata()`, and `.supported_languages()`.
+
+- `fr.CallableAdapter(fn)`: Wraps any Python function.
+- `fr.as_adapter(model)`: Ensures model conforms to `ModelAdapter`.
+- `fr.HttpServiceAdapter(url, timeout=5.0, retries=2)`: Calls REST/HTTP model endpoints with automatic retries.
+- `fr.from_sklearn(pipeline)`: Wraps scikit-learn models.
+- `fr.HFTextClassifier(...)`: Hugging Face pipelines with batching.
+- `fr.LLMClassifier(...)` / `fr.llm_classifier(...)`: LLM APIs with strict label extraction.
+

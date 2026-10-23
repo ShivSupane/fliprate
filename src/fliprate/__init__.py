@@ -3,21 +3,19 @@ on messy romanized Hindi / Marathi / Tamil / Telugu and other Indian-language te
 
     import fliprate as fr
 
-    # Test robustness
-    report = fr.test(my_model, "data/test.csv")
+    # Happy path: quick 1-line check
+    verdict = fr.quick_check(my_model, "mala product avadlaaa nahi")
+    print(verdict.is_safe, verdict.prediction)
+
+    # Clean text directly
+    clean = fr.normalize_text("mala product avadlaaa nhi")
+
+    # Safe prediction
+    pred = fr.safe_predict(my_model, "mala product avadlaaa nahi")
+
+    # Audit model on test dataset
+    report = fr.check_model(my_model, "data/test.csv")
     print(report.summary())
-
-    # Fix it
-    safe_model = fr.protect(my_model)
-    report2 = fr.test(safe_model, "data/test.csv")
-
-    # Real-time gate
-    result = fr.gate(my_model, "mala product avadlaaa nahi")
-    print(result.decision)   # PASS / TRANSFORM / REVIEW
-
-    # Multi-language rules from Aksharantar (428K groups, 20 languages)
-    rules = fr.aksharantar_rules("tam", "tel")
-    report = fr.test(my_model, "data/test.csv", rules=rules)
 
 Author: Shiv Supane
 """
@@ -44,13 +42,47 @@ from .rules import (
     DEVANAGARI_GROUPS,
     LANGUAGE_GROUPS,
     RuleSet,
+    add_custom_rule,
+    describe_rule_group,
     is_safe_variant,
+    load_rules,
+    preview_variants,
 )
+
+# ── Happy-path & Production Pipeline ─────────────────────────────────────────
+from .pipeline import (
+    QuickCheckResult,
+    RuntimeGuardResult,
+    batch_guard,
+    check_model,
+    evaluate_pipeline,
+    make_protected_model,
+    normalize_text,
+    quick_check,
+    runtime_guard,
+    safe_predict,
+)
+
+# ── Explainability & Debugging ───────────────────────────────────────────────
+from .explain import (
+    explain_gate_decision,
+    preview_normalized_variants,
+    print_rule_hits,
+    show_why_it_flipped,
+)
+
+# ── Validation ───────────────────────────────────────────────────────────────
+from .validation import validate_dataset, validate_text
 
 # ── Model adapters ──────────────────────────────────────────────────────────
 from .adapters import (
+    CallableAdapter,
     HFTextClassifier,
+    HttpServiceAdapter,
     LLMClassifier,
+    ModelAdapter,
+    SklearnAdapter,
+    as_adapter,
     from_sklearn,
     llm_classifier,
     twitter_preprocess,
@@ -77,30 +109,18 @@ from .events import drain, make_event, to_sse
 
 
 def guard(model, text, **kwargs):
-    """Thin convenience wrapper around gate().
-
-    This keeps the common production use-case simple: "does this input look stable,
-    transformable, or review-worthy for my model?"
-    """
+    """Thin convenience wrapper around gate()."""
     return gate(model, text, **kwargs)
 
 
 def audit(model, dataset, **kwargs):
-    """Thin convenience wrapper around test().
-
-    Returns the same Report object as `fliprate.test`, but with a friendlier name for
-    product and QA workflows.
-    """
+    """Thin convenience wrapper around test()."""
     return test(model, dataset, **kwargs)
 
 
 def learn_rules_from_texts(texts, **kwargs):
-    """Mine spelling-rule candidates from raw texts.
-
-    This turns a relatively advanced data-mining workflow into a one-line helper.
-    """
+    """Mine spelling-rule candidates from raw texts."""
     from .dataset import mine_variants
-
     return mine_variants(texts, **kwargs)
 
 
@@ -108,7 +128,34 @@ __version__ = "0.4.0"
 __author__ = "Shiv Supane"
 
 __all__ = [
-    # ── Test & measure ──────────────────────────────────────────────────────
+    # ── Happy-Path & Beginner API ────────────────────────────────────────────
+    "quick_check",
+    "QuickCheckResult",
+    "check_model",
+    "normalize_text",
+    "safe_predict",
+    "guard",
+    "audit",
+    "learn_rules_from_texts",
+
+    # ── Production Pipeline ──────────────────────────────────────────────────
+    "runtime_guard",
+    "RuntimeGuardResult",
+    "batch_guard",
+    "evaluate_pipeline",
+    "make_protected_model",
+
+    # ── Explainability & Debugging ───────────────────────────────────────────
+    "explain_gate_decision",
+    "show_why_it_flipped",
+    "preview_normalized_variants",
+    "print_rule_hits",
+
+    # ── Validation ───────────────────────────────────────────────────────────
+    "validate_text",
+    "validate_dataset",
+
+    # ── Test & Gate ──────────────────────────────────────────────────────────
     "test",
     "iter_test",
     "gate",
@@ -118,9 +165,6 @@ __all__ = [
     "Report",
     "GateResult",
     "paired_difference",
-    "guard",
-    "audit",
-    "learn_rules_from_texts",
 
     # ── Fix & protect ────────────────────────────────────────────────────────
     "protect",
@@ -128,13 +172,17 @@ __all__ = [
     "perturb",
     "is_safe_variant",
 
-    # ── Rules ────────────────────────────────────────────────────────────────
+    # ── Rules & Rule Management ──────────────────────────────────────────────
     "RuleSet",
     "DEFAULT_RULES",
     "DEVANAGARI_GROUPS",
     "CROSS_SCRIPT_MAP",
     "CROSS_SCRIPT_REV",
     "LANGUAGE_GROUPS",
+    "load_rules",
+    "add_custom_rule",
+    "preview_variants",
+    "describe_rule_group",
 
     # ── Multi-language datasets ──────────────────────────────────────────────
     "dakshina_rules",
@@ -144,11 +192,16 @@ __all__ = [
     "load_aksharantar_groups",
     "AKSHARANTAR_LANGUAGES",
 
-    # ── Model adapters ────────────────────────────────────────────────────────
+    # ── Model adapters ───────────────────────────────────────────────────────
+    "ModelAdapter",
+    "CallableAdapter",
+    "HttpServiceAdapter",
+    "as_adapter",
     "HFTextClassifier",
+    "SklearnAdapter",
+    "from_sklearn",
     "LLMClassifier",
     "llm_classifier",
-    "from_sklearn",
     "twitter_preprocess",
     "with_retries",
     "ProtectedModel",
@@ -158,7 +211,7 @@ __all__ = [
     "run_experiment",
     "ExperimentResult",
 
-    # ── Data loading ────────────────────────────────────────────────────────
+    # ── Data loading ─────────────────────────────────────────────────────────
     "load_dataset",
     "read_csv_text",
 
@@ -171,7 +224,7 @@ __all__ = [
     "make_event",
     "to_sse",
 
-    # ── Version ─────────────────────────────────────────────────────────────
+    # ── Version ──────────────────────────────────────────────────────────────
     "__version__",
     "__author__",
 ]

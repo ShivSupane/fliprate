@@ -52,7 +52,30 @@ pip install -e ".[dev,api,hf,sklearn]"
 
 ## Quick start
 
-### Test your model in 3 lines
+### The Happy-Path API (Beginner Friendly)
+
+```python
+import fliprate as fr
+
+# 1-line quality check
+verdict = fr.quick_check(my_model, "mala product avadlaaa nahi")
+print(verdict.is_safe)       # True / False
+print(verdict.prediction)    # Model's answer on the canonical text
+print(verdict.reason)        # Plain-English explanation
+
+# Clean messy text directly
+clean = fr.normalize_text("Mala product avadlaaa nhi", lowercase=False)
+# -> "Mala product avadla nahi"
+
+# Predict safely with automatic spelling normalization fallback
+pred = fr.safe_predict(my_model, "ye delivery nhi aayi")
+
+# Audit model robustness on a dataset
+report = fr.check_model(my_model, "data/test.csv")
+print(report.summary())
+```
+
+### Full Robustness Evaluation (Detailed Metrics)
 
 ```python
 import fliprate as fr
@@ -299,6 +322,8 @@ docker run -p 7860:7860 \
 
 | File | Contents |
 |---|---|
+| [`docs/COOKBOOK.md`](docs/COOKBOOK.md) | Practical real-world recipes (sentiment, chatbot, ticket routing, custom slang) |
+| [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) | Production architecture, when to use it, distributed scaling, PII & security |
 | [`docs/QUICKSTART.md`](docs/QUICKSTART.md) | Every command, env var, and code example |
 | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | Full function reference with parameters |
 | [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Architecture, design decisions, module map |

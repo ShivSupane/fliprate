@@ -1275,3 +1275,82 @@ def is_safe_variant(original: str, variant: str, cross_script: bool = False) -> 
 
 def ambiguous_tokens(text: str) -> List[str]:
     return DEFAULT_RULES.ambiguous_tokens(text)
+
+
+_LANG_ALIAS_MAP = {
+    "hi": "hindi", "hin": "hindi", "hindi": "hindi",
+    "mr": "marathi", "mar": "marathi", "marathi": "marathi",
+    "ta": "tamil", "tam": "tamil", "tamil": "tamil",
+    "te": "telugu", "tel": "telugu", "telugu": "telugu",
+    "kn": "kannada", "kan": "kannada", "kannada": "kannada",
+    "ml": "malayalam", "mal": "malayalam", "malayalam": "malayalam",
+    "gu": "gujarati", "guj": "gujarati", "gujarati": "gujarati",
+    "pa": "punjabi", "pan": "punjabi", "punjabi": "punjabi",
+    "bn": "bengali", "ben": "bengali", "bengali": "bengali",
+    "ur": "urdu", "urd": "urdu", "urdu": "urdu",
+    "or": "odia", "ori": "odia", "odia": "odia",
+    "as": "assamese", "asm": "assamese", "assamese": "assamese",
+}
+
+
+def load_rules(language: str) -> RuleSet:
+    """Load a RuleSet configured for a specific language by name or code.
+
+    Examples:
+        rules = fr.load_rules("hindi")
+        rules = fr.load_rules("marathi")
+        rules = fr.load_rules("ta")
+    """
+    lang = language.strip().lower()
+    canonical_lang = _LANG_ALIAS_MAP.get(lang, lang)
+    if canonical_lang in LANGUAGE_GROUPS:
+        return DEFAULT_RULES.extended(groups=LANGUAGE_GROUPS[canonical_lang])
+    raise ValueError(
+        f"Unknown language '{language}'. Supported: {', '.join(sorted(set(_LANG_ALIAS_MAP.values())))}"
+    )
+
+
+def add_custom_rule(variants: Sequence[str], canonical: Optional[str] = None,
+                    rules: Optional[RuleSet] = None) -> RuleSet:
+    """Add a group of equivalent spellings to an existing or default RuleSet.
+
+    Example:
+        rules = fr.add_custom_rule(["discnt", "dscnt", "discount"], canonical="discount")
+    """
+    base_rules = rules or DEFAULT_RULES
+    all_words = list(variants)
+    if canonical and canonical not in all_words:
+        all_words.append(canonical)
+    words_unique = sorted(set(all_words))
+    if canonical and canonical in words_unique:
+        new_group = (canonical,) + tuple(w for w in words_unique if w != canonical)
+    else:
+        new_group = tuple(words_unique)
+    return base_rules.extended(groups=[new_group])
+
+
+def preview_variants(text: str, n: int = 10, **kwargs) -> List[str]:
+    """Preview a list of generated variant strings for quick interactive testing."""
+    from .perturbation import perturb
+    return [v.text for v in perturb(text, n=n, **kwargs)]
+
+
+def describe_rule_group(word_or_group: str, rules: Optional[RuleSet] = None) -> Optional[Dict[str, Any]]:
+    """Describe the rule group containing a word, including variants and canonical spelling."""
+    target_rules = rules or DEFAULT_RULES
+    w_key = word_key(word_or_group)
+    idx = target_rules.key_to_group.get(w_key)
+    if idx is None:
+        return None
+    group = target_rules.groups[idx]
+    canonical = target_rules.key_to_canon.get(w_key, group[0])
+    is_neg = (w_key in target_rules.negations or word_or_group.lower() in target_rules.negations)
+    return {
+        "word": word_or_group,
+        "canonical": canonical,
+        "group_id": idx,
+        "variants": list(group),
+        "variant_count": len(group),
+        "is_negation": is_neg,
+    }
+
