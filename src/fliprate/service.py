@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import hmac
+import json
 import logging
 import os
 import threading
 import time
 import uuid
+from abc import ABC, abstractmethod
 from collections import OrderedDict, defaultdict, deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Deque, Dict, Generator, List, Optional
@@ -28,6 +30,8 @@ class Settings:
     max_concurrent_runs: int = 2
     max_text_chars: int = 2000
     max_rows: int = 2000
+    redis_url: Optional[str] = None        # if set, uses Redis for distributed jobs & rate limiting
+    env: str = "development"               # "production" or "development"
 
     @classmethod
     def from_env(cls, env=None) -> "Settings":
@@ -41,6 +45,8 @@ class Settings:
             max_concurrent_runs=int(e.get("FLIPRATE_MAX_CONCURRENT", 2)),
             max_text_chars=int(e.get("FLIPRATE_MAX_TEXT_CHARS", 2000)),
             max_rows=int(e.get("FLIPRATE_MAX_ROWS", 2000)),
+            redis_url=e.get("FLIPRATE_REDIS_URL") or None,
+            env=e.get("FLIPRATE_ENV", "development").lower(),
         )
 
 
@@ -51,9 +57,22 @@ def key_ok(supplied: Optional[str], expected: Optional[str]) -> bool:
     return supplied is not None and hmac.compare_digest(supplied.encode(), expected.encode())
 
 
-class JobStore:
-    """One-time jobs. The job id is an unguessable token, so the stream URL needs no header
-    (the browser's EventSource cannot send custom headers)."""
+class BaseJobStore(ABC):
+    """Abstract interface for background job storage."""
+
+    @abstractmethod
+    def put(self, kind: str, params: Dict[str, Any]) -> str:
+        """Store job parameters and return a unique unguessable job ID."""
+        pass
+
+    @abstractmethod
+    def pop(self, job_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve and remove job parameters by job ID."""
+        pass
+
+
+class JobStore(BaseJobStore):
+    """In-memory one-time job storage (single process)."""
 
     def __init__(self, max_jobs: int = 500, ttl: float = 300, clock: Callable[[], float] = time.monotonic):
         self.max_jobs, self.ttl, self.clock = max_jobs, ttl, clock
@@ -79,9 +98,48 @@ class JobStore:
         return len(self._jobs)
 
 
-class RateLimiter:
-    """Sliding-window limiter, per key. In-memory, so per process: use a shared store if you scale out.
-    Old keys are evicted after 2 minutes of inactivity to prevent unbounded memory growth."""
+InMemoryJobStore = JobStore
+
+
+class RedisJobStore(BaseJobStore):
+    """Distributed Redis-backed job storage for multi-worker environments."""
+
+    def __init__(self, redis_url: str, ttl: int = 300, key_prefix: str = "fliprate:job:"):
+        try:
+            import redis
+            self.client = redis.Redis.from_url(redis_url, decode_responses=True)
+        except ImportError as exc:
+            raise ImportError("RedisJobStore requires `pip install redis`") from exc
+        self.ttl = ttl
+        self.key_prefix = key_prefix
+
+    def put(self, kind: str, params: Dict[str, Any]) -> str:
+        job_id = uuid.uuid4().hex
+        key = f"{self.key_prefix}{job_id}"
+        data = json.dumps({"kind": kind, "params": params, "created": time.time()})
+        self.client.setex(key, self.ttl, data)
+        return job_id
+
+    def pop(self, job_id: str) -> Optional[Dict[str, Any]]:
+        key = f"{self.key_prefix}{job_id}"
+        val = self.client.get(key)
+        if val is None:
+            return None
+        self.client.delete(key)
+        return json.loads(val)
+
+
+class BaseRateLimiter(ABC):
+    """Abstract interface for rate limiting."""
+
+    @abstractmethod
+    def allow(self, key: str) -> bool:
+        """Return True if request is allowed, False if limit exceeded."""
+        pass
+
+
+class RateLimiter(BaseRateLimiter):
+    """Sliding-window in-memory rate limiter per key (single process)."""
 
     def __init__(self, limit_per_min: int, clock: Callable[[], float] = time.monotonic):
         self.limit, self.clock = limit_per_min, clock
@@ -94,7 +152,6 @@ class RateLimiter:
             return True
         now = self.clock()
         with self._lock:
-            # Evict keys not seen in the last 2 minutes
             stale = [k for k, t in self._last_seen.items() if now - t > 120]
             for k in stale:
                 self._hits.pop(k, None)
@@ -107,6 +164,57 @@ class RateLimiter:
                 return False
             q.append(now)
             return True
+
+
+InMemoryRateLimiter = RateLimiter
+
+
+class RedisRateLimiter(BaseRateLimiter):
+    """Distributed Redis rate limiter using fixed/sliding window counters."""
+
+    def __init__(self, redis_url: str, limit_per_min: int, key_prefix: str = "fliprate:rl:"):
+        try:
+            import redis
+            self.client = redis.Redis.from_url(redis_url, decode_responses=True)
+        except ImportError as exc:
+            raise ImportError("RedisRateLimiter requires `pip install redis`") from exc
+        self.limit = limit_per_min
+        self.key_prefix = key_prefix
+
+    def allow(self, key: str) -> bool:
+        if self.limit <= 0:
+            return True
+        current_minute = int(time.time() // 60)
+        redis_key = f"{self.key_prefix}{key}:{current_minute}"
+        try:
+            pipe = self.client.pipeline()
+            pipe.incr(redis_key)
+            pipe.expire(redis_key, 120)
+            count, _ = pipe.execute()
+            return count <= self.limit
+        except Exception as exc:
+            log.warning("Redis rate limiter connection error: %s, allowing request", exc)
+            return True
+
+
+def create_job_store(settings: Settings) -> BaseJobStore:
+    """Factory creating appropriate JobStore based on configuration."""
+    if settings.redis_url:
+        try:
+            return RedisJobStore(settings.redis_url, ttl=settings.job_ttl_seconds)
+        except Exception as exc:
+            log.warning("Could not connect to Redis for JobStore: %s. Falling back to in-memory.", exc)
+    return InMemoryJobStore(settings.max_jobs, settings.job_ttl_seconds)
+
+
+def create_rate_limiter(settings: Settings) -> BaseRateLimiter:
+    """Factory creating appropriate RateLimiter based on configuration."""
+    if settings.redis_url:
+        try:
+            return RedisRateLimiter(settings.redis_url, limit_per_min=settings.rate_limit_per_min)
+        except Exception as exc:
+            log.warning("Could not connect to Redis for RateLimiter: %s. Falling back to in-memory.", exc)
+    return InMemoryRateLimiter(settings.rate_limit_per_min)
 
 
 class Metrics:
@@ -144,7 +252,6 @@ def run_job_events(job: Dict[str, Any], model: Callable, sample_rows: Callable[[
         metrics.inc(f"jobs_{job['kind']}_ok_total")
     except Exception as exc:
         metrics.inc("jobs_failed_total")
-        # Log the error TYPE only. Exception messages can contain user text, so the traceback is DEBUG-only.
         log.error("job failed kind=%s error=%s", job["kind"], type(exc).__name__)
         log.debug("job failure details", exc_info=True)
         yield make_event("error", message=f"The model failed ({type(exc).__name__}). Check the server logs.")

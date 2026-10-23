@@ -25,3 +25,7 @@ data/rules_from_aksharantar/
 # Environment and secrets
 .env
 *.env
+
+# Local test outputs and dashboards
+results/
+
