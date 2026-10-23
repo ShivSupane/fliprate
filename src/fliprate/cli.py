@@ -95,6 +95,15 @@ def main(argv=None) -> int:
     sa = add("audit-summary", "precision of the safe-variant claim from a judged audit CSV", rules=False)
     sa.add_argument("audit_csv")
 
+    add("explain", "explain why a gate decision occurred in plain English", text=True, model=True)
+
+    sbm = add("benchmark", "benchmark candidate models on a dataset and optionally export HTML dashboard")
+    sbm.add_argument("--data", required=True, help="CSV with columns text,label")
+    sbm.add_argument("--models", required=True, help="comma-separated name=spec pairs, e.g. base=mod:fn1,cand=mod:fn2")
+    sbm.add_argument("--baseline", default=None, help="name of the baseline model")
+    sbm.add_argument("--out", default=None, help="path to write dashboard (.html or .md)")
+    sbm.add_argument("-n", type=int, default=5, help="variants per message")
+
     args = p.parse_args(argv)
     rules = _rules(args)
 
@@ -167,6 +176,27 @@ def main(argv=None) -> int:
         write_candidates(cands, args.out)
         print(f"{len(cands)} candidate groups written to {args.out}. Fill the `status` column with approve/reject, "
               f"then use --rules {args.out}")
+    elif args.cmd == "explain":
+        from .explain import explain_gate_decision
+        expl = explain_gate_decision(args.text, _load_model(args.model), rules=rules)
+        print(f"Decision: {expl['decision']}")
+        print(f"Summary:  {expl['summary']}")
+        print(f"Advice:   {expl['recommendation']}")
+        print(f"Script:   {expl['script']} | Raw Stability: {expl['raw_stability']:.1%}")
+    elif args.cmd == "benchmark":
+        from .benchmark import benchmark
+        model_dict = {}
+        for pair in args.models.split(","):
+            if "=" in pair:
+                m_name, m_spec = pair.split("=", 1)
+                model_dict[m_name.strip()] = _load_model(m_spec.strip())
+            else:
+                model_dict[pair.strip()] = _load_model(pair.strip())
+        suite = benchmark(model_dict, args.data, baseline=args.baseline, n_variants=args.n, rules=rules)
+        print(suite.summary())
+        if args.out:
+            suite.save(args.out)
+            print(f"Report saved to {args.out}")
     return 0
 
 

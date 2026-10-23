@@ -11,6 +11,14 @@
   - `"spelling"`: Curated nukta-safe equivalence groups (`ज़रा`/`जरा`, `फ़ोन`/`फोन`, etc.) avoiding blind substitutions.
 - **Negation Safety in Devanagari**: Extended negation set with Hindi and Marathi negation words (`नहीं`, `नही`, `नहिं`, `मत`, `नाही`, `नाहीं`, `नको`, `नकोस`). Verified over corpus tests that negation counts remain strictly invariant across all perturbations.
 - **Canonical Form Gate Pass**: In `gate()`, when input is already in canonical normalized form (`normalize(text).normalized == text`) and raw variants flip, it now evaluates normalized stability. If normalized variants are stable, returns `PASS` with warning `"input is already in canonical form; model is sensitive to other spellings (protect() recommended)"` instead of `REVIEW`.
+- **Developer Toolkit & Beginner Happy Path**: Added `fr.quick_check()`, `fr.normalize_text()`, `fr.safe_predict()`, and `fr.check_model()` providing an intuitive 1-line surface for learners and developers.
+- **Standardized `ModelAdapter` Interface**: Added `ModelAdapter` abstract base class with `.predict()`, `.predict_batch()`, `.metadata()`, and `.supported_languages()`, alongside `CallableAdapter`, `HttpServiceAdapter` (REST endpoints with timeouts & retries), and `as_adapter()`.
+- **Production Pipeline Wrappers**: Added `fr.runtime_guard(mode="lenient"|"strict")`, `fr.batch_guard()`, `fr.evaluate_pipeline()`, and `fr.make_protected_model()`.
+- **Rule Management & Diagnostics**: Added `fr.load_rules()`, `fr.add_custom_rule()`, `fr.preview_variants()`, and `fr.describe_rule_group()`.
+- **Explainability & Debugging**: Added `fr.explain_gate_decision()`, `fr.show_why_it_flipped()`, `fr.preview_normalized_variants()`, and `fr.print_rule_hits()`.
+- **Benchmarking Suite & Quality Dashboard**: Added `fr.benchmark()`, `fr.compare_models()`, `BenchmarkSuite`, and exportable Markdown and standalone HTML dashboards.
+- **Distributed Infrastructure & Security**: Added `BaseJobStore` and `BaseRateLimiter` interfaces with pluggable `RedisJobStore` and `RedisRateLimiter`, `X-Request-ID` correlation middleware, structured request logging, and production CORS checks.
+- **Cookbook & Guides**: Added practical real-world recipes in `docs/COOKBOOK.md` and enterprise architecture guidelines in `docs/DEPLOYMENT_GUIDE.md`.
 - **Opt-in Cross-Script Transliteration**: Optional `cross_script=True` parameter in `perturb()` and `is_safe_variant()` for deterministic 1-to-1 transliterated word pairs.
 
 ## 0.3.0
