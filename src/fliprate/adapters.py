@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 import time
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 
@@ -21,7 +22,64 @@ def twitter_preprocess(text: str) -> str:
     return " ".join(out)
 
 
-class HFTextClassifier:
+class ModelAdapter(ABC):
+    """Standardized adapter interface for all models evaluated or guarded by FlipRate.
+
+    Subclasses must implement `predict(text)`. Subclasses can optionally override
+    `predict_batch(texts)` for high-throughput batching.
+    """
+
+    @abstractmethod
+    def predict(self, text: str) -> str:
+        """Predict the label for a single input text string."""
+        pass
+
+    def predict_batch(self, texts: Sequence[str]) -> List[str]:
+        """Predict labels for a batch of input text strings. Default loops over `predict`."""
+        return [self.predict(t) for t in texts]
+
+    def metadata(self) -> Dict[str, Any]:
+        """Return diagnostic metadata about the adapter."""
+        return {
+            "adapter_type": self.__class__.__name__,
+            "name": getattr(self, "name", self.__class__.__name__),
+        }
+
+    def supported_languages(self) -> List[str]:
+        """Return list of supported languages or scripts, if known."""
+        return ["any"]
+
+    def __call__(self, text: str) -> str:
+        """Allow calling the adapter instance directly like a regular Python function."""
+        return self.predict(text)
+
+
+class CallableAdapter(ModelAdapter):
+    """Wrap any standard Python function or lambda `fn(text: str) -> str` as a ModelAdapter."""
+
+    def __init__(self, fn: Callable[[str], str], name: Optional[str] = None):
+        self.fn = fn
+        self.name = name or getattr(fn, "__name__", "callable")
+
+    def predict(self, text: str) -> str:
+        return self.fn(text)
+
+    def predict_batch(self, texts: Sequence[str]) -> List[str]:
+        if hasattr(self.fn, "predict_batch"):
+            return self.fn.predict_batch(texts)
+        return [self.fn(t) for t in texts]
+
+
+def as_adapter(model: Any) -> ModelAdapter:
+    """Ensure `model` conforms to ModelAdapter; wraps raw callables if needed."""
+    if isinstance(model, ModelAdapter):
+        return model
+    if callable(model):
+        return CallableAdapter(model)
+    raise TypeError(f"Expected ModelAdapter or callable, got {type(model).__name__}")
+
+
+class HFTextClassifier(ModelAdapter):
     """Hugging Face text-classification model, batched.
 
         clf = HFTextClassifier("cardiffnlp/twitter-xlm-roberta-base-sentiment",
@@ -60,6 +118,9 @@ class HFTextClassifier:
     def warmup(self) -> None:
         self.predict_batch(["warmup"])
 
+    def predict(self, text: str) -> str:
+        return self.predict_batch([text])[0]
+
     def predict_batch(self, texts: Sequence[str]) -> List[str]:
         texts = [self.preprocess(t) if self.preprocess else t for t in texts]
         outs = self._get()(texts, batch_size=self.batch_size, truncation=True, max_length=self.max_length)
@@ -70,29 +131,35 @@ class HFTextClassifier:
             labels.append(lab.lower() if self.lowercase_labels else lab)
         return labels
 
-    def __call__(self, text: str) -> str:
-        return self.predict_batch([text])[0]
+    def metadata(self) -> Dict[str, Any]:
+        meta = super().metadata()
+        meta.update({
+            "model_name": self.name,
+            "batch_size": self.batch_size,
+            "max_length": self.max_length,
+        })
+        return meta
 
 
-class SklearnAdapter:
+class SklearnAdapter(ModelAdapter):
     """Wrap a fitted scikit-learn Pipeline (e.g. TfidfVectorizer + LogisticRegression)."""
 
     def __init__(self, pipeline: Any, name: str = "sklearn"):
         self.pipeline, self.name = pipeline, name
 
+    def predict(self, text: str) -> Any:
+        return self.predict_batch([text])[0]
+
     def predict_batch(self, texts: Sequence[str]) -> List[Any]:
         out = self.pipeline.predict(list(texts))
         return out.tolist() if hasattr(out, "tolist") else list(out)
-
-    def __call__(self, text: str):
-        return self.predict_batch([text])[0]
 
 
 def from_sklearn(pipeline: Any, name: str = "sklearn") -> SklearnAdapter:
     return SklearnAdapter(pipeline, name)
 
 
-class LLMClassifier:
+class LLMClassifier(ModelAdapter):
     """Classify with any LLM through a function `complete(prompt) -> str` that you provide.
 
     The reply is accepted only if it clearly names exactly one allowed label; otherwise it is recorded as
@@ -119,15 +186,67 @@ class LLMClassifier:
         self.n_invalid += 1
         return self.invalid_label
 
-    def __call__(self, text: str) -> str:
+    def predict(self, text: str) -> str:
         return self.parse(self.complete(self._prompt(text)))
 
     def predict_batch(self, texts: Sequence[str]) -> List[str]:
-        return [self(t) for t in texts]
+        return [self.predict(t) for t in texts]
 
 
 def llm_classifier(complete: Callable[[str], str], labels: Sequence[str], **kw) -> LLMClassifier:
     return LLMClassifier(complete, labels, **kw)
+
+
+class HttpServiceAdapter(ModelAdapter):
+    """Adapter for REST/HTTP model endpoints with built-in timeouts and retries.
+
+    Sends POST requests to `endpoint_url` with payload `{"text": text}` or batch payload `{"texts": texts}`.
+    Expects JSON response `{"prediction": label}` or `{"predictions": [label1, ...]}`.
+    """
+
+    def __init__(self, endpoint_url: str, headers: Optional[Dict[str, str]] = None,
+                 timeout: float = 5.0, retries: int = 2, name: str = "http_service",
+                 parse_response: Optional[Callable[[Dict[str, Any]], str]] = None):
+        self.endpoint_url = endpoint_url
+        self.headers = headers or {"Content-Type": "application/json"}
+        self.timeout = timeout
+        self.retries = retries
+        self.name = name
+        self.parse_response = parse_response
+
+    def predict(self, text: str) -> str:
+        import json
+        import urllib.request
+        import urllib.error
+
+        payload = json.dumps({"text": text}).encode("utf-8")
+        req = urllib.request.Request(self.endpoint_url, data=payload, headers=self.headers, method="POST")
+
+        for attempt in range(self.retries + 1):
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+                    if self.parse_response:
+                        return self.parse_response(data)
+                    if "prediction" in data:
+                        return str(data["prediction"])
+                    if "label" in data:
+                        return str(data["label"])
+                    raise ValueError(f"Unrecognized response format from {self.endpoint_url}: {data}")
+            except Exception as exc:
+                if attempt == self.retries:
+                    raise RuntimeError(f"HttpServiceAdapter failed after {self.retries + 1} attempts: {exc}") from exc
+                time.sleep(0.3 * (2 ** attempt))
+        return ""
+
+    def metadata(self) -> Dict[str, Any]:
+        meta = super().metadata()
+        meta.update({
+            "endpoint_url": self.endpoint_url,
+            "timeout": self.timeout,
+            "retries": self.retries,
+        })
+        return meta
 
 
 def with_retries(fn: Callable, retries: int = 3, backoff: float = 0.5,
