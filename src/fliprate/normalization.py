@@ -31,6 +31,15 @@ _WS_RE            = re.compile(r"\s+")
 _ZERO_WIDTH_RE    = re.compile(r"[\u200B\u200C\u200D\uFEFF]")  # ZWSP, ZWNJ, ZWJ, BOM
 
 
+def _match_case(old: str, new: str) -> str:
+    """Best-effort case preservation: Title / Upper / lower."""
+    if len(old) > 1 and old.isupper():
+        return new.upper()
+    if old[:1].isupper():
+        return new.capitalize()
+    return new
+
+
 def _collapse_runs(word: str) -> str:
     """Collapse excessively repeated characters in a single word token.
 
@@ -106,14 +115,20 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
             continue
 
         if chunk.isascii():
-            word = chunk.lower() if lowercase else chunk
-            # 1. Check rules dict first
+            word = chunk if not lowercase else chunk.lower()
             canon = rules.key_to_canon.get(word_key(word))
             if canon is not None:
-                new = canon
+                if lowercase:
+                    new = canon
+                else:
+                    new = _match_case(chunk, canon)
             else:
-                # 2. Unknown Latin word: collapse character runs conservatively
-                new = _collapse_runs(word)
+                # Unknown Latin word: collapse character runs conservatively
+                collapsed = _collapse_runs(word)
+                if lowercase:
+                    new = collapsed
+                else:
+                    new = _match_case(chunk, collapsed)
 
             if new.lower() != chunk.lower():
                 changes.append((chunk, new))
