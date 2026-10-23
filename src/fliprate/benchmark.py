@@ -35,7 +35,7 @@ class ModelBenchmarkScore:
 @dataclass
 class BenchmarkSuite:
     """Collection of model benchmark results with dashboard rendering."""
-    scores: Dict[str, ModelBenchmarkScore]
+    scores: Dict[str, ModelBenchmarkScore] = field(default_factory=dict)
     baseline_name: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 

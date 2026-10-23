@@ -13,8 +13,9 @@ from .perturbation import perturb
 from .rules import DEFAULT_RULES, RuleSet, tokenize_keep, word_key
 
 
-def explain_gate_decision(text: str, model: Any, **kwargs) -> Dict[str, Any]:
+def explain_gate_decision(text_or_result: Any, model: Optional[Any] = None, **kwargs) -> Dict[str, Any]:
     """Provide a structured, human-readable explanation for a gate() decision.
+    Accepts (text, model), (model, text), or a GateResult directly.
 
     Returns a dict with:
       - `decision`: "PASS" / "TRANSFORM" / "REVIEW"
@@ -27,7 +28,18 @@ def explain_gate_decision(text: str, model: Any, **kwargs) -> Dict[str, Any]:
       - `recommendation`: what the user or production system should do next
       - `flipped_variants`: list of variant strings that caused a prediction flip
     """
-    res = gate(model, text, **kwargs)
+    if hasattr(text_or_result, "decision") and hasattr(text_or_result, "text_used"):
+        res = text_or_result
+        text = res.text_used
+    elif callable(text_or_result) and isinstance(model, str):
+        text = model
+        res = gate(text_or_result, text, **kwargs)
+    else:
+        text = str(text_or_result)
+        if model is None:
+            raise ValueError("model must be provided when passing a text string to explain_gate_decision()")
+        res = gate(model, text, **kwargs)
+
     script = detect_script(text)
 
     if res.decision == "PASS":
@@ -64,8 +76,9 @@ def explain_gate_decision(text: str, model: Any, **kwargs) -> Dict[str, Any]:
     }
 
 
-def show_why_it_flipped(text: str, model: Any, **kwargs) -> List[Dict[str, Any]]:
+def show_why_it_flipped(text_or_model: Any, model_or_text: Any, **kwargs) -> List[Dict[str, Any]]:
     """Inspect and highlight every variant that caused the model's prediction to flip.
+    Accepts arguments in either order: `(text, model)` or `(model, text)`.
 
     Returns a list of dicts with:
       - `variant_text`: the modified variant string
@@ -74,6 +87,13 @@ def show_why_it_flipped(text: str, model: Any, **kwargs) -> List[Dict[str, Any]]
       - `variant_prediction`: label predicted on this variant
       - `changed_words`: list of (original_word, variant_word) pairs that differ
     """
+    if callable(text_or_model) and isinstance(model_or_text, str):
+        model, text = text_or_model, model_or_text
+    elif callable(model_or_text) and isinstance(text_or_model, str):
+        text, model = text_or_model, model_or_text
+    else:
+        text, model = text_or_model, model_or_text
+
     orig_pred = str(model(text))
     variants = perturb(text, **kwargs)
     flips = []

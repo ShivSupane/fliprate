@@ -24,6 +24,19 @@ class QuickCheckResult:
     reason: str
     flipped_variants: List[str]
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "is_safe": self.is_safe,
+            "decision": self.decision,
+            "prediction": self.prediction,
+            "suggested_text": self.suggested_text,
+            "reason": self.reason,
+            "flipped_variants": self.flipped_variants,
+        }
+
+    def __getitem__(self, item: str) -> Any:
+        return self.to_dict()[item]
+
     def __bool__(self) -> bool:
         return self.is_safe
 
