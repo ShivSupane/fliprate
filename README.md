@@ -158,6 +158,49 @@ Devanagari perturbations include:
 
 ---
 
+### Multi-Model Benchmarking & HTML Dashboards (v0.5.0)
+
+Compare multiple candidate models side-by-side on your dataset and export interactive scorecards:
+
+```python
+import fliprate as fr
+
+suite = fr.benchmark(
+    models={"roberta": model_a, "llama": model_b},
+    dataset="data/test.csv",
+    baseline="roberta",
+)
+
+# Print terminal summary
+print(suite.summary())
+
+# Export interactive standalone HTML dashboard or Markdown scorecard
+suite.save("scorecard.html")
+suite.save("scorecard.md")
+```
+
+### Explainability & Diagnostics (v0.5.0)
+
+Pinpoint why a model flipped its prediction across orthographic perturbations:
+
+```python
+# Explain why gate returned PASS, TRANSFORM, or REVIEW
+explanation = fr.explain_gate_decision(my_model, "delivery nahi aayi")
+print(explanation["summary"])
+print(explanation["recommendation"])
+
+# Inspect every flipped variant and the exact differing words
+flips = fr.show_why_it_flipped(my_model, "bohot accha product")
+for flip in flips:
+    print(f"Variant: {flip['variant_text']} -> Flipped from {flip['original_prediction']} to {flip['variant_prediction']}")
+    print(f"Diffs: {flip['diffs']}")
+
+# Preview how noisy variations get normalized
+variants = fr.preview_normalized_variants("bohotttt achaaa product")
+```
+
+---
+
 ## Web Console
 
 ```bash
@@ -176,10 +219,17 @@ Zero-dependency vanilla HTML/JS. No Streamlit, no npm, no build step.
 ## CLI
 
 ```bash
+# Quality Gating & Diagnostics
 fliprate gate "mala product avadlaaa nahi"
+fliprate explain --model "my_pkg:my_model" --text "delivery nahi aayi"
 fliprate perturb "delivery nahi aaya"
 fliprate normalize "mala product avadlaaa nhi"
-fliprate test --data mydata.csv
+
+# Benchmarking & Reporting
+fliprate benchmark --models models.json --data mydata.csv --out scorecard.html
+fliprate report --data mydata.csv --model "my_pkg:my_model" --out report.md
+
+# Testing & Dataset Tools
 fliprate test --data mydata.csv -n 10 --protect --save report.json
 fliprate check-data testdata.csv --against traindata.csv
 fliprate split mydata.csv --out-dir data/
