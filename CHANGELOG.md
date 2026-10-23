@@ -1,4 +1,10 @@
 # Changelog
+ 
+## 0.5.0
+- **Exhaustive Test Coverage**: Added comprehensive test suite (`tests/test_complete_coverage.py`) covering all 18 modules and bringing test count to 354 automated tests with 100% pass rate.
+- **Benchmarking CLI**: Added `fliprate benchmark --models <spec> --data <csv> --out <path>` supporting standalone HTML scorecards and Markdown reports.
+- **Explainability CLI**: Added `fliprate explain --model <spec> --text <text>` for interactive diagnostic debugging.
+- **Developer Experience**: Added dict subscriptability and `to_dict()` on `QuickCheckResult`, default initialization on `BenchmarkSuite`, and flexible argument ordering in `explain_gate_decision` and `show_why_it_flipped`.
 
 ## 0.4.0
 - **Devanagari & Script-Aware Gating**: Native support for Devanagari (Hindi, Marathi, Nepali) and mixed-script text. Added `detect_script(text)` returning `"latin"`, `"devanagari"`, `"mixed"`, or `"other"`.
