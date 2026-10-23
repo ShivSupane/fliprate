@@ -89,8 +89,28 @@ from .adapters import (
     with_retries,
 )
 
+# ── Benchmarking & Quality Dashboard ─────────────────────────────────────────
+from .benchmark import (
+    BenchmarkSuite,
+    ModelBenchmarkScore,
+    benchmark,
+    compare_models,
+)
+
 # ── Experiment runner ────────────────────────────────────────────────────────
 from .experiment import ExperimentResult, run_experiment
+
+# ── Service Storage & Rate Limiting ──────────────────────────────────────────
+from .service import (
+    BaseJobStore,
+    BaseRateLimiter,
+    InMemoryJobStore,
+    InMemoryRateLimiter,
+    JobStore,
+    RateLimiter,
+    RedisJobStore,
+    RedisRateLimiter,
+)
 
 # ── Multi-language dataset loaders ────────────────────────────────────────────
 from .dakshina import (
@@ -207,9 +227,25 @@ __all__ = [
     "ProtectedModel",
     "Predictor",
 
+    # ── Benchmarking & Quality Dashboard ─────────────────────────────────────
+    "benchmark",
+    "compare_models",
+    "BenchmarkSuite",
+    "ModelBenchmarkScore",
+
     # ── Experiment ───────────────────────────────────────────────────────────
     "run_experiment",
     "ExperimentResult",
+
+    # ── Storage & Distributed Infrastructure ─────────────────────────────────
+    "BaseJobStore",
+    "BaseRateLimiter",
+    "InMemoryJobStore",
+    "InMemoryRateLimiter",
+    "JobStore",
+    "RateLimiter",
+    "RedisJobStore",
+    "RedisRateLimiter",
 
     # ── Data loading ─────────────────────────────────────────────────────────
     "load_dataset",
