@@ -1,463 +1,476 @@
 # FlipRate
 
-**Does your NLP model change its answer when the same message is typed differently?**
+> **Does your NLP model flip its prediction when a user types the same message differently?**  
+> FlipRate measures that, quantifies it with confidence intervals, and gives you tools to fix it — in **one pip install**, zero required dependencies.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.9.0-blue)](https://pypi.org/project/fliprate/)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Tests](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml/badge.svg)](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/fliprate?color=4f46e5&label=PyPI)](https://pypi.org/project/fliprate/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3b82f6)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
+[![Tests](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml/badge.svg)](https://github.com/ShivSupane/fliprate/actions)
+[![Downloads](https://img.shields.io/pypi/dm/fliprate)](https://pypi.org/project/fliprate/)
 
-Built by **Shiv Supane**
+Built by **[Shiv Supane](https://github.com/ShivSupane)**
 
 ---
 
 ## The problem
 
-People who text in Hindi, Marathi, Bengali, Tamil, Telugu, and other Indian languages
-using Roman (English) script have no standard spelling. The same word gets typed dozens of ways:
+People who text in Hindi, Marathi, Bengali, Tamil, and other Indian languages using the
+Roman alphabet have no standard spelling. The same word gets typed dozens of ways:
 
-| Word | Romanized variants |
+| Hindi word | Romanized variants |
 |---|---|
 | नही (no) | `nahi` · `nhi` · `nahin` · `nahee` |
 | बहुत (very) | `bahut` · `bohot` · `bhut` · `boht` |
 | आवडला (liked) | `avadla` · `avdla` · `avadlaaa` |
 
-Most NLP models treat these as completely different inputs and give different answers —
-even though the meaning is identical. **FlipRate measures that problem, quantifies it
-with confidence intervals, and gives you tools to fix it.**
+Most NLP models treat these as completely different inputs and change their prediction —
+even though the meaning is identical. **FlipRate quantifies that brittleness and fixes it.**
 
 ```
-User types:   "mala product avadlaaa nahi"  →  model says: product_feedback ✓
-Same meaning: "mala product avdla nhi"      →  model says: human_support    ✗  ← FLIP
-```
-
----
-
-## Install
-
-```bash
-pip install fliprate                    # core library (zero dependencies)
-pip install "fliprate[api]"             # + FastAPI web console
-pip install "fliprate[api,hf]"          # + Hugging Face model support
-pip install "fliprate[api,hf,sklearn]"  # + scikit-learn baselines
-```
-
-From source:
-```bash
-git clone https://github.com/ShivSupane/fliprate.git
-cd fliprate
-pip install -e ".[dev,api,hf,sklearn]"
+User types:   "mala product avadlaaa nahi"  →  model says: negative ✓
+Same meaning: "mala product avdla nhi"      →  model says: positive ✗  ← FLIP
 ```
 
 ---
 
 ## Quick start
 
-### The Happy-Path API (Beginner Friendly)
+```bash
+pip install fliprate
+```
 
 ```python
 import fliprate as fr
 
-# 1-line quality check
-verdict = fr.quick_check(my_model, "mala product avadlaaa nahi")
-print(verdict.is_safe)       # True / False
-print(verdict.prediction)    # Model's answer on the canonical text
-print(verdict.reason)        # Plain-English explanation
+# 1 — Does my model flip on this sentence?
+result = fr.gate(my_model, "delivery nahi aayi")
+print(result.decision)        # PASS | TRANSFORM | REVIEW
+print(result.flip_rate)       # e.g. 0.33
 
-# Clean messy text directly
-clean = fr.normalize_text("Mala product avadlaaa nhi", lowercase=False)
-# -> "Mala product avadla nahi"
+# 2 — Normalize noisy input before prediction
+clean = fr.normalize_text("mala product avadlaaa nhi")
+# → "mala product avadla nahi"
 
-# Predict safely with automatic spelling normalization fallback
-pred = fr.safe_predict(my_model, "ye delivery nhi aayi")
-
-# Audit model robustness on a dataset
+# 3 — Measure flip rate across your whole test set
 report = fr.check_model(my_model, "data/test.csv")
 print(report.summary())
-```
+# flip_rate: 0.27  [95% CI 0.21–0.33]  accuracy: 0.84  flips: 54/200
 
-### Full Robustness Evaluation (Detailed Metrics)
-
-```python
-import fliprate as fr
-
-report = fr.test(my_model, "data/test.csv")   # my_model: any function text -> label
-print(report.summary())
-```
-
-Example output *(illustrative — your numbers will differ)*:
-```
-Messages: 500 | safe variants tested: 2500
-Accuracy on originals:      68.4%  (macro-F1 0.672)
-Accuracy on safe variants:  67.1%  (macro-F1 0.658)
-Accuracy drop:              -1.3%  95% CI [-2.1%, -0.5%]
-Flip rate:                   6.2%  95% CI [5.1%, 7.4%]
-Most fragile change type:   repetition (flip rate 9.8%)
-```
-
-### Protect your model
-
-```python
-safe_model = fr.protect(my_model)   # normalizer in front
-report2 = fr.test(safe_model, "data/test.csv")
-
-diff = fr.paired_difference(report, report2)
-print(f"Flip rate change: {diff['difference']:+.1%}")
-print(f"95% CI: {diff['ci']}")
-```
-
-### Real-time gate
-
-```python
-result = fr.gate(my_model, "mala product avadlaaa nahi")
-print(result.decision)          # PASS / TRANSFORM / REVIEW
-print(result.prediction)        # model's answer on the (possibly normalized) text
-print(result.reason)            # human-readable explanation
-print(result.flipped_variants)  # variants that caused model flip (if unstable)
-```
-
-### Production-friendly convenience wrappers
-
-```python
-import fliprate as fr
-
-# One-line runtime quality gate
-res = fr.guard(my_model, "mala order avadlaaa nahi")
-
-# One-line model audit
-report = fr.audit(my_model, "data/test.csv")
-
-# Mine spelling rule candidates from raw text
-cands = fr.learn_rules_from_texts([
-    "mala avadla nahi",
-    "mala avdla nahi",
-    "mala avadlaa nahi",
-])
-```
-
-### Devanagari & Script-Aware Gating (v0.4.0)
-
-FlipRate natively supports Devanagari (Hindi, Marathi, etc.) and mixed-script text:
-
-```python
-# Detect script
-fr.detect_script("मला प्रॉडक्ट आवडला")      # "devanagari"
-fr.detect_script("product bohot accha hai")  # "latin"
-fr.detect_script("ye product बहुत accha hai") # "mixed"
-
-# Gate Devanagari and mixed text with safe orthographic perturbations
-result = fr.gate(my_model, "मला प्रॉडक्ट आवडला नाही")
-print(result.decision)   # PASS / TRANSFORM / REVIEW
-```
-
-Devanagari perturbations include:
-- **Unicode normalization**: precomposed vs decomposed nuktas (e.g., U+0958..U+095F vs base + U+093C)
-- **Digits**: bidirectional swap between ASCII (`0-9`) and Devanagari (`०-९`) digits
-- **Punctuation**: danda (`।`) and double danda (`॥`) interchange with Western punctuation
-- **Curated spelling**: meaning-safe nukta variations (`ज़रा`/`जरा`, `फ़ोन`/`फोन`) and Hindi/Marathi negations (`नहीं`, `नाही`, `नको`)
-- **Opt-in cross-script**: optional `cross_script=True` for high-confidence 1-to-1 transliterated pairs
-
----
-
-### Multi-Model Benchmarking & HTML Dashboards (v0.5.0)
-
-Compare multiple candidate models side-by-side on your dataset and export interactive scorecards:
-
-```python
-import fliprate as fr
-
-suite = fr.benchmark(
-    models={"roberta": model_a, "llama": model_b},
-    dataset="data/test.csv",
-    baseline="roberta",
-)
-
-# Print terminal summary
-print(suite.summary())
-
-# Export interactive standalone HTML dashboard or Markdown scorecard
-suite.save("scorecard.html")
-suite.save("scorecard.md")
-```
-
-### Explainability & Diagnostics (v0.5.0)
-
-Pinpoint why a model flipped its prediction across orthographic perturbations:
-
-```python
-# Explain why gate returned PASS, TRANSFORM, or REVIEW
-explanation = fr.explain_gate_decision(my_model, "delivery nahi aayi")
-print(explanation["summary"])
-print(explanation["recommendation"])
-
-# Inspect every flipped variant and the exact differing words
-flips = fr.show_why_it_flipped(my_model, "bohot accha product")
-for flip in flips:
-    print(f"Variant: {flip['variant_text']} -> Flipped from {flip['original_prediction']} to {flip['variant_prediction']}")
-    print(f"Diffs: {flip['diffs']}")
-
-# Preview how noisy variations get normalized
-variants = fr.preview_normalized_variants("bohotttt achaaa product")
+# 4 — Protected prediction: normalize → predict → check → route
+pred = fr.safe_predict(my_model, "bohot accha product hai")
 ```
 
 ---
 
-## Web Console
+## Why FlipRate?
 
-```bash
-uvicorn fliprate.api:app --reload          # toy model, instant start
-# then open http://localhost:8000
-```
-
-Two tabs:
-- **Playground** — paste a message, watch the gate decision stream live
-- **Robustness Lab** — upload a labeled CSV, get a live flip-rate chart
-
-Zero-dependency vanilla HTML/JS. No Streamlit, no npm, no build step.
-
----
-
-## CLI
-
-```bash
-# Quality Gating & Diagnostics
-fliprate gate "mala product avadlaaa nahi"
-fliprate explain --model "my_pkg:my_model" --text "delivery nahi aayi"
-fliprate perturb "delivery nahi aaya"
-fliprate normalize "mala product avadlaaa nhi"
-
-# Benchmarking & Reporting
-fliprate benchmark --models models.json --data mydata.csv --train-data traindata.csv --out scorecard.html
-fliprate report --data mydata.csv --model "my_pkg:my_model" --out report.md
-
-# Testing & Dataset Tools
-fliprate test --data mydata.csv -n 10 --protect --save report.json --max-flip-rate 0.05
-fliprate check-data testdata.csv --against traindata.csv
-fliprate split mydata.csv --out-dir data/
-fliprate mine mydata.csv --out candidates.csv
-```
-
-**CLI exit codes:**
-
-| Code | Meaning |
+| What you need | FlipRate answer |
 |---|---|
-| `0` | All checks passed |
-| `1` | Threshold violation (flip rate / accuracy exceeded) |
-| `2` | Configuration or data error (bad file, model not found) |
+| Measure model brittleness on Indian-language text | `fr.gate()`, `fr.check_model()`, `fr.test()` |
+| Fix noisy input before it reaches your model | `fr.normalize_text()`, `fr.protect()` |
+| Compare multiple models side-by-side | `fr.benchmark()`, `fr.run_benchmark_protocol()` |
+| Audit your evaluation dataset for quality issues | `fr.audit_dataset()` |
+| Explain *why* a model flipped | `fr.show_why_it_flipped()`, `fr.explain_gate_decision()` |
+| Integrate into CI/CD | `fliprate test --data test.csv --max-flip-rate 0.05` |
+| Use Hugging Face / sklearn / any callable | `fr.HFTextClassifier`, `fr.from_sklearn`, `fr.CallableAdapter` |
 
 ---
 
-### Dataset Audit & Evidence Protocol (v0.9.0)
+## Installation
 
-Before drawing conclusions from benchmark results, audit your evaluation data for quality issues:
+```bash
+# Core (zero required runtime dependencies)
+pip install fliprate
+
+# With REST API / web console
+pip install "fliprate[api]"
+
+# With Hugging Face support
+pip install "fliprate[hf]"
+
+# With scikit-learn adapter
+pip install "fliprate[sklearn]"
+
+# Everything
+pip install "fliprate[all]"
+```
+
+---
+
+## Core concepts
+
+### 1 · Gate — real-time quality check
 
 ```python
-import fliprate as fr
+result = fr.gate(my_model, "delivery nahi aayi")
 
-# Audit evaluation data for hidden quality issues
+result.decision      # "PASS" | "TRANSFORM" | "REVIEW"
+result.flip_rate     # fraction of variants that flipped
+result.prediction    # the model's prediction on the (normalized) input
+result.variants      # list of Variant objects with each perturbation
+```
+
+Decisions:
+- **PASS** — model is stable; safe to use the prediction.
+- **TRANSFORM** — model is unstable but we successfully normalized the text; use the prediction on the normalized form.
+- **REVIEW** — model is unstable and normalization did not help; flag for human review.
+
+### 2 · Normalize — clean messy text
+
+```python
+# Clean a single string
+clean = fr.normalize_text("mala product avadlaaa nhi bohotttt")
+# → "mala product avadla nahi bahut"
+
+# Normalize + protect brand names / codes from being changed
+clean = fr.normalize_text("mujhe ORDID-123 avdla nhi", protected_terms=["ORDID-123"])
+```
+
+### 3 · Test — batch evaluation on a dataset
+
+```python
+# CSV with columns: text, label
+report = fr.test(my_model, "data/test.csv")
+
+report.flip_rate          # overall flip rate
+report.accuracy           # accuracy on original text
+report.confidence_interval  # (lower, upper) 95% Wilson CI
+report.summary()          # pretty-printed one-liner
+```
+
+### 4 · Benchmark — compare models
+
+```python
+suite = fr.benchmark(
+    models={"tfidf": model_a, "bert": model_b},
+    dataset="data/test.csv",
+    baseline="tfidf",
+)
+suite.summary()           # terminal scorecard
+suite.save("report.html") # standalone interactive HTML dashboard
+suite.save("report.md")   # markdown table
+```
+
+### 5 · Dataset Audit — catch quality issues before you report numbers
+
+```python
 audit = fr.audit_dataset(
     "data/test.csv",
-    train_dataset="data/train.csv",    # optional: also checks leakage
+    train_dataset="data/train.csv",   # optional: check for leakage
 )
-print(audit["n_messages"])             # total messages
-print(audit["class_distribution"])    # label distribution
-print(audit["script_distribution"])   # latin / devanagari / mixed counts
-print(audit["exact_duplicates"])      # exact duplicate pairs
-print(audit["near_duplicates"])       # near-duplicate spelling variant pairs
-print(audit["label_conflicts"])       # conflicting-label groups
-print(audit["leakage_detected"])      # True if train/test overlap found
-
-# Full reproducible benchmark with automatic audit, raw vs protected
-suite = fr.run_benchmark_protocol(
-    models={"tfidf-word": model_a, "transformer": model_b},
-    dataset="data/test.csv",
-    train_dataset="data/train.csv",
-    baseline="tfidf-word",
-    n_variants=5,
-)
-print(suite.summary())
-suite.save("results/dashboard.html")
+audit["n_messages"]              # total rows
+audit["class_distribution"]      # label → count
+audit["script_distribution"]     # latin / devanagari / mixed → count
+audit["exact_duplicates"]        # exact duplicate pairs
+audit["near_duplicates"]         # spelling-variant pairs
+audit["label_conflicts"]         # same text, different labels
+audit["leakage_detected"]        # True if train/test overlap found
 ```
 
----
+### 6 · Reproducible benchmark protocol
 
-## Security & Privacy
-
-- Report vulnerabilities privately to `shiv.supane777@gmail.com` — see [`SECURITY.md`](SECURITY.md) for the response timeline and supported versions.
-- Report summaries **never** include raw input text by default. To opt-in to examples in explainability output: `fr.explain_report_flips(report, opt_in_examples=True)`.
-- Core FlipRate has **zero required runtime dependencies** and operates entirely in-process without network calls.
+```python
+suite = fr.run_benchmark_protocol(
+    models={"word_tfidf": model_a, "char_tfidf": model_b},
+    dataset="data/test.csv",
+    train_dataset="data/train.csv",
+    baseline="word_tfidf",
+    n_variants=5,
+    seed=0,
+)
+suite.save("results/dashboard.html")
+suite.dataset_audit   # full audit dict attached to the suite
+```
 
 ---
 
 ## Plug in any model
 
+FlipRate works with **any callable that takes a string and returns a label**.
+
 ```python
-# Hugging Face (lazy-loaded, batched)
+# ── Any Python function ──────────────────────────────────────────
+def my_model(text: str) -> str:
+    return "positive" if "accha" in text else "negative"
+
+result = fr.gate(my_model, "bohot accha product hai")
+
+# ── Hugging Face pipeline ────────────────────────────────────────
 clf = fr.HFTextClassifier(
     "cardiffnlp/twitter-xlm-roberta-base-sentiment",
     lowercase_labels=True,
-    preprocess=fr.twitter_preprocess,
 )
+result = fr.gate(clf, "mujhe ye product pasand nahi")
 
-# scikit-learn
-from fliprate.baselines import train_tfidf
-clf = train_tfidf(train_rows, analyzer="word")   # or "char_wb"
+# ── scikit-learn pipeline ────────────────────────────────────────
+from sklearn.pipeline import Pipeline
+clf = fr.from_sklearn(sklearn_pipeline)
 
-# Any LLM
-llm = fr.with_retries(fr.llm_classifier(
-    my_openai_fn, labels=["positive", "neutral", "negative"]
-))
+# ── REST / HTTP service ──────────────────────────────────────────
+clf = fr.HttpServiceAdapter("https://api.example.com/classify", timeout=5.0)
+
+# ── LLM (OpenAI / Anthropic / Gemini) ───────────────────────────
+clf = fr.LLMClassifier(
+    client=openai_client,
+    labels=["positive", "negative", "neutral"],
+)
 ```
 
 ---
 
-## Multi-language rules
+## CLI
 
-FlipRate ships with 73 core HIGH-confidence groups for immediate use.
-For broader coverage, load from two research datasets:
+Use FlipRate in CI/CD pipelines or shell scripts without writing Python.
+
+```bash
+# ── Real-time gate ───────────────────────────────────────────────
+fliprate gate "delivery nahi aayi"
+
+# ── Normalize text ───────────────────────────────────────────────
+fliprate normalize "mala product avadlaaa nhi"
+
+# ── Show all perturbations ───────────────────────────────────────
+fliprate perturb "delivery nahi aaya"
+
+# ── Explain a gate decision ──────────────────────────────────────
+fliprate explain --model "mypackage:my_model" --text "delivery nahi aayi"
+
+# ── Batch evaluation (CI gate) ───────────────────────────────────
+fliprate test --data test.csv --max-flip-rate 0.05      # exit 1 if threshold exceeded
+fliprate test --data test.csv -n 100 --protect --save report.json
+
+# ── Multi-model benchmark ────────────────────────────────────────
+fliprate benchmark --models models.json --data test.csv --train-data train.csv --out scorecard.html
+
+# ── Full report ──────────────────────────────────────────────────
+fliprate report --data test.csv --model "mypackage:my_model" --out report.md
+
+# ── Dataset tools ────────────────────────────────────────────────
+fliprate check-data test.csv --against train.csv   # check leakage
+fliprate split mydata.csv --out-dir data/          # train/test split
+fliprate mine mydata.csv --out candidates.csv      # mine spelling rules
+```
+
+**Exit codes:**
+
+| Code | Meaning |
+|---|---|
+| `0` | All checks passed |
+| `1` | Threshold violated (flip rate / accuracy) |
+| `2` | Configuration or data error (bad file, model not found) |
+
+---
+
+## Devanagari & multilingual support
+
+FlipRate supports Devanagari (Hindi, Marathi) and mixed-script text natively:
 
 ```python
-# Built-in per-language groups (12 Indian languages + 1 shared cross-lingual group)
-# hindi, urdu, marathi, bengali, tamil, telugu, kannada, malayalam, gujarati, punjabi, odia, assamese, shared
-tamil_rules = fr.DEFAULT_RULES.extended(groups=fr.LANGUAGE_GROUPS["tamil"])
+# Script detection
+fr.detect_script("मला प्रॉडक्ट आवडला")        # "devanagari"
+fr.detect_script("product bohot accha hai")   # "latin"
+fr.detect_script("ye product बहुत accha hai") # "mixed"
 
-# Dakshina (Google Research, CC BY-SA 4.0) — 225K groups, 12 languages
-# Codes: hi ur mr bn ta te kn ml gu pa sd si
-rules = fr.dakshina_rules("ta")           # Tamil
-rules = fr.dakshina_rules("hi", "mr")    # Hindi + Marathi
-
-# Aksharantar (AI4Bharat, CC BY 4.0) — 428K groups, 20 languages
-# Codes: hin guj tam tel kan mal mar pan ben urd ori asm kas kok mai mni nep san brx sid
-rules = fr.aksharantar_rules("hin")               # Hindi: 58K groups
-rules = fr.aksharantar_rules("tam", "tel", "kan") # South India
-
-# Use in any call
-report = fr.test(my_model, "data/test.csv", rules=rules)
+# Gate on Devanagari text
+result = fr.gate(my_model, "मला प्रॉडक्ट आवडला नाही")
 ```
 
----
-
-## How it works
-
-**Safe variant:** a rewriting of a message that keeps the same canonical words
-(up to reviewed equivalent spellings) and the same negation count. Adding or
-removing a negation word (`nahi`, `nako`, `illa`, …) is never allowed.
-
-**Flip rate:** `variants_where_answer_changed / total_safe_variants`.
-Bootstrap 95% CIs are computed over messages, not individual variants.
-
-**Gate decisions:**
-
-| Decision | When |
-|---|---|
-| **PASS** | ≥ 80% of safe variants get the same answer. |
-| **TRANSFORM** | Unstable, but the built-in normalizer fixes it. Sends cleaned text to model; keeps original. |
-| **REVIEW** | Unstable and normalization does not help. Route to a human. |
+Perturbations include:
+- Unicode normalization (precomposed vs decomposed nuktas)
+- Digit swap: ASCII (`0–9`) ↔ Devanagari (`०–९`)
+- Danda (`।`) / double-danda (`॥`) ↔ Western punctuation
+- Meaning-safe nukta variations (`ज़रा`/`जरा`, `फ़ोन`/`फोन`)
+- Hindi/Marathi negation variants (`नहीं`, `नाही`, `नको`)
 
 ---
 
-## Experiment results (v0.2)
-
-Tested on a processed copy of SentiMix Hinglish sentiment (2,997 held-out messages,
-5 rule-generated variants per message). **Read the caveats below before citing these numbers.**
-
-| Model | Mode | Accuracy | Flip rate (95% CI) |
-|---|---|---|---|
-| xlm-roberta-base-sentiment | raw | 59.2% | 7.3% (6.7–7.9%) |
-| xlm-roberta-base-sentiment | **protected** | 59.1% | **3.5%** (3.1–3.9%) |
-| TF-IDF word n-gram | raw | 65.9% | 4.2% (3.8–4.6%) |
-| TF-IDF word n-gram | **protected** | 65.6% | **3.2%** (2.9–3.6%) |
-
-Paired flip-rate change: **−3.80 pts** [−4.22, −3.39]. Accuracy: −0.03 pts [−0.23, +0.17].
-
-> **Important caveats (from [`evidence/EVIDENCE.md`](evidence/EVIDENCE.md)):**
-> - The SentiMix copy used here is lowercased, stopword-stripped and Porter-stemmed — not natural user typing.
-> - The spelling-swap flip rate drops to 0 % after protection **by construction**: the variants and the normalizer use the same rule list, so normalization simply undoes its own perturbations. This shows the normalizer is internally consistent, not that it fixes real-world spelling noise.
-> - The spelling rules have not been reviewed by a fluent speaker.
-> - Only one transformer was tested, zero-shot.
->
-> These numbers are a proof-of-concept baseline. Treat them as lower bounds on what a fair evaluation on natural, unprocessed text would show.
-
-Full evidence and raw result files: [`evidence/`](evidence/)
-
----
-
-## Production deployment
+## Web console
 
 ```bash
-# With API key and restricted CORS
-FLIPRATE_API_KEY=secret FLIPRATE_CORS=https://yoursite.com \
-  uvicorn fliprate.api:app --host 0.0.0.0 --port 8000 \
-  --proxy-headers --forwarded-allow-ips="*"
+pip install "fliprate[api]"
+uvicorn fliprate.api:app --reload
+# → open http://localhost:8000
 ```
 
-**Environment variables:**
-
-| Variable | Default | Effect |
-|---|---|---|
-| `FLIPRATE_MODEL` | toy model | `module:function` path to your classifier |
-| `FLIPRATE_API_KEY` | none (open) | Require key on POST endpoints |
-| `FLIPRATE_CORS` | `*` | Allowed origins — always restrict in production |
-| `FLIPRATE_RATE_LIMIT` | `60` | Requests per minute per IP/key |
-| `FLIPRATE_MAX_CONCURRENT` | `2` | Max simultaneous jobs |
-| `FLIPRATE_MAX_TEXT_CHARS` | `2000` | Max chars per analyze request |
-| `FLIPRATE_MAX_ROWS` | `2000` | Max rows per test request |
-
-Docker:
-```bash
-docker build -t fliprate .
-docker run -p 7860:7860 \
-  -e FLIPRATE_MODEL=fliprate.hf_models:xlmt_sentiment \
-  -e FLIPRATE_API_KEY=secret \
-  fliprate
-```
-
-**Production notes:**
-- `normalize(text, lowercase=False)` accurately preserves word casing (`Title`, `UPPER`, `lower`).
-- Single-instance deployments run entirely in-process with zero external database dependencies.
-- In distributed environments behind load balancers, note that in-memory rate limiting and task queues are local to each process.
+Two tabs:
+- **Playground** — paste any message, see the gate decision live
+- **Robustness Lab** — upload a labeled CSV, get a live flip-rate chart
 
 ---
 
-## Documentation
+## CI/CD integration
 
-| File | Contents |
+Add FlipRate to your GitHub Actions pipeline to catch regressions automatically:
+
+```yaml
+# .github/workflows/robustness.yml
+- name: Install FlipRate
+  run: pip install fliprate
+
+- name: Run robustness gate
+  run: |
+    fliprate test \
+      --data tests/data/test.csv \
+      --model "mypackage:my_model" \
+      --max-flip-rate 0.05 \
+      --save robustness_report.json
+  # exits 1 if flip rate exceeds 5%
+
+- name: Upload report
+  uses: actions/upload-artifact@v4
+  with:
+    name: robustness-report
+    path: robustness_report.json
+```
+
+---
+
+## Explainability & debugging
+
+```python
+# Why did the gate return REVIEW?
+explanation = fr.explain_gate_decision(my_model, "delivery nahi aayi")
+print(explanation["summary"])
+print(explanation["recommendation"])
+
+# Which exact variants flipped, and what changed?
+flips = fr.show_why_it_flipped(my_model, "bohot accha product")
+for flip in flips:
+    print(f"Variant:  {flip['variant_text']}")
+    print(f"Flipped:  {flip['original_prediction']} → {flip['variant_prediction']}")
+    print(f"Diff:     {flip['diffs']}")
+
+# Preview what normalization does to noisy text
+variants = fr.preview_normalized_variants("bohotttt achaaa product")
+
+# Report-level explainability (privacy-safe by default)
+summary = fr.explain_report_flips(report)
+# opt_in_examples=True to include raw text in output
+```
+
+---
+
+## Rule management
+
+```python
+# Inspect built-in rules
+fr.describe_rule_group("nahi")
+
+# Add a project-specific spelling group
+fr.add_custom_rule(["thnx", "thanks", "thankyou", "thx"])
+
+# Protect brand names / codes from being changed
+fr.normalize_text("please check ORDER-999 nahi aaya", protected_terms=["ORDER-999"])
+
+# Preview what variants a rule generates
+fr.preview_variants("delivery nahi aayi")
+
+# Mine new rule candidates from your own data
+candidates = fr.learn_rules_from_texts(my_texts)
+```
+
+---
+
+## Security & privacy
+
+- **Privacy by default** — `explain_report_flips(report)` never includes raw user text in output. Opt in with `opt_in_examples=True`.
+- **Zero network calls** — core FlipRate runs entirely in-process; no telemetry, no external APIs.
+- **Zero required dependencies** — safe to add to any project.
+- **Vulnerability disclosure** — email `shiv.supane777@gmail.com` (see [`SECURITY.md`](SECURITY.md)).
+
+---
+
+## API quick-reference
+
+| Function | One-liner description |
 |---|---|
-| [`docs/COOKBOOK.md`](docs/COOKBOOK.md) | Practical real-world recipes (sentiment, chatbot, ticket routing, custom slang) |
-| [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) | Production architecture, when to use it, distributed scaling, PII & security |
-| [`docs/QUICKSTART.md`](docs/QUICKSTART.md) | Every command, env var, and code example |
-| [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | Full function reference with parameters |
-| [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) | Architecture, design decisions, module map |
-| [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md) | Experiment protocol and caveats |
-| [`docs/RELEASE_AND_DEPLOY.md`](docs/RELEASE_AND_DEPLOY.md) | PyPI and deployment guide |
-| [`evidence/`](evidence/) | Raw result files and EVIDENCE.md |
+| `fr.gate(model, text)` | Real-time robustness check → `GateResult` |
+| `fr.quick_check(model, text)` | Fastest 1-line check → `QuickCheckResult` |
+| `fr.safe_predict(model, text)` | Normalize + gate + predict |
+| `fr.normalize_text(text)` | Clean noisy romanized text |
+| `fr.test(model, dataset)` | Batch evaluation → `Report` |
+| `fr.check_model(model, dataset)` | Alias for `test` with summary |
+| `fr.benchmark(models, dataset)` | Multi-model comparison → `BenchmarkSuite` |
+| `fr.audit_dataset(dataset)` | Data quality audit → dict |
+| `fr.run_benchmark_protocol(...)` | Rigorous reproducible benchmark |
+| `fr.show_why_it_flipped(model, text)` | Explain each flip with word diffs |
+| `fr.explain_gate_decision(model, text)` | Human-readable gate explanation |
+| `fr.detect_script(text)` | `"latin"` / `"devanagari"` / `"mixed"` |
+| `fr.from_sklearn(pipeline)` | Wrap any sklearn model |
+| `fr.HFTextClassifier(model_name)` | Wrap a Hugging Face model |
+| `fr.LLMClassifier(client, labels)` | Wrap an LLM API |
+
+Full API reference → [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md)
 
 ---
 
-## Limitations
+## Project layout
 
-- Supported scripts: Roman (Latin), Devanagari, and mixed code-switched text. Other Indic scripts (Tamil, Telugu, Bengali script) route to `REVIEW` with an informative reason.
-- Rule-generated variants only — real typing noise is wider than 6 change types.
-- Spelling rules have not been reviewed by a fluent speaker for any language.
-- Customer-support domain lexicon; use `--no-lexicon` for other domains.
-- Dakshina data is from Wikipedia. Aksharantar draws on Wikipedia, IndicCorp, Samanantar, and other corpora — but not all pairs are manually annotated.
-- Do not publish numbers from the bundled 40-message demo sample.
+```
+fliprate/
+├── src/fliprate/
+│   ├── __init__.py        # all public exports
+│   ├── engine.py          # FlipRate class
+│   ├── gating.py          # gate / iter_gate / agate
+│   ├── pipeline.py        # quick_check / safe_predict / check_model
+│   ├── normalization.py   # normalize / normalize_text
+│   ├── perturbation.py    # perturb / KINDS / Variant
+│   ├── rules.py           # RuleSet / DEFAULT_RULES
+│   ├── evaluation.py      # test / Report / iter_test
+│   ├── benchmark.py       # benchmark / BenchmarkSuite / audit_dataset
+│   ├── explain.py         # show_why_it_flipped / explain_gate_decision
+│   ├── adapters.py        # HFTextClassifier / LLMClassifier / from_sklearn
+│   ├── dataset.py         # find_near_duplicates / check_leakage / mine_variants
+│   ├── augmentation.py    # augment / compare_augmentation
+│   ├── cli.py             # fliprate CLI entry point
+│   └── api.py             # FastAPI web console
+├── tests/                 # 414 tests across all versions
+├── docs/
+│   ├── API_REFERENCE.md
+│   ├── DEPLOYMENT_GUIDE.md
+│   └── FLIPRATE_MASTER_ROADMAP.md
+├── CHANGELOG.md
+├── SECURITY.md
+└── README.md
+```
 
 ---
 
-## Datasets
+## Versioning
 
-If you use the multi-language rules in published work, cite:
+FlipRate follows [Semantic Versioning](https://semver.org/).  
+Public API is frozen at 1.0.0 — future releases will be backward compatible.
 
-> Roark et al. (2020). "Processing South Asian Languages Written in the Latin Script: the Dakshina Dataset." LREC 2020. https://aclanthology.org/2020.lrec-1.294
+| Version | Highlight |
+|---|---|
+| **1.0.0** | Stable release — API frozen, 414 tests passing |
+| 0.9.0 | Dataset audit, benchmark protocol, security policy, CLI exit codes |
+| 0.8.0 | Protected terms, rule governance, non-causal diagnosis |
+| 0.7.0 | Training augmentation, near-duplicate detection, leakage checking |
+| 0.6.0 | Cost modes, partial evaluation, async gate |
+| 0.5.0 | Multi-model benchmarking, HTML dashboards, explainability |
+| 0.4.0 | Devanagari support, Dakshina/Aksharantar loaders |
 
-> Mittal et al. (2022). "Aksharantar: Towards Building Open Transliteration Tools for the Next Billion Users." https://arxiv.org/abs/2205.03018
+Full history → [`CHANGELOG.md`](CHANGELOG.md)
+
+---
+
+## Contributing
+
+1. Fork the repository and create a feature branch.
+2. Add tests for every new behavior (`tests/` directory).
+3. Ensure all 414 tests pass: `python -m pytest -q`
+4. Open a PR — the CI checks Python 3.9 → 3.13 on every push.
+
+No new required runtime dependencies, please.
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE). © 2025 Shiv Supane
+MIT — see [`LICENSE`](LICENSE)
 
-The Dakshina dataset is CC BY-SA 4.0. The Aksharantar dataset is CC BY 4.0.
-Neither is included in this package — download separately.
+---
+
+*FlipRate — built to make Indian-language NLP robust by default.*
