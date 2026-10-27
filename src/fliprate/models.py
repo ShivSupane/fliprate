@@ -36,10 +36,30 @@ class Predictor:
     def __init__(self, model: Callable, cache: bool = True, batch_size: int = 64, max_cache: int = 50_000):
         self.model, self.cache, self.batch_size, self.max_cache = model, cache, batch_size, max_cache
         self._cache: Dict[str, Any] = {}
-        self.calls = 0       # texts actually sent to the model
+        self.calls = 0          # unique texts actually sent to the model
+        self.request_count = 0  # underlying batch/network requests executed
         self.cache_hits = 0
+        self.total_lookups = 0
+
+    @property
+    def cache_hit_rate(self) -> float:
+        return self.cache_hits / self.total_lookups if self.total_lookups > 0 else 0.0
+
+    def invalidate_cache(self, reset_stats: bool = False) -> None:
+        """Clear cache entries and optionally reset accounting counters."""
+        self._cache.clear()
+        if reset_stats:
+            self.reset_stats()
+
+    def reset_stats(self) -> None:
+        """Reset cost counters without clearing cache entries."""
+        self.calls = 0
+        self.request_count = 0
+        self.cache_hits = 0
+        self.total_lookups = 0
 
     def predict(self, texts: Sequence[str]) -> List[Any]:
+        self.total_lookups += len(texts)
         known: Dict[str, Any] = {}
         todo: List[str] = []
         for t in dict.fromkeys(texts):
@@ -50,6 +70,7 @@ class Predictor:
                 todo.append(t)
         for i in range(0, len(todo), self.batch_size):
             chunk = todo[i:i + self.batch_size]
+            self.request_count += 1
             for t, p in zip(chunk, batch_predict(self.model, chunk)):
                 known[t] = p
                 self.calls += 1

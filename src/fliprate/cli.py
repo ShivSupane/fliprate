@@ -52,7 +52,9 @@ def main(argv=None) -> int:
 
     add("perturb", "show safe variants of a message", text=True).add_argument("-n", type=int, default=8)
     add("normalize", "show the normalized form of a message", text=True)
-    add("gate", "run the PASS/TRANSFORM/REVIEW gate", text=True, model=True)
+    sg = add("gate", "run the PASS/TRANSFORM/REVIEW gate", text=True, model=True)
+    sg.add_argument("--mode", choices=["fast", "balanced", "thorough"], default="thorough", help="evaluation mode: fast (no variants), balanced (sample), thorough (all)")
+    sg.add_argument("--early-stop", action="store_true", help="stop early on first detected flip")
 
     sd = add("demo", "robustness test on the bundled toy sample", model=True)
     sd.add_argument("-n", type=int, default=5)
@@ -61,6 +63,9 @@ def main(argv=None) -> int:
     st.add_argument("--data", required=True, help="CSV with columns text,label")
     st.add_argument("-n", type=int, default=5, help="variants per message")
     st.add_argument("--seed", type=int, default=0)
+    st.add_argument("--mode", choices=["fast", "balanced", "thorough"], default="thorough", help="evaluation mode: fast (no variants), balanced (sample), thorough (all)")
+    st.add_argument("--early-stop", action="store_true", help="stop early if threshold is breached")
+    st.add_argument("--model-version", default=None, help="user-supplied model version/revision string")
     st.add_argument("--protect", action="store_true", help="put normalization in front of the model")
     st.add_argument("--save", default=None, help="write the full report (JSON) here")
     st.add_argument("--max-flip-rate", type=float, default=None, help="CI threshold: maximum allowable flip rate (e.g. 0.05); exit 1 if exceeded")
@@ -119,7 +124,13 @@ def main(argv=None) -> int:
         for old, new in r.changes:
             print(f"  {old} -> {new}")
     elif args.cmd == "gate":
-        r = gate(_load_model(args.model), args.text, rules=rules)
+        r = gate(
+            _load_model(args.model),
+            args.text,
+            rules=rules,
+            mode=getattr(args, "mode", "thorough"),
+            early_stop=getattr(args, "early_stop", False),
+        )
         print(f"{r.decision}: {r.reason}")
         print(f"prediction={r.prediction!r} raw_stability={r.raw_stability} normalized_stability={r.normalized_stability}")
         for v in r.flipped_variants[:5]:
@@ -136,22 +147,38 @@ def main(argv=None) -> int:
             print(f"Error loading model or dataset: {type(exc).__name__}: {exc}", file=sys.stderr)
             return 2
 
-        def show(ev):
-            if ev["stage"] == "progress" and ev["done"] % 25 == 0:
-                print(f"  {ev['done']}/{ev['total']}  flip rate so far {ev['flip_rate']:.1%}", file=sys.stderr)
-
-        report = test(model, rows, n_variants=args.n, seed=getattr(args, "seed", 0), on_event=show, rules=rules)
-        print(report.summary())
-
-        # CI Threshold evaluation
-        violations = []
         applied_thresholds = {}
         max_fr = getattr(args, "max_flip_rate", None)
         min_acc = getattr(args, "min_accuracy", None)
         max_drop = getattr(args, "max_accuracy_drop", None)
-
         if max_fr is not None:
             applied_thresholds["max_flip_rate"] = max_fr
+        if min_acc is not None:
+            applied_thresholds["min_accuracy"] = min_acc
+        if max_drop is not None:
+            applied_thresholds["max_accuracy_drop"] = max_drop
+
+        def show(ev):
+            if ev["stage"] == "progress" and ev["done"] % 25 == 0:
+                print(f"  {ev['done']}/{ev['total']}  flip rate so far {ev['flip_rate']:.1%}", file=sys.stderr)
+
+        report = test(
+            model,
+            rows,
+            n_variants=args.n,
+            seed=getattr(args, "seed", 0),
+            on_event=show,
+            rules=rules,
+            mode=getattr(args, "mode", "thorough"),
+            early_stop=getattr(args, "early_stop", False),
+            model_version=getattr(args, "model_version", None),
+            thresholds=applied_thresholds,
+        )
+        print(report.summary())
+
+        # CI Threshold evaluation
+        violations = []
+        if max_fr is not None:
             if report.flip_rate > max_fr:
                 violations.append(f"flip rate {report.flip_rate:.1%} exceeds threshold {max_fr:.1%}")
 
