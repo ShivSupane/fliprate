@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.7.0 — ML Workflow Integration and Experimental Augmentation
+- **Scikit-Learn Transformer (`FlipRateNormalizer`)**:
+  - `BaseEstimator` and `TransformerMixin` compatible text transformer for scikit-learn `Pipeline`.
+  - Works with `Pipeline([('norm', FlipRateNormalizer()), ('tfidf', TfidfVectorizer()), ('clf', LogisticRegression())])`.
+  - Fully compatible with `sklearn.base.clone()`.
+  - Preserves row order and row count; zero dependencies required in core if scikit-learn is not installed.
+- **Training-Time Data Augmentation (`fr.augment`)**:
+  - Generates controlled training examples using reviewed meaning-preserving transformations.
+  - Strict safety contract: preserves labels only for transformations passing semantic safety checks.
+  - Strictly invariant negation checks: never flips or deletes negative particles (`nahi`, `nhi`, `not`, etc.).
+  - Preserves original dataset examples by default; supports deterministic seeded generation.
+  - Provides detailed diagnostics: transformation kind breakdown and count of skipped unsafe candidates.
+  - Added empirical validation helper `fr.compare_augmentation()` comparing baseline vs augmented accuracy, macro-F1, and flip rate.
+- **Dataset Ergonomics & Explainable Diagnostics**:
+  - Duck-typed support for pandas DataFrames in `load_dataset()` without importing pandas in the core path.
+  - `find_near_duplicates()`: Identifies exact duplicates, near-duplicate spelling variants, and conflicting labels with 1-indexed row references without silently dropping data.
+  - `check_leakage()`: Cross-split diagnostic detecting exact and spelling-variant train/test leakage with explainable row references.
+- **Engine Integration**: Added `fr.FlipRate.augment()` to the convenient engine interface.
+
 ## 0.6.0 — Cost-Aware Evaluation and Measured Performance
 - **Three Explicit Modes (`fast`, `balanced`, `thorough`)**:
   - `fast`: Executes standard model inference on original inputs without generating or predicting safe variants (`n_variants_evaluated = 0`). Explicitly states that robustness was not evaluated, avoiding hidden compute costs.

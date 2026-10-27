@@ -78,6 +78,7 @@ from .validation import validate_dataset, validate_text
 # ── Model adapters ──────────────────────────────────────────────────────────
 from .adapters import (
     CallableAdapter,
+    FlipRateNormalizer,
     HFTextClassifier,
     HttpServiceAdapter,
     LLMClassifier,
@@ -129,6 +130,18 @@ from .aksharantar import (
 from .events import drain, make_event, to_sse
 
 
+# ── Training Augmentation & Diagnostics [v0.7.0] ─────────────────────────────
+from .augmentation import AugmentationResult, augment, compare_augmentation
+from .dataset import (
+    DuplicateMatch,
+    DuplicateReport,
+    LeakageMatch,
+    LeakageReport,
+    check_leakage,
+    find_near_duplicates,
+)
+
+
 def guard(model, text, **kwargs):
     """Thin convenience wrapper around gate()."""
     return gate(model, text, **kwargs)
@@ -145,7 +158,7 @@ def learn_rules_from_texts(texts, **kwargs):
     return mine_variants(texts, **kwargs)
 
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 __author__ = "Shiv Supane"
 
 __all__ = [
@@ -216,7 +229,7 @@ __all__ = [
     "load_aksharantar_groups",
     "AKSHARANTAR_LANGUAGES",
 
-    # ── Model adapters ───────────────────────────────────────────────────────
+    # ── Model adapters & Transformers ────────────────────────────────────────
     "ModelAdapter",
     "CallableAdapter",
     "HttpServiceAdapter",
@@ -224,12 +237,24 @@ __all__ = [
     "HFTextClassifier",
     "SklearnAdapter",
     "from_sklearn",
+    "FlipRateNormalizer",
     "LLMClassifier",
     "llm_classifier",
     "twitter_preprocess",
     "with_retries",
     "ProtectedModel",
     "Predictor",
+
+    # ── Augmentation & Workflow Integration [v0.7.0] ─────────────────────────
+    "augment",
+    "AugmentationResult",
+    "compare_augmentation",
+    "find_near_duplicates",
+    "check_leakage",
+    "DuplicateReport",
+    "DuplicateMatch",
+    "LeakageReport",
+    "LeakageMatch",
 
     # ── Benchmarking & Quality Dashboard ─────────────────────────────────────
     "benchmark",
