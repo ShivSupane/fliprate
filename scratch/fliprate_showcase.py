@@ -16,13 +16,19 @@ import json
 import sys
 import textwrap
 
-# ─── Install if needed ────────────────────────────────────────────────────────
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+# ─── Verification ─────────────────────────────────────────────────────────────
 try:
     import fliprate as fr
 except ImportError:
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "fliprate"])
-    import fliprate as fr
+    print("Error: fliprate is not installed in the current environment.", file=sys.stderr)
+    print("Install it with: pip install .  or  pip install -e .", file=sys.stderr)
+    sys.exit(1)
 
 # ─── Universal async runner (Colab / Jupyter / Terminal) ──────────────────────
 def run_coro(coro):
@@ -547,6 +553,7 @@ try:
         try:
             fr.validate_text(bad_input)
             print(f"    {RED}✗ Should have raised for {desc}{RESET}")
+            raise AssertionError(f"validate_text unexpectedly accepted invalid input: {desc}")
         except (TypeError, ValueError) as e:
             show_input(desc, repr(bad_input))
             show_output("raises", f'{type(e).__name__}: "{e}"')
@@ -582,12 +589,13 @@ try:
     show_output("type", type(rules).__name__)
     show_output("total_groups", len(rules.groups))
     show_output("total_negations", len(rules.negations))
-    show_output("sample_groups", dict(list(rules.groups.items())[:3]))
+    show_output("sample_groups", [list(g) for g in rules.groups[:3]])
     ok("DEFAULT_RULES loaded with comprehensive spelling groups")
 
     # 10b. load_rules
-    show_function("load_rules", "Load the default rule set explicitly")
-    loaded = fr.load_rules()
+    show_function("load_rules", "Load a language-specific rule set explicitly")
+    loaded = fr.load_rules("hindi")
+    show_input("language", '"hindi"')
     show_output("type", type(loaded).__name__)
     show_output("groups_count", len(loaded.groups))
     ok("load_rules returns a RuleSet")
@@ -624,11 +632,12 @@ try:
 
     # 10f. add_custom_rule
     show_function("add_custom_rule", "Add your own spelling rule to the rule set")
-    custom_rules = fr.add_custom_rule("shukriya", ["shukria", "sukriya", "shukriyaa"])
-    show_input("canonical", '"shukriya"')
+    custom_rules = fr.add_custom_rule(["shukria", "sukriya", "shukriyaa"], canonical="shukriya")
     show_input("variants", '["shukria", "sukriya", "shukriyaa"]')
+    show_input("canonical", '"shukriya"')
     show_output("type", type(custom_rules).__name__)
-    show_output("new_group", custom_rules.groups.get(custom_rules.group_of("shukria")))
+    g_idx = custom_rules.group_of("shukria")
+    show_output("new_group", custom_rules.groups[g_idx] if g_idx is not None else None)
     ok("add_custom_rule creates a custom RuleSet with new group")
 
     # 10g. Constants
@@ -846,9 +855,9 @@ try:
 
     # 14c. with_retries
     show_function("with_retries", "Add retry logic to any model adapter (for unreliable APIs)")
-    robust = fr.with_retries(adapter, max_retries=3)
+    robust = fr.with_retries(adapter, retries=3)
     show_input("adapter", "CallableAdapter(dummy_sentiment_model)")
-    show_input("max_retries", "3")
+    show_input("retries", "3")
     show_output("predict", f'"{robust("acha product")}"')
     ok("with_retries adds fault tolerance")
 
@@ -887,17 +896,17 @@ try:
     # 15a. InMemoryJobStore
     show_function("InMemoryJobStore", "In-memory job storage for tracking evaluation jobs")
     store = fr.InMemoryJobStore()
-    job_id = store.create({"model": "test", "status": "running"})
+    job_id = store.put("eval", {"model": "test", "status": "running"})
     show_input("job_data", '{"model": "test", "status": "running"}')
     show_output("job_id", f'"{job_id}"')
-    fetched = store.get(job_id)
+    fetched = store.pop(job_id)
     show_output("fetched_job", fetched)
     ok("InMemoryJobStore creates and retrieves jobs")
 
     # 15b. InMemoryRateLimiter
     show_function("InMemoryRateLimiter", "In-memory rate limiter for API endpoints")
-    limiter = fr.InMemoryRateLimiter(max_requests=5, window_seconds=60)
-    show_input("config", "max_requests=5, window_seconds=60")
+    limiter = fr.InMemoryRateLimiter(limit_per_min=5)
+    show_input("config", "limit_per_min=5")
     allowed = limiter.allow("user_123")
     show_output("allow('user_123')", allowed)
     ok("InMemoryRateLimiter manages request rates")
@@ -1138,6 +1147,7 @@ if errors:
     print(f"\n  {RED}Failed Sections:{RESET}")
     for name, msg in errors:
         print(f"    ✗ {name}: {msg}")
+    sys.exit(1)
 else:
     print(f"  {GREEN}{BOLD}Status:{RESET}       {GREEN}ALL SECTIONS PASSED ✓{RESET}")
 
