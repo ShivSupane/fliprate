@@ -1,10 +1,14 @@
 # Changelog
  
 ## 0.5.0
-- **Exhaustive Test Coverage**: Added comprehensive test suite (`tests/test_complete_coverage.py`) covering all 18 modules and bringing test count to 354 automated tests with 100% pass rate.
+- **Canonical Decision Type**: Added unified `Decision` dataclass for single-message gate decisions with `.is_safe`, `.should_route_to_human`, mapping access, and JSON serialization. `GateResult` remains fully supported as a backwards-compatible alias.
+- **Model-Bound FlipRate Engine**: Added `fr.FlipRate(model, ...)` configuration object for binding a model, stability thresholds, variant count, and rules into a single reusable object.
+- **CI Regression Assertion Helper**: Added `fr.assert_stable(model, dataset, ...)` supporting explicit requirements (`max_flip_rate`, `min_accuracy`, `max_accuracy_drop`) with actionable error messages.
+- **CLI Regression Gate**: Extended `fliprate test` with `--max-flip-rate`, `--min-accuracy`, and `--max-accuracy-drop` flags. Exits `0` on success, `1` on threshold breach, and `2` on data/model error. Stores CI results in report metadata when `--save` is used.
+- **Exhaustive Test Coverage**: Added contract test suite (`tests/test_v05_contracts.py`) bringing automated test count to 365 tests with 100% pass rate.
 - **Benchmarking CLI**: Added `fliprate benchmark --models <spec> --data <csv> --out <path>` supporting standalone HTML scorecards and Markdown reports.
 - **Explainability CLI**: Added `fliprate explain --model <spec> --text <text>` for interactive diagnostic debugging.
-- **Developer Experience**: Added dict subscriptability and `to_dict()` on `QuickCheckResult`, default initialization on `BenchmarkSuite`, and flexible argument ordering in `explain_gate_decision` and `show_why_it_flipped`.
+- **Showcase & Validation Hardening**: Eliminated silent `pip install` in showcase scripts, added UTF-8 console support, and removed false-pass risks in validation error checks.
 
 ## 0.4.0
 - **Devanagari & Script-Aware Gating**: Native support for Devanagari (Hindi, Marathi, Nepali) and mixed-script text. Added `detect_script(text)` returning `"latin"`, `"devanagari"`, `"mixed"`, or `"other"`.

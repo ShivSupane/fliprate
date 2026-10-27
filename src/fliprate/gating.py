@@ -14,7 +14,8 @@ PASS, TRANSFORM, REVIEW = "PASS", "TRANSFORM", "REVIEW"
 
 
 @dataclass
-class GateResult:
+class Decision:
+    """Canonical result of single-message gating."""
     decision: str
     reason: str
     original_text: str
@@ -25,6 +26,16 @@ class GateResult:
     n_variants: int
     warnings: List[str] = field(default_factory=list)
     flipped_variants: List[str] = field(default_factory=list)
+
+    @property
+    def is_safe(self) -> bool:
+        """True if prediction survives safe variants (decision is PASS or TRANSFORM)."""
+        return self.decision in (PASS, TRANSFORM)
+
+    @property
+    def should_route_to_human(self) -> bool:
+        """True if prediction instability or high risk requires human review."""
+        return self.decision == REVIEW
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -38,10 +49,21 @@ class GateResult:
             "n_variants": self.n_variants,
             "warnings": list(self.warnings),
             "flipped_variants": list(self.flipped_variants),
+            "is_safe": self.is_safe,
+            "should_route_to_human": self.should_route_to_human,
         }
 
     def to_json(self, indent: Optional[int] = None) -> str:
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
+
+    def __getitem__(self, item: str) -> Any:
+        return self.to_dict()[item]
+
+    def __bool__(self) -> bool:
+        return self.is_safe
+
+
+GateResult = Decision
 
 
 def _is_emoji_or_modifier(c: str) -> bool:

@@ -31,7 +31,8 @@ from .evaluation import (
     read_csv_text,
     test,
 )
-from .gating import GateResult, agate, detect_script, gate, iter_gate
+from .engine import FlipRate, assert_stable
+from .gating import Decision, GateResult, agate, detect_script, gate, iter_gate
 from .models import Predictor, ProtectedModel, protect
 from .normalization import NormalizeResult, normalize
 from .perturbation import KINDS, Variant, perturb
@@ -149,6 +150,8 @@ __author__ = "Shiv Supane"
 
 __all__ = [
     # ── Happy-Path & Beginner API ────────────────────────────────────────────
+    "FlipRate",
+    "assert_stable",
     "quick_check",
     "QuickCheckResult",
     "check_model",
@@ -183,6 +186,7 @@ __all__ = [
     "agate",
     "detect_script",
     "Report",
+    "Decision",
     "GateResult",
     "paired_difference",
 

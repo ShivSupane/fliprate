@@ -63,6 +63,9 @@ def main(argv=None) -> int:
     st.add_argument("--seed", type=int, default=0)
     st.add_argument("--protect", action="store_true", help="put normalization in front of the model")
     st.add_argument("--save", default=None, help="write the full report (JSON) here")
+    st.add_argument("--max-flip-rate", type=float, default=None, help="CI threshold: maximum allowable flip rate (e.g. 0.05); exit 1 if exceeded")
+    st.add_argument("--min-accuracy", type=float, default=None, help="CI threshold: minimum allowable variant accuracy (e.g. 0.80); exit 1 if below")
+    st.add_argument("--max-accuracy-drop", type=float, default=None, help="CI threshold: maximum allowable accuracy drop (e.g. 0.05); exit 1 if exceeded")
 
     srep = add("report", "evaluate model on data and write a Markdown report", model=True)
     srep.add_argument("--data", required=True, help="CSV with columns text,label")
@@ -124,10 +127,14 @@ def main(argv=None) -> int:
         for w in r.warnings:
             print("warning:", w)
     elif args.cmd in ("demo", "test"):
-        model = _load_model(args.model)
-        if args.cmd == "test" and args.protect:
-            model = protect(model, rules=rules)
-        rows = sample_dataset() if args.cmd == "demo" else load_dataset(args.data)
+        try:
+            model = _load_model(args.model)
+            if args.cmd == "test" and args.protect:
+                model = protect(model, rules=rules)
+            rows = sample_dataset() if args.cmd == "demo" else load_dataset(args.data)
+        except Exception as exc:
+            print(f"Error loading model or dataset: {type(exc).__name__}: {exc}", file=sys.stderr)
+            return 2
 
         def show(ev):
             if ev["stage"] == "progress" and ev["done"] % 25 == 0:
@@ -135,9 +142,47 @@ def main(argv=None) -> int:
 
         report = test(model, rows, n_variants=args.n, seed=getattr(args, "seed", 0), on_event=show, rules=rules)
         print(report.summary())
+
+        # CI Threshold evaluation
+        violations = []
+        applied_thresholds = {}
+        max_fr = getattr(args, "max_flip_rate", None)
+        min_acc = getattr(args, "min_accuracy", None)
+        max_drop = getattr(args, "max_accuracy_drop", None)
+
+        if max_fr is not None:
+            applied_thresholds["max_flip_rate"] = max_fr
+            if report.flip_rate > max_fr:
+                violations.append(f"flip rate {report.flip_rate:.1%} exceeds threshold {max_fr:.1%}")
+
+        if min_acc is not None:
+            applied_thresholds["min_accuracy"] = min_acc
+            if report.accuracy_variants < min_acc:
+                violations.append(f"accuracy on variants {report.accuracy_variants:.1%} below threshold {min_acc:.1%}")
+
+        if max_drop is not None:
+            applied_thresholds["max_accuracy_drop"] = max_drop
+            if report.accuracy_drop > max_drop:
+                violations.append(f"accuracy drop {report.accuracy_drop:+.1%} exceeds threshold {max_drop:.1%}")
+
+        if applied_thresholds:
+            report.metadata["ci_thresholds"] = applied_thresholds
+            report.metadata["ci_gate_passed"] = (len(violations) == 0)
+            report.metadata["ci_violations"] = violations
+
         if getattr(args, "save", None):
             report.save(args.save)
             print(f"saved: {args.save}")
+
+        if violations:
+            print("\n[CI GATE FAILED] Threshold violations:", file=sys.stderr)
+            for v in violations:
+                print(f"  ✗ {v}", file=sys.stderr)
+            return 1
+
+        if applied_thresholds:
+            print(f"\n[CI GATE PASSED] All {len(applied_thresholds)} threshold checks passed.", file=sys.stderr)
+        return 0
     elif args.cmd == "report":
         model = _load_model(args.model)
         if args.protect:
