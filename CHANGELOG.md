@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.9.0 — Evidence, Documentation, Privacy and Release Readiness
+- **Real Benchmark Protocol (`audit_dataset` & `run_benchmark_protocol`)**:
+  - Added `audit_dataset(dataset, train_dataset=None, rules=None)` to programmatically audit evaluation datasets: class balance, script distribution (Latin, Devanagari, mixed), exact/near-duplicate pairs, label conflicts, and train/test leakage detection — all in one call.
+  - Added `run_benchmark_protocol(models, dataset, ...)` convenience helper: runs a full reproducible comparison (raw vs protected) with `audit=True` by default, 95% Wilson confidence intervals, per-kind flip-rate breakdown, runtime/call accounting, and leakage reporting.
+  - Both functions exported from top-level `fliprate` and in `__all__`.
+- **CLI Hardening & Exit Codes**:
+  - `fliprate benchmark` now accepts `--train-data` flag to supply a training CSV for automatic leakage auditing during benchmarks.
+  - `fliprate report` and `fliprate benchmark` now return `2` on model/data loading errors (config or data errors) vs `1` for threshold violations — consistent with documented exit codes.
+- **Security Policy (`SECURITY.md`)**:
+  - Added `SECURITY.md` with supported versions table (0.6.x–0.9.x), private vulnerability disclosure process (email `shiv.supane777@gmail.com`), response timeline (48h acknowledgement, 5-day triage), and `Privacy & Security Best Practices` for FlipRate deployments.
+- **Privacy Preservation Verified**:
+  - Confirmed `explain_report_flips(report, opt_in_examples=False)` (the default) never surfaces raw original or variant texts in report summaries.
+  - New regression test `test_privacy_preservation_by_default` verifies text containing sensitive tokens does not appear in report summaries unless `opt_in_examples=True` is explicitly set.
+- **Packaging & Type Stubs**:
+  - `py.typed` marker continues to be shipped in the package. Zero new required runtime dependencies.
+  - Version bumped to `0.9.0` in both `pyproject.toml` and `src/fliprate/__init__.py`.
+- **Version-Agnostic Test Hygiene**:
+  - `test_report_version_is_v080` in `test_v08_governance_and_diagnosis.py` updated to compare `rep.metadata["fliprate_version"]` against `fliprate.__version__` rather than a hardcoded string — stays correct across future releases.
+
 ## 0.8.0 — Better Rule Governance and Diagnosis
 - **Protected Terms (`protected_terms`)**:
   - Allow developers and production pipelines to specify words, phrases, brand names, product titles, account codes, or domain terms that normalization and perturbation must leave unchanged byte-for-byte.

@@ -2,6 +2,7 @@
 
 **Does your NLP model change its answer when the same message is typed differently?**
 
+[![PyPI](https://img.shields.io/badge/pypi-0.9.0-blue)](https://pypi.org/project/fliprate/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Tests](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml/badge.svg)](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml)
@@ -226,15 +227,65 @@ fliprate perturb "delivery nahi aaya"
 fliprate normalize "mala product avadlaaa nhi"
 
 # Benchmarking & Reporting
-fliprate benchmark --models models.json --data mydata.csv --out scorecard.html
+fliprate benchmark --models models.json --data mydata.csv --train-data traindata.csv --out scorecard.html
 fliprate report --data mydata.csv --model "my_pkg:my_model" --out report.md
 
 # Testing & Dataset Tools
-fliprate test --data mydata.csv -n 10 --protect --save report.json
+fliprate test --data mydata.csv -n 10 --protect --save report.json --max-flip-rate 0.05
 fliprate check-data testdata.csv --against traindata.csv
 fliprate split mydata.csv --out-dir data/
 fliprate mine mydata.csv --out candidates.csv
 ```
+
+**CLI exit codes:**
+
+| Code | Meaning |
+|---|---|
+| `0` | All checks passed |
+| `1` | Threshold violation (flip rate / accuracy exceeded) |
+| `2` | Configuration or data error (bad file, model not found) |
+
+---
+
+### Dataset Audit & Evidence Protocol (v0.9.0)
+
+Before drawing conclusions from benchmark results, audit your evaluation data for quality issues:
+
+```python
+import fliprate as fr
+
+# Audit evaluation data for hidden quality issues
+audit = fr.audit_dataset(
+    "data/test.csv",
+    train_dataset="data/train.csv",    # optional: also checks leakage
+)
+print(audit["n_messages"])             # total messages
+print(audit["class_distribution"])    # label distribution
+print(audit["script_distribution"])   # latin / devanagari / mixed counts
+print(audit["exact_duplicates"])      # exact duplicate pairs
+print(audit["near_duplicates"])       # near-duplicate spelling variant pairs
+print(audit["label_conflicts"])       # conflicting-label groups
+print(audit["leakage_detected"])      # True if train/test overlap found
+
+# Full reproducible benchmark with automatic audit, raw vs protected
+suite = fr.run_benchmark_protocol(
+    models={"tfidf-word": model_a, "transformer": model_b},
+    dataset="data/test.csv",
+    train_dataset="data/train.csv",
+    baseline="tfidf-word",
+    n_variants=5,
+)
+print(suite.summary())
+suite.save("results/dashboard.html")
+```
+
+---
+
+## Security & Privacy
+
+- Report vulnerabilities privately to `shiv.supane777@gmail.com` — see [`SECURITY.md`](SECURITY.md) for the response timeline and supported versions.
+- Report summaries **never** include raw input text by default. To opt-in to examples in explainability output: `fr.explain_report_flips(report, opt_in_examples=True)`.
+- Core FlipRate has **zero required runtime dependencies** and operates entirely in-process without network calls.
 
 ---
 

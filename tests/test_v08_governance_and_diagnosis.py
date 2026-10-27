@@ -281,7 +281,8 @@ class TestScriptAbstentionAndSchema(unittest.TestCase):
         dummy_model = lambda t: "pos"
         dataset = [("product accha hai", "pos"), ("bahut bura", "neg")]
         rep = test(dummy_model, dataset, n_variants=2, seed=0)
-        self.assertEqual(rep.metadata["fliprate_version"], "0.8.0")
+        import fliprate
+        self.assertEqual(rep.metadata["fliprate_version"], fliprate.__version__)
         self.assertEqual(rep.schema_version, "0.6.0")
         self.assertIn("protected_terms", rep.metadata)
 

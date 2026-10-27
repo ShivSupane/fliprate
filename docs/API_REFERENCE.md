@@ -1,6 +1,6 @@
 # FlipRate — API Reference
 
-**Author: Shiv Supane** | Version 0.4.0
+**Author: Shiv Supane** | Version 0.9.0
 
 All public functions are available as `fliprate.<name>` after `import fliprate as fr`.
 
@@ -504,4 +504,87 @@ Abstract base class `fr.ModelAdapter` with `.predict(text)`, `.predict_batch(tex
 - `fr.from_sklearn(pipeline)`: Wraps scikit-learn models.
 - `fr.HFTextClassifier(...)`: Hugging Face pipelines with batching.
 - `fr.LLMClassifier(...)` / `fr.llm_classifier(...)`: LLM APIs with strict label extraction.
+
+---
+
+## Evidence & Benchmark Protocol (v0.9.0)
+
+### `fr.audit_dataset(dataset, train_dataset=None, rules=None)`
+
+Audit evaluation and (optionally) training datasets for quality issues before reporting numbers.
+
+```python
+audit = fr.audit_dataset("data/test.csv", train_dataset="data/train.csv")
+audit["n_messages"]           # int — total evaluation rows
+audit["class_distribution"]  # dict — label → count
+audit["script_distribution"] # dict — script type (latin / devanagari / mixed) → count
+audit["exact_duplicates"]     # int — exact duplicate row pairs
+audit["near_duplicates"]      # int — near-duplicate (spelling variant) row pairs
+audit["label_conflicts"]      # int — groups where near-duplicates carry conflicting labels
+audit["train_test_exact_leaks"] # int — exact-match rows found in both train and test
+audit["train_test_near_leaks"]  # int — near-duplicate leakage rows between train and test
+audit["leakage_detected"]     # bool — True if any leakage was found
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `dataset` | `str / Path / list` | required | Path to CSV or list of `(text, label)` tuples |
+| `train_dataset` | `str / Path / list / None` | `None` | Training set for leakage detection |
+| `rules` | `RuleSet / None` | `DEFAULT_RULES` | Rules used for near-duplicate fingerprinting |
+
+---
+
+### `fr.run_benchmark_protocol(models, dataset, train_dataset=None, baseline=None, with_protection=True, protected_terms=None, **kwargs)`
+
+Execute a rigorous, reproducible benchmark protocol on held-out natural text. Automatically audits the dataset, compares all models raw and protected, and returns a `BenchmarkSuite`.
+
+```python
+suite = fr.run_benchmark_protocol(
+    models={"word_tfidf": model_a, "char_tfidf": model_b},
+    dataset="data/test.csv",
+    train_dataset="data/train.csv",
+    baseline="word_tfidf",
+    n_variants=5,
+    seed=0,
+)
+
+suite.summary()          # terminal-friendly scorecard
+suite.to_markdown()      # markdown table
+suite.to_html()          # standalone HTML dashboard
+suite.save("out.html")   # write to file
+suite.to_dict()          # serializable dict
+suite.dataset_audit      # dict — output of audit_dataset()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `models` | `dict[str, callable]` | required | Name → model function mapping |
+| `dataset` | `str / Path / list` | required | Evaluation dataset |
+| `train_dataset` | `str / Path / list / None` | `None` | Training set for leakage audit |
+| `baseline` | `str / None` | `None` | Name of the baseline model |
+| `with_protection` | `bool` | `True` | Also evaluate each model with normalization protection |
+| `protected_terms` | `list[str] / None` | `None` | Terms to preserve unchanged during normalization |
+| `**kwargs` | — | — | Forwarded to `benchmark()` (e.g. `n_variants`, `seed`, `rules`) |
+
+---
+
+## CLI Exit Codes
+
+| Exit Code | Meaning |
+|---|---|
+| `0` | All checks passed |
+| `1` | Threshold violated — flip rate, accuracy drop, or accuracy exceeded the configured limits |
+| `2` | Configuration or data error — model not loadable, data file not found, or invalid format |
+
+---
+
+## Security & Privacy
+
+- **Vulnerability disclosure:** `shiv.supane777@gmail.com` (see `SECURITY.md`)
+- **Privacy defaults:** `explain_report_flips(report, opt_in_examples=False)` never includes raw text in output.
+- **No runtime dependencies:** Core functions run entirely in-process without external network calls.
 

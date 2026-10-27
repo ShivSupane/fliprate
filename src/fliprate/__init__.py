@@ -96,8 +96,10 @@ from .adapters import (
 from .benchmark import (
     BenchmarkSuite,
     ModelBenchmarkScore,
+    audit_dataset,
     benchmark,
     compare_models,
+    run_benchmark_protocol,
 )
 
 # ── Experiment runner ────────────────────────────────────────────────────────
@@ -163,7 +165,7 @@ def learn_rules_from_texts(texts, **kwargs):
     return mine_variants(texts, **kwargs)
 
 
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 __author__ = "Shiv Supane"
 
 __all__ = [
@@ -274,6 +276,8 @@ __all__ = [
     "compare_models",
     "BenchmarkSuite",
     "ModelBenchmarkScore",
+    "audit_dataset",
+    "run_benchmark_protocol",
 
     # ── Experiment ───────────────────────────────────────────────────────────
     "run_experiment",

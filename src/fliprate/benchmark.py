@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from collections import Counter
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from .dataset import load_dataset
+from .dataset import check_leakage, find_near_duplicates, load_dataset
 from .evaluation import Report, test
+from .gating import detect_script
 from .models import protect
+from .rules import DEFAULT_RULES
 
 
 @dataclass
@@ -30,6 +33,39 @@ class ModelBenchmarkScore:
     flip_rate_reduction: Optional[float] = None
     is_baseline: bool = False
     score_vs_baseline: Optional[float] = None  # flip rate difference vs baseline
+    by_kind: Dict[str, Dict[str, float]] = field(default_factory=dict)
+    model_calls: int = 0
+    seconds: float = 0.0
+
+
+def audit_dataset(
+    dataset: Any,
+    train_dataset: Optional[Any] = None,
+    rules: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Audit evaluation and training datasets for duplicates, leakage, and script distribution."""
+    eval_rows = load_dataset(dataset)
+    labels = [l for _, l in eval_rows]
+    label_counts = Counter(labels)
+
+    dup_report = find_near_duplicates(eval_rows, rules=rules)
+    scripts = Counter(detect_script(t) for t, _ in eval_rows)
+
+    leak_report = None
+    if train_dataset is not None:
+        leak_report = check_leakage(train_dataset, eval_rows, rules=rules)
+
+    return {
+        "n_messages": len(eval_rows),
+        "class_distribution": dict(label_counts),
+        "script_distribution": dict(scripts),
+        "exact_duplicates": len(dup_report.exact_duplicates),
+        "near_duplicates": len(dup_report.near_duplicates),
+        "label_conflicts": len(dup_report.conflicting_pairs),
+        "train_test_exact_leaks": len(leak_report.exact_leaks) if leak_report else 0,
+        "train_test_near_leaks": len(leak_report.near_leaks) if leak_report else 0,
+        "leakage_detected": leak_report.has_leakage if leak_report else False,
+    }
 
 
 @dataclass
@@ -38,6 +74,7 @@ class BenchmarkSuite:
     scores: Dict[str, ModelBenchmarkScore] = field(default_factory=dict)
     baseline_name: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+    dataset_audit: Dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         lines = [
@@ -135,6 +172,7 @@ class BenchmarkSuite:
         return {
             "baseline": self.baseline_name,
             "metadata": self.metadata,
+            "dataset_audit": self.dataset_audit,
             "scores": {
                 name: {
                     "accuracy_original": s.accuracy_original,
@@ -148,6 +186,9 @@ class BenchmarkSuite:
                     "flip_rate_reduction": s.flip_rate_reduction,
                     "is_baseline": s.is_baseline,
                     "score_vs_baseline": s.score_vs_baseline,
+                    "by_kind": s.by_kind,
+                    "model_calls": s.model_calls,
+                    "seconds": s.seconds,
                 }
                 for name, s in self.scores.items()
             }
@@ -166,11 +207,21 @@ class BenchmarkSuite:
         return out_path
 
 
-def benchmark(models: Dict[str, Any], dataset: Any, baseline: Optional[str] = None,
-              with_protection: bool = True, n_variants: int = 5, bootstrap: int = 200,
-              **kwargs) -> BenchmarkSuite:
+def benchmark(
+    models: Dict[str, Any],
+    dataset: Any,
+    baseline: Optional[str] = None,
+    with_protection: bool = True,
+    n_variants: int = 5,
+    bootstrap: int = 200,
+    train_dataset: Optional[Any] = None,
+    audit: bool = True,
+    protected_terms: Optional[Sequence[str]] = None,
+    **kwargs: Any,
+) -> BenchmarkSuite:
     """Benchmark multiple models side-by-side on a test dataset."""
     rows = load_dataset(dataset)
+    audit_data = audit_dataset(rows, train_dataset=train_dataset) if audit else {}
     scores: Dict[str, ModelBenchmarkScore] = {}
 
     baseline_model_name = baseline if (baseline and baseline in models) else (list(models.keys())[0] if models else None)
@@ -178,7 +229,14 @@ def benchmark(models: Dict[str, Any], dataset: Any, baseline: Optional[str] = No
 
     for name, model in models.items():
         # Evaluate raw model
-        rep = test(model, rows, n_variants=n_variants, bootstrap=bootstrap, **kwargs)
+        rep = test(
+            model,
+            rows,
+            n_variants=n_variants,
+            bootstrap=bootstrap,
+            protected_terms=protected_terms,
+            **kwargs,
+        )
 
         prot_flip: Optional[float] = None
         prot_acc: Optional[float] = None
@@ -186,7 +244,14 @@ def benchmark(models: Dict[str, Any], dataset: Any, baseline: Optional[str] = No
 
         if with_protection:
             safe_model = protect(model)
-            rep_prot = test(safe_model, rows, n_variants=n_variants, bootstrap=bootstrap, **kwargs)
+            rep_prot = test(
+                safe_model,
+                rows,
+                n_variants=n_variants,
+                bootstrap=bootstrap,
+                protected_terms=protected_terms,
+                **kwargs,
+            )
             prot_flip = rep_prot.flip_rate
             prot_acc = rep_prot.accuracy_variants
             reduction = rep.flip_rate - rep_prot.flip_rate
@@ -208,6 +273,9 @@ def benchmark(models: Dict[str, Any], dataset: Any, baseline: Optional[str] = No
             flip_rate_reduction=reduction,
             is_baseline=is_base,
             score_vs_baseline=None,
+            by_kind=rep.by_kind,
+            model_calls=rep.metadata.get("model_calls", 0),
+            seconds=rep.metadata.get("seconds", 0.0),
         )
 
     # Compute score vs baseline
@@ -219,6 +287,33 @@ def benchmark(models: Dict[str, Any], dataset: Any, baseline: Optional[str] = No
         scores=scores,
         baseline_name=baseline_model_name,
         metadata={"n_models": len(models), "n_messages": len(rows), "n_variants": n_variants},
+        dataset_audit=audit_data,
+    )
+
+
+def run_benchmark_protocol(
+    models: Dict[str, Any],
+    dataset: Any,
+    train_dataset: Optional[Any] = None,
+    baseline: Optional[str] = None,
+    with_protection: bool = True,
+    protected_terms: Optional[Sequence[str]] = None,
+    **kwargs: Any,
+) -> BenchmarkSuite:
+    """Execute a rigorous, reproducible benchmark protocol on held-out natural text.
+
+    Audits train/test leakage, near duplicates, and script distribution, and compares
+    models raw vs protected with 95% Wilson confidence intervals.
+    """
+    return benchmark(
+        models=models,
+        dataset=dataset,
+        baseline=baseline,
+        with_protection=with_protection,
+        train_dataset=train_dataset,
+        audit=True,
+        protected_terms=protected_terms,
+        **kwargs,
     )
 
 
