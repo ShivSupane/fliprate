@@ -7,21 +7,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Python 3.9 is not available on ubuntu-latest (26.04);
+          # Python 3.9 is not available on ubuntu-latest (24.04);
           # pin it to ubuntu-22.04 where it is still supported.
           - python-version: "3.9"
             os: ubuntu-22.04
           - python-version: "3.10"
-            os: ubuntu-latest
+            os: ubuntu-24.04
           - python-version: "3.11"
-            os: ubuntu-latest
+            os: ubuntu-24.04
           - python-version: "3.12"
-            os: ubuntu-latest
+            os: ubuntu-24.04
           - python-version: "3.13"
-            os: ubuntu-latest
+            os: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev,api]"
