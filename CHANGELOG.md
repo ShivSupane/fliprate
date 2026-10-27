@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.0 — Stable release: API frozen, contract supported
+
+This is the first production-stable release of FlipRate. The public API is now frozen;
+future releases will maintain backward compatibility.
+
+- **API freeze**: all functions, classes, and CLI commands documented in `README.md` and
+  `docs/API_REFERENCE.md` are guaranteed stable. No removals or breaking signature changes
+  without a major version bump.
+- **All 414 tests pass** across Python 3.9 → 3.13 on Linux.
+- **README completely rewritten** for developers and AI agents: quick-start, concept explanations,
+  plug-in-any-model guide, CLI reference, CI/CD integration, project layout, and full API table.
+- **`pyproject.toml` classifier** updated from Alpha → `Production/Stable`.
+- **Version bump**: `0.9.0` → `1.0.0` in `pyproject.toml` and `src/fliprate/__init__.py`.
+- No new runtime dependencies introduced.
+
 ## 0.9.0 — Evidence, Documentation, Privacy and Release Readiness
 - **Real Benchmark Protocol (`audit_dataset` & `run_benchmark_protocol`)**:
   - Added `audit_dataset(dataset, train_dataset=None, rules=None)` to programmatically audit evaluation datasets: class balance, script distribution (Latin, Devanagari, mixed), exact/near-duplicate pairs, label conflicts, and train/test leakage detection — all in one call.

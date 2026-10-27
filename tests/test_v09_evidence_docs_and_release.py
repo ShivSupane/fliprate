@@ -13,12 +13,19 @@ from fliprate.explain import explain_report_flips
 
 
 def test_v09_version_and_pyproject():
-    """Verify version 0.9.0 consistency."""
-    assert fr.__version__ == "0.9.0"
+    """Verify version consistency between __init__.py and pyproject.toml."""
+    import re
+    # Version must be a valid semver-ish string
+    assert re.match(r"^\d+\.\d+\.\d+", fr.__version__), (
+        f"__version__ '{fr.__version__}' is not a valid version string"
+    )
     pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
     assert pyproject_path.exists()
     content = pyproject_path.read_text(encoding="utf-8")
-    assert 'version = "0.9.0"' in content
+    # pyproject.toml version must match __version__
+    assert f'version = "{fr.__version__}"' in content, (
+        f"pyproject.toml version does not match fliprate.__version__ ({fr.__version__})"
+    )
     # Zero required runtime dependencies
     assert "dependencies = []" in content
 

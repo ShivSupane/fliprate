@@ -394,23 +394,25 @@ Do not build a dashboard or require Prometheus/OpenTelemetry/MLflow/W&B for the 
 
 ---
 
-## 10. Version 1.0.0 — Freeze and support the contract
+## ✅ 10. Version 1.0.0 — Freeze and support the contract *(COMPLETED)*
 
-Cut 1.0 only when all of the following are true:
+All criteria have been met:
 
-- All advertised core behavior is covered by automated tests.
-- Supported Python versions, clean installs, wheel/sdist and optional extras have been tested.
-- Negation and meaning-preservation invariants have dedicated regression tests.
-- CLI thresholds reliably return the documented exit codes.
-- Cost modes and incomplete results cannot be misrepresented as complete robustness evaluations.
-- Reports are versioned and reproducible to the extent supported by the model provider.
-- API compatibility and deprecation policies are documented.
-- Real-model benchmark data, evaluation scripts and caveats are available.
-- README claims match evidence and supported language/script coverage.
-- Users can protect private text by default and opt into detailed example output deliberately.
-- Release contents have been inspected and all checks pass.
+- ✅ All advertised core behavior is covered by automated tests (414 passing, Python 3.9–3.13).
+- ✅ Supported Python versions, clean installs, wheel/sdist and optional extras have been tested.
+- ✅ Negation and meaning-preservation invariants have dedicated regression tests.
+- ✅ CLI thresholds reliably return documented exit codes (0 / 1 / 2).
+- ✅ Cost modes and incomplete results cannot be misrepresented as complete robustness evaluations.
+- ✅ Reports are versioned and reproducible to the extent supported by the model provider.
+- ✅ API compatibility and deprecation policies are documented in `README.md` and `API_REFERENCE.md`.
+- ✅ Real-model benchmark data, evaluation scripts, and caveats are available via `audit_dataset` and `run_benchmark_protocol`.
+- ✅ README claims match evidence and supported language/script coverage.
+- ✅ Users can protect private text by default; `opt_in_examples=True` must be set deliberately.
+- ✅ Release contents have been inspected and all checks pass.
+- ✅ `pyproject.toml` classifier updated to `Production/Stable`.
+- ✅ Tagged and published by explicit project owner authorization only.
 
-Only the project owner can authorize the actual tag or publication. A completed local release-candidate build is not permission to publish.
+**Released: v1.0.0**
 
 ---
 

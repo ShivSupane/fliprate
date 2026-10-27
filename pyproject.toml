@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fliprate"
-version = "0.9.0"
+version = "1.0.0"
 description = "Measure and reduce how often an NLP model changes its answer on messy romanized Hindi/Marathi and other Indian-language text."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Shiv Supane", email = "shiv.supane777@gmail.com" }]
 keywords = ["nlp", "robustness", "hinglish", "marathi", "indic", "romanized", "testing", "transliteration", "code-mixed"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
