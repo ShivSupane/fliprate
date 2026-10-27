@@ -1,5 +1,22 @@
 # Changelog
- 
+
+## 0.6.0 — Cost-Aware Evaluation and Measured Performance
+- **Three Explicit Modes (`fast`, `balanced`, `thorough`)**:
+  - `fast`: Executes standard model inference on original inputs without generating or predicting safe variants (`n_variants_evaluated = 0`). Explicitly states that robustness was not evaluated, avoiding hidden compute costs.
+  - `balanced`: Evaluates a deterministic, seeded sample of reviewed transformations (`sampling_policy="deterministic_sample"`), providing cost-effective regression testing.
+  - `thorough`: Full robustness evaluation across all configured transformations and variants.
+- **Sound Early Stopping & Mathematical Bound Checks**:
+  - In `gate(..., early_stop=True)`: Halts immediately upon observing the first prediction flip or when threshold achievement is mathematically impossible. Marks `evaluation_complete=False` and `stop_reason="first_flip_detected"` / `"threshold_unachievable"`, preventing early-stopped runs from being misrepresented as exact flip rates.
+  - In `test(..., early_stop=True)`: Halts dataset evaluation early if threshold breach is mathematically guaranteed.
+- **Granular Cost & Inference Accounting in `Predictor`**:
+  - Distinguishes individual input evaluations (`calls`) from batch/HTTP requests (`request_count`).
+  - Added cache tracking: `total_lookups`, `cache_hits`, and `cache_hit_rate` property.
+  - Added cache invalidation and counter reset: `invalidate_cache()`, `reset_stats()`.
+- **Reproducible Report Schema (`schema_version = "0.6.0"`)**:
+  - Expanded `Report` and `Report.to_dict()` with `schema_version`, `mode`, `evaluation_complete`, `n_variants_requested`, `n_variants_evaluated`, `stop_reason`, and detailed performance metadata (`model_calls`, `request_count`, `cache_hits`, `cache_hit_rate`, `seconds`).
+- **CLI Options**: Added `--mode {fast,balanced,thorough}` and `--early-stop` flags to `fliprate test` and `fliprate gate`.
+- **Engine & CI Assertion Helpers**: `fr.FlipRate` and `fr.assert_stable` now seamlessly support `mode` and `early_stop`.
+
 ## 0.5.0
 - **Canonical Decision Type**: Added unified `Decision` dataclass for single-message gate decisions with `.is_safe`, `.should_route_to_human`, mapping access, and JSON serialization. `GateResult` remains fully supported as a backwards-compatible alias.
 - **Model-Bound FlipRate Engine**: Added `fr.FlipRate(model, ...)` configuration object for binding a model, stability thresholds, variant count, and rules into a single reusable object.

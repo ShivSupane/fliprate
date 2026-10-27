@@ -23,6 +23,8 @@ def assert_stable(
     n_variants: int = 5,
     seed: int = 0,
     rules: Optional[Any] = None,
+    mode: str = "thorough",
+    early_stop: bool = False,
     **kwargs: Any,
 ) -> Report:
     """Evaluate model robustness on a dataset and assert quality requirements pass.
@@ -34,7 +36,25 @@ def assert_stable(
     Example:
         fr.assert_stable(my_model, "data/test.csv", max_flip_rate=0.05, min_accuracy=0.80)
     """
-    report = test(model, dataset, n_variants=n_variants, seed=seed, rules=rules, **kwargs)
+    thresholds = {}
+    if max_flip_rate is not None:
+        thresholds["max_flip_rate"] = max_flip_rate
+    if min_accuracy is not None:
+        thresholds["min_accuracy"] = min_accuracy
+    if max_accuracy_drop is not None:
+        thresholds["max_accuracy_drop"] = max_accuracy_drop
+
+    report = test(
+        model,
+        dataset,
+        n_variants=n_variants,
+        seed=seed,
+        rules=rules,
+        mode=mode,
+        early_stop=early_stop,
+        thresholds=thresholds,
+        **kwargs,
+    )
 
     violations: List[str] = []
     if max_flip_rate is not None and report.flip_rate > max_flip_rate:
@@ -52,6 +72,9 @@ def assert_stable(
             f"accuracy drop {report.accuracy_drop:+.1%} exceeds max_accuracy_drop={max_accuracy_drop:.1%}"
         )
 
+    if not report.evaluation_complete and report.stop_reason:
+        violations.append(f"early evaluation stopped: {report.stop_reason}")
+
     if violations:
         raise AssertionError("FlipRate stability gate failed: " + "; ".join(violations))
 
@@ -68,6 +91,7 @@ class FlipRate:
             stability_threshold=0.8,
             n_variants=8,
             seed=0,
+            mode="thorough",
         )
 
         res = engine.gate("mala product avadlaaa nahi")
@@ -83,6 +107,8 @@ class FlipRate:
         n_variants: int = 8,
         seed: int = 0,
         lowercase: bool = True,
+        mode: str = "thorough",
+        early_stop: bool = False,
     ) -> None:
         self.model = model
         self.rules = rules
@@ -90,6 +116,8 @@ class FlipRate:
         self.n_variants = n_variants
         self.seed = seed
         self.lowercase = lowercase
+        self.mode = mode
+        self.early_stop = early_stop
 
     def _resolve_model(self, model_override: Optional[Any] = None) -> Any:
         m = model_override if model_override is not None else self.model
@@ -105,6 +133,8 @@ class FlipRate:
             "threshold": self.stability_threshold,
             "n_variants": self.n_variants,
             "seed": self.seed,
+            "mode": self.mode,
+            "early_stop": self.early_stop,
         }
         opts.update(kwargs)
         return gate(m, text, **opts)
@@ -116,6 +146,8 @@ class FlipRate:
             "rules": self.rules,
             "n_variants": self.n_variants,
             "seed": self.seed,
+            "mode": self.mode,
+            "early_stop": self.early_stop,
         }
         opts.update(kwargs)
         return test(m, dataset, **opts)

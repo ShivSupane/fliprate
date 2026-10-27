@@ -179,6 +179,12 @@ class Report:
     transitions: Dict[str, int] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
     message_stats: List[List[int]] = field(default_factory=list)  # per message: [orig_correct, n_variants, n_flips, n_variants_correct]
+    mode: str = "thorough"
+    schema_version: str = "0.6.0"
+    evaluation_complete: bool = True
+    n_variants_requested: int = 0
+    n_variants_evaluated: int = 0
+    stop_reason: Optional[str] = None
 
     # convenient aliases so `report.accuracy` / `report.macro_f1` just work
     @property
@@ -200,11 +206,22 @@ class Report:
         ]
         if worst:
             lines.append(f"Most fragile change type:   {worst[0]} (flip rate {worst[1]['flip_rate']:.1%})")
-        lines.append("Note: flip rate shows instability, not correctness. A model can flip to the right answer.")
+        if self.mode == "fast":
+            lines.append("Note: [fast mode] Robustness was not evaluated (zero variants tested).")
+        elif not self.evaluation_complete:
+            lines.append(f"Note: Incomplete evaluation (stopped early: {self.stop_reason}). Statistics are partial.")
+        else:
+            lines.append("Note: flip rate shows instability, not correctness. A model can flip to the right answer.")
         return "\n".join(lines)
 
     def to_dict(self, max_flips: Optional[int] = 100) -> Dict[str, Any]:
         return {
+            "schema_version": self.schema_version,
+            "mode": self.mode,
+            "evaluation_complete": self.evaluation_complete,
+            "n_variants_requested": self.n_variants_requested,
+            "n_variants_evaluated": self.n_variants_evaluated,
+            "stop_reason": self.stop_reason,
             "n_messages": self.n_messages,
             "n_variants": self.n_variants,
             "accuracy_original": self.accuracy_original,
@@ -303,8 +320,17 @@ def iter_test(
     rules: Optional[RuleSet] = None,
     cache: bool = True,
     batch_messages: int = 8,
+    mode: str = "thorough",
+    early_stop: bool = False,
+    model_version: Optional[str] = None,
+    thresholds: Optional[Dict[str, float]] = None,
 ) -> Generator[Event, None, Report]:
     """Run a robustness test and yield progress events; the generator's return value is the Report.
+
+    Modes:
+      * 'fast': evaluates original inputs only. Zero variant predictions. Robustness is not checked.
+      * 'balanced': evaluates a deterministic sample of reviewed transformations.
+      * 'thorough': evaluates all configured variants for complete metrics.
 
     Messages are processed `batch_messages` at a time so batch-capable models (see models.py) stay fast.
     """
@@ -314,12 +340,72 @@ def iter_test(
         raise ValueError(f"bootstrap must be >= 1, got {bootstrap}")
     if batch_messages < 1:
         raise ValueError(f"batch_messages must be >= 1, got {batch_messages}")
+    if mode not in ("fast", "balanced", "thorough"):
+        raise ValueError(f"mode must be 'fast', 'balanced', or 'thorough', got {mode!r}")
 
     rules = rules or DEFAULT_RULES
     rows = load_dataset(dataset)
     predictor = Predictor(model, cache=cache)
     t0 = time.time()
-    yield make_event("started", total=len(rows), n_variants=n_variants)
+    from . import __version__
+
+    # Fast mode: evaluate original dataset texts only; zero variant predictions
+    if mode == "fast":
+        yield make_event("started", total=len(rows), n_variants=0)
+        flat_texts = [t for t, _ in rows]
+        preds = predictor.predict(flat_texts)
+        y_true = [l for _, l in rows]
+        acc_o = accuracy(y_true, preds)
+        f1_o = macro_f1(y_true, preds)
+        report = Report(
+            n_messages=len(rows),
+            n_variants=0,
+            accuracy_original=acc_o,
+            macro_f1_original=f1_o,
+            accuracy_variants=acc_o,
+            macro_f1_variants=f1_o,
+            flip_rate=0.0,
+            flip_rate_ci=(0.0, 0.0),
+            accuracy_drop=0.0,
+            accuracy_drop_ci=(0.0, 0.0),
+            by_kind={},
+            flips=[],
+            seed=seed,
+            transitions={},
+            message_stats=[[int(p == l), 0, 0, 0] for p, l in zip(preds, y_true)],
+            mode="fast",
+            schema_version="0.6.0",
+            evaluation_complete=True,
+            n_variants_requested=0,
+            n_variants_evaluated=0,
+            stop_reason=None,
+            metadata={
+                "schema_version": "0.6.0",
+                "fliprate_version": __version__,
+                "python": platform.python_version(),
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "model": model_name(model),
+                "model_version": model_version or "unknown",
+                "dataset_sha256_16": _dataset_sha(rows),
+                "rules_fingerprint": rules.fingerprint(),
+                "mode": "fast",
+                "robustness_evaluated": False,
+                "note": "Fast mode: evaluated original texts only; robustness was not checked",
+                "sampling_policy": "none",
+                "thresholds": thresholds or {},
+                "model_calls": predictor.calls,
+                "request_count": predictor.request_count,
+                "cache_hits": predictor.cache_hits,
+                "cache_hit_rate": predictor.cache_hit_rate,
+                "seconds": round(time.time() - t0, 2),
+            },
+        )
+        yield make_event("done", report=report.to_dict())
+        return report
+
+    # Balanced mode samples fewer variants per message deterministically
+    eff_variants = min(n_variants, 2) if mode == "balanced" else n_variants
+    yield make_event("started", total=len(rows), n_variants=eff_variants)
 
     y_true, y_orig = [], []
     v_true, v_pred = [], []
@@ -328,12 +414,16 @@ def iter_test(
     transitions: Counter = Counter()
     kind_tot: Dict[str, List[int]] = {}  # kind -> [variants, flips, correct]
     total_v = total_f = 0
+    total_req_variants = 0
+    eval_complete = True
+    stop_reason: Optional[str] = None
 
     for start in range(0, len(rows), max(1, batch_messages)):
         plans, flat = [], []
         for j, (text, label) in enumerate(rows[start:start + max(1, batch_messages)]):
             i = start + j
-            vs = perturb(text, n_variants, kinds, seed + i, rules=rules)
+            vs = perturb(text, eff_variants, kinds, seed + i, rules=rules)
+            total_req_variants += len(vs)
             plans.append((i, text, label, vs, len(flat)))
             flat.append(text)
             flat.extend(v.text for v in vs)
@@ -369,15 +459,32 @@ def iter_test(
                 last={"text": text, "variants": len(vs), "flips": nflip},
             )
 
+            # Early stopping check if requested
+            if early_stop:
+                max_fr = (thresholds or {}).get("max_flip_rate")
+                if max_fr is not None:
+                    # If total flips already exceeds max_fr * total expected variants, breach is mathematically sealed
+                    total_expected = len(rows) * eff_variants
+                    if total_f > max_fr * total_expected:
+                        eval_complete = False
+                        stop_reason = f"max_flip_rate_breach_guaranteed (flips={total_f} > {max_fr * total_expected:.1f})"
+                        break
+                elif total_f > 0:
+                    eval_complete = False
+                    stop_reason = "first_flip_detected"
+                    break
+
+        if not eval_complete:
+            break
+
     by_kind = {
         k: {"variants": s_[0], "flip_rate": s_[1] / s_[0] if s_[0] else 0.0, "accuracy": s_[2] / s_[0] if s_[0] else 0.0}
         for k, s_ in kind_tot.items()
     }
     acc_o = accuracy(y_true, y_orig)
     acc_v = accuracy(v_true, v_pred) if v_pred else acc_o
-    from . import __version__
     report = Report(
-        n_messages=len(rows),
+        n_messages=len(y_orig),
         n_variants=total_v,
         accuracy_original=acc_o,
         macro_f1_original=macro_f1(y_true, y_orig),
@@ -392,18 +499,31 @@ def iter_test(
         seed=seed,
         transitions=dict(transitions.most_common(20)),
         message_stats=[list(x) for x in summaries],
+        mode=mode,
+        schema_version="0.6.0",
+        evaluation_complete=eval_complete,
+        n_variants_requested=total_req_variants,
+        n_variants_evaluated=total_v,
+        stop_reason=stop_reason,
         metadata={
+            "schema_version": "0.6.0",
             "fliprate_version": __version__,
             "python": platform.python_version(),
             "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "model": model_name(model),
+            "model_version": model_version or "unknown",
             "dataset_sha256_16": _dataset_sha(rows),
             "rules_fingerprint": rules.fingerprint(),
-            "variants_per_message": n_variants,
+            "mode": mode,
+            "sampling_policy": "deterministic_sample" if mode == "balanced" else "full_configured",
+            "variants_per_message": eff_variants,
+            "thresholds": thresholds or {},
             "kinds": list(kinds) if kinds else list(KINDS),
             "bootstrap_resamples": bootstrap,
             "model_calls": predictor.calls,
+            "request_count": predictor.request_count,
             "cache_hits": predictor.cache_hits,
+            "cache_hit_rate": predictor.cache_hit_rate,
             "seconds": round(time.time() - t0, 2),
         },
     )
@@ -411,11 +531,41 @@ def iter_test(
     return report
 
 
-def test(model: Model, dataset: Any, n_variants: int = 5, kinds: Optional[Sequence[str]] = None,
-         seed: int = 0, bootstrap: int = 1000, on_event: Optional[Callable[[Event], None]] = None,
-         rules: Optional[RuleSet] = None, cache: bool = True, batch_messages: int = 8) -> Report:
+def test(
+    model: Model,
+    dataset: Any,
+    n_variants: int = 5,
+    kinds: Optional[Sequence[str]] = None,
+    seed: int = 0,
+    bootstrap: int = 1000,
+    on_event: Optional[Callable[[Event], None]] = None,
+    rules: Optional[RuleSet] = None,
+    cache: bool = True,
+    batch_messages: int = 8,
+    mode: str = "thorough",
+    early_stop: bool = False,
+    model_version: Optional[str] = None,
+    thresholds: Optional[Dict[str, float]] = None,
+) -> Report:
     """Test `model` (any function text -> label) on `dataset` and return a Report."""
-    return drain(iter_test(model, dataset, n_variants, kinds, seed, bootstrap, rules, cache, batch_messages), on_event)
+    return drain(
+        iter_test(
+            model,
+            dataset,
+            n_variants=n_variants,
+            kinds=kinds,
+            seed=seed,
+            bootstrap=bootstrap,
+            rules=rules,
+            cache=cache,
+            batch_messages=batch_messages,
+            mode=mode,
+            early_stop=early_stop,
+            model_version=model_version,
+            thresholds=thresholds,
+        ),
+        on_event,
+    )
 
 
 test.__test__ = False  # stop pytest from mistaking this function for a test

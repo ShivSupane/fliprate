@@ -26,6 +26,11 @@ class Decision:
     n_variants: int
     warnings: List[str] = field(default_factory=list)
     flipped_variants: List[str] = field(default_factory=list)
+    mode: str = "thorough"
+    evaluation_complete: bool = True
+    n_variants_requested: int = 0
+    n_variants_evaluated: int = 0
+    stop_reason: Optional[str] = None
 
     @property
     def is_safe(self) -> bool:
@@ -51,6 +56,11 @@ class Decision:
             "flipped_variants": list(self.flipped_variants),
             "is_safe": self.is_safe,
             "should_route_to_human": self.should_route_to_human,
+            "mode": self.mode,
+            "evaluation_complete": self.evaluation_complete,
+            "n_variants_requested": self.n_variants_requested,
+            "n_variants_evaluated": self.n_variants_evaluated,
+            "stop_reason": self.stop_reason,
         }
 
     def to_json(self, indent: Optional[int] = None) -> str:
@@ -188,18 +198,18 @@ def iter_gate(
     cache: bool = True,
     on_error: str = "raise",
     script_aware: bool = True,
+    mode: str = "thorough",
+    early_stop: bool = False,
 ) -> Generator[Event, None, GateResult]:
     """Decide whether `text` can go to `model` as is (PASS), after cleaning (TRANSFORM), or needs a human (REVIEW).
 
-    "Stability" = share of safe variants for which the model gives the same answer as for the original.
-    It measures consistency, NOT correctness: a model can be stably wrong.
+    Modes:
+      * 'fast': one normal inference path, no extra variant predictions. Robustness is not checked.
+      * 'balanced': evaluates a deterministic configured sample of reviewed transformations.
+      * 'thorough': evaluates all configured variants for complete metrics.
 
-    Logic:
-      * stability 100% on the raw text               -> PASS
-      * some variants flip:
-          - normalization is safe, and the normalized pipeline is stabler and >= threshold -> TRANSFORM
-          - otherwise, raw stability >= threshold    -> PASS, with a warning listing the flips
-          - otherwise                                -> REVIEW
+    Early stopping (early_stop=True):
+      Stops on first detected flip or mathematical threshold breach, marking evaluation_complete=False.
     """
     if not isinstance(text, str):
         raise TypeError(f"text must be str, got {type(text).__name__}")
@@ -211,21 +221,54 @@ def iter_gate(
         raise ValueError(f"min_variants must be >= 1, got {min_variants}")
     if on_error not in ("raise", "review"):
         raise ValueError(f"on_error must be 'raise' or 'review', got {on_error!r}")
+    if mode not in ("fast", "balanced", "thorough"):
+        raise ValueError(f"mode must be 'fast', 'balanced', or 'thorough', got {mode!r}")
 
     rules = rules or DEFAULT_RULES
     predictor = Predictor(model, cache=cache)
     warnings: List[str] = []
     yield make_event("received", chars=len(text))
 
-    def done(decision, reason, used, pred, raw, norm, n, flipped=()):
-        return GateResult(decision, reason, text, used, pred, raw, norm, n, warnings, list(flipped))
+    def done(
+        decision: str,
+        reason: str,
+        used: str,
+        pred: Any,
+        raw: Optional[float],
+        norm: Optional[float],
+        n: int,
+        flipped: Sequence[str] = (),
+        eval_complete: bool = True,
+        n_req: int = 0,
+        n_eval: int = 0,
+        stop_reason: Optional[str] = None,
+    ) -> GateResult:
+        return GateResult(
+            decision,
+            reason,
+            text,
+            used,
+            pred,
+            raw,
+            norm,
+            n,
+            warnings,
+            list(flipped),
+            mode=mode,
+            evaluation_complete=eval_complete,
+            n_variants_requested=n_req,
+            n_variants_evaluated=n_eval,
+            stop_reason=stop_reason,
+        )
 
     def finish(res: GateResult):
-        return [make_event("gate", decision=res.decision, reason=res.reason),
-                make_event("done", result=res.to_dict())]
+        return [
+            make_event("gate", decision=res.decision, reason=res.reason),
+            make_event("done", result=res.to_dict()),
+        ]
 
     if not text.strip():
-        res = done(REVIEW, "Empty input", text, None, None, None, 0)
+        res = done(REVIEW, "Empty input", text, None, None, None, 0, n_req=0, n_eval=0)
         yield from finish(res)
         return res
 
@@ -233,7 +276,7 @@ def iter_gate(
         ratio = _latin_ratio(text)
         yield make_event("script_check", latin_ratio=round(ratio, 2))
         if ratio < 0.5:
-            res = done(REVIEW, "Mostly non-Latin script; v0.1 supports romanized text only", text, None, None, None, 0)
+            res = done(REVIEW, "Mostly non-Latin script; v0.1 supports romanized text only", text, None, None, None, 0, n_req=0, n_eval=0)
             yield from finish(res)
             return res
     else:
@@ -242,47 +285,138 @@ def iter_gate(
         if script == "other":
             letters = [c for c in text if c.isalpha() and not _is_emoji_or_modifier(c)]
             if not letters:
-                res = done(REVIEW, "No script letters found", text, None, None, None, 0)
+                res = done(REVIEW, "No script letters found", text, None, None, None, 0, n_req=0, n_eval=0)
             else:
                 sname = _detect_primary_script_name(letters)
-                res = done(REVIEW, f"unsupported script: {sname}", text, None, None, None, 0)
+                res = done(REVIEW, f"unsupported script: {sname}", text, None, None, None, 0, n_req=0, n_eval=0)
             yield from finish(res)
             return res
 
     for tok in rules.ambiguous_tokens(text):
         warnings.append(f"'{tok}' is ambiguous ({rules.ambiguous[tok]}); left unchanged")
 
-    variants = perturb(text, n_variants, kinds, seed, rules=rules)
+    # Fast mode: single inference pass, zero variant evaluations
+    if mode == "fast":
+        warnings.append("Robustness was not checked (mode='fast')")
+        try:
+            base = predictor.predict([text])[0]
+        except Exception as exc:
+            if on_error == "review":
+                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, None, None, 0, n_req=0, n_eval=0)
+                yield from finish(res)
+                return res
+            raise
+        res = done(
+            PASS,
+            "Fast mode: inference executed; robustness not evaluated",
+            text,
+            base,
+            raw=None,
+            norm=None,
+            n=0,
+            n_req=0,
+            n_eval=0,
+            eval_complete=True,
+            stop_reason=None,
+        )
+        yield from finish(res)
+        return res
+
+    # Balanced mode samples fewer variants deterministically
+    target_variants = min(n_variants, 3) if mode == "balanced" else n_variants
+    variants = perturb(text, target_variants, kinds, seed, rules=rules)
+    n_requested = len(variants)
+
     try:
-        preds = predictor.predict([text] + [v.text for v in variants])
+        base = predictor.predict([text])[0]
     except Exception as exc:
         if on_error == "review":
-            res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, None, None, len(variants))
+            res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, None, None, 0, n_req=n_requested, n_eval=0)
             yield from finish(res)
             return res
         raise
 
-    base, vpreds = preds[0], preds[1:]
     yield make_event("variants", count=len(variants), prediction=base)
-    if len(variants) < min_variants:
+    if len(variants) < min_variants and mode != "balanced":
         warnings.append(f"Only {len(variants)} safe variants could be generated; stability is weakly measured")
 
     flipped = []
-    for v, p in zip(variants, vpreds):
-        same = p == base
-        if not same:
-            flipped.append(v.text)
-        yield make_event("prediction", variant=v.text, kind=v.kind, label=p, same=same)
-    raw = (len(variants) - len(flipped)) / len(variants) if variants else None
+    n_evaluated = 0
+    stopped_early = False
+    stop_reason: Optional[str] = None
+
+    if early_stop:
+        for v in variants:
+            try:
+                p = predictor.predict([v.text])[0]
+            except Exception as exc:
+                if on_error == "review":
+                    res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, None, None, len(variants), n_req=n_requested, n_eval=n_evaluated)
+                    yield from finish(res)
+                    return res
+                raise
+            n_evaluated += 1
+            same = (p == base)
+            if not same:
+                flipped.append(v.text)
+            yield make_event("prediction", variant=v.text, kind=v.kind, label=p, same=same)
+
+            if not same:
+                stopped_early = True
+                stop_reason = "first_flip_detected"
+                warnings.append("Early stop on flip: evaluation incomplete; stability is not an exact measurement")
+                break
+
+            max_possible_stable = (len(variants) - n_evaluated) + (n_evaluated - len(flipped))
+            if (max_possible_stable / len(variants)) < threshold:
+                stopped_early = True
+                stop_reason = "threshold_unachievable"
+                warnings.append("Early stop on threshold breach: evaluation incomplete")
+                break
+    else:
+        try:
+            vpreds = predictor.predict([v.text for v in variants])
+        except Exception as exc:
+            if on_error == "review":
+                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, None, None, len(variants), n_req=n_requested, n_eval=0)
+                yield from finish(res)
+                return res
+            raise
+        n_evaluated = len(variants)
+        for v, p in zip(variants, vpreds):
+            same = (p == base)
+            if not same:
+                flipped.append(v.text)
+            yield make_event("prediction", variant=v.text, kind=v.kind, label=p, same=same)
+
+    raw = None if stopped_early else ((len(variants) - len(flipped)) / len(variants) if variants else None)
     yield make_event("raw_stability", value=raw)
+
+    if stopped_early:
+        res = done(
+            decision=REVIEW,
+            reason=f"Instability detected ({stop_reason}); evaluation incomplete",
+            used=text,
+            pred=base,
+            raw=None,
+            norm=None,
+            n=n_evaluated,
+            flipped=flipped,
+            eval_complete=False,
+            n_req=n_requested,
+            n_eval=n_evaluated,
+            stop_reason=stop_reason,
+        )
+        yield from finish(res)
+        return res
 
     if raw is None:
         warnings.append("No variants available, so stability could not be measured")
-        res = done(PASS, "No variants available to test stability", text, base, None, None, 0)
+        res = done(PASS, "No variants available to test stability", text, base, None, None, 0, n_req=n_requested, n_eval=n_evaluated)
         yield from finish(res)
         return res
     if not flipped:
-        res = done(PASS, "Prediction is stable across safe variants", text, base, raw, None, len(variants))
+        res = done(PASS, "Prediction is stable across safe variants", text, base, raw, None, len(variants), n_req=n_requested, n_eval=n_evaluated)
         yield from finish(res)
         return res
 
@@ -298,7 +432,7 @@ def iter_gate(
             npreds = predictor.predict([norm.normalized] + [normalize(v.text, rules=rules).normalized for v in variants])
         except Exception as exc:
             if on_error == "review":
-                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", norm.normalized, None, raw, None, len(variants))
+                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", norm.normalized, None, raw, None, len(variants), n_req=n_requested, n_eval=n_evaluated)
                 yield from finish(res)
                 return res
             raise
@@ -314,7 +448,7 @@ def iter_gate(
             npreds = batch_predict(predictor.model, norm_variants)
         except Exception as exc:
             if on_error == "review":
-                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, raw, None, len(variants))
+                res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", text, None, raw, None, len(variants), n_req=n_requested, n_eval=n_evaluated)
                 yield from finish(res)
                 return res
             raise
@@ -327,23 +461,52 @@ def iter_gate(
 
     n = len(variants)
     if can_transform:
-        res = done(TRANSFORM, "Stable after approved normalization", norm.normalized, nbase, raw, nstab, n, flipped)
+        res = done(TRANSFORM, "Stable after approved normalization", norm.normalized, nbase, raw, nstab, n, flipped, n_req=n_requested, n_eval=n_evaluated)
     elif canonical_stable:
-        res = done(PASS, "Input is in canonical form and stable after normalization", text, base, raw, nstab, n, flipped)
+        res = done(PASS, "Input is in canonical form and stable after normalization", text, base, raw, nstab, n, flipped, n_req=n_requested, n_eval=n_evaluated)
     elif raw >= threshold:
         warnings.append(f"{len(flipped)} of {n} safe variants changed the answer; normalization did not improve this")
-        res = done(PASS, "Mostly stable across safe variants", text, base, raw, nstab, n, flipped)
+        res = done(PASS, "Mostly stable across safe variants", text, base, raw, nstab, n, flipped, n_req=n_requested, n_eval=n_evaluated)
     else:
-        res = done(REVIEW, "Unstable across safe variants and normalization does not fix it", text, base, raw, nstab, n, flipped)
+        res = done(REVIEW, "Unstable across safe variants and normalization does not fix it", text, base, raw, nstab, n, flipped, n_req=n_requested, n_eval=n_evaluated)
     yield from finish(res)
     return res
 
 
-def gate(model: Callable[[str], Any], text: str, n_variants: int = 8, threshold: float = 0.8,
-         min_variants: int = 3, seed: int = 0, kinds: Optional[Sequence[str]] = None,
-         on_event: Optional[Callable[[Event], None]] = None, rules: Optional[RuleSet] = None,
-         cache: bool = True, on_error: str = "raise", script_aware: bool = True) -> GateResult:
-    return drain(iter_gate(model, text, n_variants, threshold, min_variants, seed, kinds, rules, cache, on_error, script_aware), on_event)
+def gate(
+    model: Callable[[str], Any],
+    text: str,
+    n_variants: int = 8,
+    threshold: float = 0.8,
+    min_variants: int = 3,
+    seed: int = 0,
+    kinds: Optional[Sequence[str]] = None,
+    on_event: Optional[Callable[[Event], None]] = None,
+    rules: Optional[RuleSet] = None,
+    cache: bool = True,
+    on_error: str = "raise",
+    script_aware: bool = True,
+    mode: str = "thorough",
+    early_stop: bool = False,
+) -> GateResult:
+    return drain(
+        iter_gate(
+            model,
+            text,
+            n_variants=n_variants,
+            threshold=threshold,
+            min_variants=min_variants,
+            seed=seed,
+            kinds=kinds,
+            rules=rules,
+            cache=cache,
+            on_error=on_error,
+            script_aware=script_aware,
+            mode=mode,
+            early_stop=early_stop,
+        ),
+        on_event,
+    )
 
 
 async def agate(
@@ -359,6 +522,8 @@ async def agate(
     cache: bool = True,
     on_error: str = "raise",
     script_aware: bool = True,
+    mode: str = "thorough",
+    early_stop: bool = False,
 ) -> GateResult:
     """Async version of gate(). Runs gate() in a background worker thread via asyncio.to_thread."""
     return await asyncio.to_thread(
@@ -375,4 +540,6 @@ async def agate(
         cache=cache,
         on_error=on_error,
         script_aware=script_aware,
+        mode=mode,
+        early_stop=early_stop,
     )
