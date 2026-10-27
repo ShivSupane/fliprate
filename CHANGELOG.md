@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.0 — Better Rule Governance and Diagnosis
+- **Protected Terms (`protected_terms`)**:
+  - Allow developers and production pipelines to specify words, phrases, brand names, product titles, account codes, or domain terms that normalization and perturbation must leave unchanged byte-for-byte.
+  - Deterministic longest-phrase-first boundary matching prevents multiword phrases (e.g. `"Tata Motors"`) from colliding with shorter sub-terms (e.g. `"Tata"`).
+  - Explicit word boundary lookahead/lookbehind matching (`(?<!\w)...(?!\w)`) handles substrings, punctuation boundaries, Latin, and Devanagari mixed scripts safely without corrupting internal characters.
+  - Integrated into `normalize()`, `perturb()`, `gate()`, `test()`, `FlipRateNormalizer`, and `FlipRate` engine.
+- **Reviewed Rule-Mining Workflow (`CandidateRuleSet` & Enhanced `Candidate`)**:
+  - `learn_rules_from_texts()` and `mine_variants()` produce a `CandidateRuleSet` containing candidate rules awaiting human review rather than silently activating unverified rules.
+  - Enhanced `Candidate` dataclass with governance fields: `canonical`, `variants`, `counts`, `risk`, `language`, `confidence` (heuristic ranking score), `reviewer_status` (`"pending"`, `"approved"`, `"rejected"`), `evidence_source`, and `notes`.
+  - `CandidateRuleSet` provides `.approve()`, `.reject()`, `.save_reviewed_csv()` (fully compatible with `RuleSet.from_csv()`), and `.to_ruleset(approved_only=True)`.
+  - Subclasses `list` for 100% backward compatibility with existing code.
+- **Explainability & Non-Causal Diagnosis**:
+  - Enhanced `show_why_it_flipped()`: Uses sequence matching (`difflib`) to accurately compute `changed_tokens` / `diffs` across deletions, insertions, and word substitutions even when token counts vary.
+  - Generates objective, non-causal descriptions describing observed input/output shifts without claiming internal model reasoning causation.
+  - Added `explain_report_flips(report, opt_in_examples=False)`: Provides privacy-preserving analysis of dataset test reports, keeping raw input/variant text opt-in.
+- **Script Coverage & Documented Abstention**:
+  - Validated that unsupported Indic scripts (Tamil, Telugu, Bengali, etc.) continue to yield documented `REVIEW` decisions with explicit `reason="unsupported script: <name>"`, avoiding unsafe or uncontrolled normalization.
+  - Updated report schema version to `"0.8.0"`.
+
 ## 0.7.0 — ML Workflow Integration and Experimental Augmentation
 - **Scikit-Learn Transformer (`FlipRateNormalizer`)**:
   - `BaseEstimator` and `TransformerMixin` compatible text transformer for scikit-learn `Pipeline`.

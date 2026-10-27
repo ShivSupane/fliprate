@@ -4,9 +4,16 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
-from .rules import DEFAULT_RULES, RuleSet, is_word, tokenize_keep, word_key
+from .rules import (
+    DEFAULT_RULES,
+    RuleSet,
+    _DEVA_TO_ASCII_DIGITS,
+    is_word,
+    tokenize_keep,
+    word_key,
+)
 
 
 @dataclass
@@ -29,6 +36,9 @@ _VOWEL_RUN_RE     = re.compile(r"([aeiouAEIOU])\1{2,}")        # 3+ identical vo
 _PUNC_RUN_RE      = re.compile(r"([^\w\s])\1+")                # repeated punctuation
 _WS_RE            = re.compile(r"\s+")
 _ZERO_WIDTH_RE    = re.compile(r"[\u200B\u200C\u200D\uFEFF]")  # ZWSP, ZWNJ, ZWJ, BOM
+
+_WORD_CHAR_CLASS = r"[\w\u0900-\u0963\u0966-\u097F]"
+_IS_WORD_CHAR_RE = re.compile(_WORD_CHAR_CLASS, re.UNICODE)
 
 
 def _match_case(old: str, new: str) -> str:
@@ -65,7 +75,71 @@ _PROTECT_RE = re.compile(
 )
 
 
-def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None) -> NormalizeResult:
+def mask_protected_terms(
+    text: str,
+    protected_terms: Optional[Sequence[str]] = None,
+    case_sensitive: bool = False,
+) -> Tuple[str, List[str]]:
+    """Mask protected words/phrases before normalization or perturbation.
+
+    Uses deterministic, boundary-safe matching (longest phrases first) so
+    multiword entities ('Tata Motors') match before sub-terms ('Tata').
+    Returns (masked_text, captured_spans).
+    """
+    if not protected_terms:
+        return text, []
+
+    # Clean, deduplicate and sort descending by length, then alphabetical for determinism
+    clean_terms = sorted(
+        set(t.strip() for t in protected_terms if t and t.strip()),
+        key=lambda s: (-len(s), s),
+    )
+    if not clean_terms:
+        return text, []
+
+    masks: List[str] = []
+    patterns: List[str] = []
+    for t in clean_terms:
+        nfc_t = unicodedata.normalize("NFC", t)
+        pre = rf"(?<!{_WORD_CHAR_CLASS})" if _IS_WORD_CHAR_RE.match(nfc_t[0]) else ""
+        post = rf"(?!{_WORD_CHAR_CLASS})" if _IS_WORD_CHAR_RE.match(nfc_t[-1]) else ""
+        patterns.append(rf"{pre}{re.escape(nfc_t)}{post}")
+
+    flags = re.UNICODE if case_sensitive else (re.UNICODE | re.IGNORECASE)
+    comb_re = re.compile("|".join(patterns), flags)
+
+    def _repl(m: re.Match) -> str:
+        idx = len(masks)
+        masks.append(m.group(0))
+        return f"__FLIPPROT{idx}__"
+
+    nfc_text = unicodedata.normalize("NFC", text)
+    masked_text = comb_re.sub(_repl, nfc_text)
+    return masked_text, masks
+
+
+_PROT_UNMASK_RE = re.compile(r"__FLIPPROT([0-9\u0966-\u096F]+)__", re.IGNORECASE | re.UNICODE)
+
+
+def unmask_protected_terms(text: str, masks: Sequence[str]) -> str:
+    """Restore masked protected terms byte-for-byte in their original form."""
+    if not masks:
+        return text
+
+    def _repl(m: re.Match) -> str:
+        raw_idx = m.group(1).translate(_DEVA_TO_ASCII_DIGITS)
+        idx = int(raw_idx)
+        return masks[idx] if idx < len(masks) else m.group(0)
+
+    return _PROT_UNMASK_RE.sub(_repl, text)
+
+
+def normalize(
+    text: str,
+    lowercase: bool = True,
+    rules: Optional[RuleSet] = None,
+    protected_terms: Optional[Sequence[str]] = None,
+) -> NormalizeResult:
     """Return a cleaned copy of `text`. The original is always preserved in the result.
 
     What it does:
@@ -76,6 +150,7 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
       * repeated punctuation collapsed ("!!!" -> "!", "।।।" -> "।")
       * extra spaces removed
       * URLs, emails, @handles, #hashtags, and numbers are protected byte-for-byte
+      * protected terms (e.g. brand/product names, account codes) are left unchanged byte-for-byte
 
     What it never does: add, remove or reorder words, or touch ambiguous tokens like "nai",
     or tokens containing digits.
@@ -83,7 +158,7 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
     if not isinstance(text, str):
         raise TypeError(f"text must be str, got {type(text).__name__}")
 
-    # Mask URLs, emails, @handles, #hashtags, and numbers so normalization does not damage them
+    # 1. Mask URLs, emails, @handles, #hashtags, and numbers so normalization does not damage them
     masks: List[str] = []
 
     def _mask_match(match: re.Match) -> str:
@@ -92,6 +167,9 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
         return f"__FLIPMASK{idx}__"
 
     masked_text = _PROTECT_RE.sub(_mask_match, text)
+
+    # 2. Mask user-specified protected terms byte-for-byte
+    masked_text, prot_masks = mask_protected_terms(masked_text, protected_terms)
 
     # Strip zero-width characters and normalize to NFC
     stripped = _ZERO_WIDTH_RE.sub("", masked_text)
@@ -102,6 +180,10 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
     changes: List[Tuple[str, str]] = []
 
     for i, chunk in enumerate(parts):
+        # Skip our mask tokens and protected tokens
+        if chunk.startswith("__FLIPMASK") or chunk.startswith("__FLIPPROT"):
+            continue
+
         if not is_word(chunk):
             # Collapse repeated punctuation: "!!!" -> "!", "..." -> ".", "।।।" -> "।"
             collapsed = _PUNC_RUN_RE.sub(r"\1", chunk)
@@ -141,6 +223,9 @@ def normalize(text: str, lowercase: bool = True, rules: Optional[RuleSet] = None
                 parts[i] = canon
 
     normalized = _WS_RE.sub(" ", "".join(parts)).strip()
+
+    # Restore protected terms byte-for-byte
+    normalized = unmask_protected_terms(normalized, prot_masks)
 
     # Restore masked entities byte-for-byte
     for idx, original_entity in enumerate(masks):

@@ -200,6 +200,7 @@ def iter_gate(
     script_aware: bool = True,
     mode: str = "thorough",
     early_stop: bool = False,
+    protected_terms: Optional[Sequence[str]] = None,
 ) -> Generator[Event, None, GateResult]:
     """Decide whether `text` can go to `model` as is (PASS), after cleaning (TRANSFORM), or needs a human (REVIEW).
 
@@ -324,7 +325,7 @@ def iter_gate(
 
     # Balanced mode samples fewer variants deterministically
     target_variants = min(n_variants, 3) if mode == "balanced" else n_variants
-    variants = perturb(text, target_variants, kinds, seed, rules=rules)
+    variants = perturb(text, target_variants, kinds, seed, rules=rules, protected_terms=protected_terms)
     n_requested = len(variants)
 
     try:
@@ -421,7 +422,7 @@ def iter_gate(
         return res
 
     # Some variants flip. Would approved normalization in front of the model help?
-    norm = normalize(text, rules=rules)
+    norm = normalize(text, rules=rules, protected_terms=protected_terms)
     nstab: Optional[float] = None
     nbase = None
     can_transform = False
@@ -429,7 +430,7 @@ def iter_gate(
     if norm.normalized != text and rules.is_safe_variant(text, norm.normalized):
         yield make_event("normalized", text=norm.normalized, changes=norm.changes)
         try:
-            npreds = predictor.predict([norm.normalized] + [normalize(v.text, rules=rules).normalized for v in variants])
+            npreds = predictor.predict([norm.normalized] + [normalize(v.text, rules=rules, protected_terms=protected_terms).normalized for v in variants])
         except Exception as exc:
             if on_error == "review":
                 res = done(REVIEW, f"model error: {type(exc).__name__}: {exc}", norm.normalized, None, raw, None, len(variants), n_req=n_requested, n_eval=n_evaluated)
@@ -443,7 +444,7 @@ def iter_gate(
     elif norm.normalized != text:
         warnings.append("Normalization would change the meaning; it was not applied")
     elif norm.normalized == text:
-        norm_variants = [normalize(v.text, rules=rules).normalized for v in variants]
+        norm_variants = [normalize(v.text, rules=rules, protected_terms=protected_terms).normalized for v in variants]
         try:
             npreds = batch_predict(predictor.model, norm_variants)
         except Exception as exc:
@@ -488,6 +489,7 @@ def gate(
     script_aware: bool = True,
     mode: str = "thorough",
     early_stop: bool = False,
+    protected_terms: Optional[Sequence[str]] = None,
 ) -> GateResult:
     return drain(
         iter_gate(
@@ -504,6 +506,7 @@ def gate(
             script_aware=script_aware,
             mode=mode,
             early_stop=early_stop,
+            protected_terms=protected_terms,
         ),
         on_event,
     )
@@ -524,6 +527,7 @@ async def agate(
     script_aware: bool = True,
     mode: str = "thorough",
     early_stop: bool = False,
+    protected_terms: Optional[Sequence[str]] = None,
 ) -> GateResult:
     """Async version of gate(). Runs gate() in a background worker thread via asyncio.to_thread."""
     return await asyncio.to_thread(
@@ -542,4 +546,5 @@ async def agate(
         script_aware=script_aware,
         mode=mode,
         early_stop=early_stop,
+        protected_terms=protected_terms,
     )

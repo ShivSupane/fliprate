@@ -331,6 +331,7 @@ def iter_test(
     early_stop: bool = False,
     model_version: Optional[str] = None,
     thresholds: Optional[Dict[str, float]] = None,
+    protected_terms: Optional[Sequence[str]] = None,
 ) -> Generator[Event, None, Report]:
     """Run a robustness test and yield progress events; the generator's return value is the Report.
 
@@ -429,7 +430,7 @@ def iter_test(
         plans, flat = [], []
         for j, (text, label) in enumerate(rows[start:start + max(1, batch_messages)]):
             i = start + j
-            vs = perturb(text, eff_variants, kinds, seed + i, rules=rules)
+            vs = perturb(text, eff_variants, kinds, seed + i, rules=rules, protected_terms=protected_terms)
             total_req_variants += len(vs)
             plans.append((i, text, label, vs, len(flat)))
             flat.append(text)
@@ -521,6 +522,7 @@ def iter_test(
             "model_version": model_version or "unknown",
             "dataset_sha256_16": _dataset_sha(rows),
             "rules_fingerprint": rules.fingerprint(),
+            "protected_terms": list(protected_terms) if protected_terms else [],
             "mode": mode,
             "sampling_policy": "deterministic_sample" if mode == "balanced" else "full_configured",
             "variants_per_message": eff_variants,
@@ -553,6 +555,7 @@ def test(
     early_stop: bool = False,
     model_version: Optional[str] = None,
     thresholds: Optional[Dict[str, float]] = None,
+    protected_terms: Optional[Sequence[str]] = None,
 ) -> Report:
     """Test `model` (any function text -> label) on `dataset` and return a Report."""
     return drain(
@@ -570,6 +573,7 @@ def test(
             early_stop=early_stop,
             model_version=model_version,
             thresholds=thresholds,
+            protected_terms=protected_terms,
         ),
         on_event,
     )

@@ -5,6 +5,7 @@ which tokens triggered a model flip, and what rules match an input.
 """
 from __future__ import annotations
 
+import difflib
 from typing import Any, Dict, List, Optional, Tuple
 
 from .gating import detect_script, gate
@@ -76,16 +77,38 @@ def explain_gate_decision(text_or_result: Any, model: Optional[Any] = None, **kw
     }
 
 
+def _compute_token_diffs(orig_text: str, var_text: str) -> List[Tuple[str, str]]:
+    """Compute exact word-level token diffs between orig_text and var_text using difflib.
+
+    Handles substitutions, deletions, and insertions even when token counts change.
+    """
+    orig_words = orig_text.split()
+    var_words = var_text.split()
+    matcher = difflib.SequenceMatcher(None, orig_words, var_words)
+    diffs: List[Tuple[str, str]] = []
+    for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
+        if tag == "replace":
+            diffs.append((" ".join(orig_words[alo:ahi]), " ".join(var_words[blo:bhi])))
+        elif tag == "delete":
+            diffs.append((" ".join(orig_words[alo:ahi]), ""))
+        elif tag == "insert":
+            diffs.append(("", " ".join(var_words[blo:bhi])))
+    return diffs
+
+
 def show_why_it_flipped(text_or_model: Any, model_or_text: Any, **kwargs) -> List[Dict[str, Any]]:
     """Inspect and highlight every variant that caused the model's prediction to flip.
     Accepts arguments in either order: `(text, model)` or `(model, text)`.
 
     Returns a list of dicts with:
+      - `original_text`: original text string
       - `variant_text`: the modified variant string
       - `kind`: type of perturbation ("spelling", "repetition", "unicode", "punctuation", etc.)
       - `original_prediction`: label predicted on original text
       - `variant_prediction`: label predicted on this variant
-      - `changed_words`: list of (original_word, variant_word) pairs that differ
+      - `diffs`: list of (original_tokens, variant_tokens) pairs that differ
+      - `changed_tokens`: alias for diffs
+      - `description`: non-causal statement describing observed difference
     """
     if callable(text_or_model) and isinstance(model_or_text, str):
         model, text = text_or_model, model_or_text
@@ -101,22 +124,95 @@ def show_why_it_flipped(text_or_model: Any, model_or_text: Any, **kwargs) -> Lis
     for v in variants:
         pred = str(model(v.text))
         if pred != orig_pred:
-            orig_words = text.split()
-            var_words = v.text.split()
-            diffs = []
-            if len(orig_words) == len(var_words):
-                for ow, vw in zip(orig_words, var_words):
-                    if ow != vw:
-                        diffs.append((ow, vw))
+            diffs = _compute_token_diffs(text, v.text)
+            diff_str = (
+                ", ".join(
+                    f"'{a}' -> '{b}'" if a and b else (f"deleted '{a}'" if a else f"inserted '{b}'")
+                    for a, b in diffs
+                )
+                if diffs
+                else "no word-level diffs detected"
+            )
+            description = (
+                f"Observed prediction shifted from '{orig_pred}' to '{pred}' when '{v.kind}' transformation was applied. "
+                f"Changed tokens: {diff_str}. (Note: reflects observed sensitivity to input variation, not internal model reasoning.)"
+            )
             flips.append({
+                "original_text": text,
                 "variant_text": v.text,
                 "kind": v.kind,
                 "original_prediction": orig_pred,
                 "variant_prediction": pred,
                 "diffs": diffs,
+                "changed_tokens": diffs,
+                "changed_words": diffs,
+                "description": description,
             })
 
     return flips
+
+
+def explain_report_flips(report: Any, opt_in_examples: bool = False, max_examples: int = 10) -> Dict[str, Any]:
+    """Provide a structured, privacy-conscious explanation of model flips from an evaluation Report.
+
+    By default (`opt_in_examples=False`), raw text examples are omitted for data privacy.
+    Set `opt_in_examples=True` to inspect specific original and variant texts and diffs.
+    """
+    flips = getattr(report, "flips", [])
+    by_kind = getattr(report, "by_kind", {})
+    transitions = getattr(report, "transitions", {})
+
+    kind_counts: Dict[str, int] = {}
+    for f in flips:
+        k = f.get("kind", "unknown")
+        kind_counts[k] = kind_counts.get(k, 0) + 1
+
+    summary = {
+        "total_flips": len(flips),
+        "flip_rate": getattr(report, "flip_rate", 0.0),
+        "flips_by_transformation": kind_counts,
+        "transitions": dict(transitions),
+        "per_transformation_metrics": by_kind,
+        "examples_redacted": not opt_in_examples,
+    }
+
+    if not opt_in_examples:
+        summary["privacy_note"] = (
+            "Raw text examples omitted for privacy. Pass `opt_in_examples=True` to inspect individual text examples."
+        )
+        summary["examples"] = []
+    else:
+        detailed_examples = []
+        for f in flips[:max_examples]:
+            orig = f.get("original", "")
+            var = f.get("variant", "")
+            k = f.get("kind", "unknown")
+            op = f.get("original_pred", "")
+            vp = f.get("variant_pred", "")
+            diffs = _compute_token_diffs(orig, var) if orig and var else []
+            diff_str = (
+                ", ".join(
+                    f"'{a}' -> '{b}'" if a and b else (f"deleted '{a}'" if a else f"inserted '{b}'")
+                    for a, b in diffs
+                )
+                if diffs
+                else "none"
+            )
+            detailed_examples.append({
+                "kind": k,
+                "original_prediction": op,
+                "variant_prediction": vp,
+                "original_text": orig,
+                "variant_text": var,
+                "changed_tokens": diffs,
+                "description": (
+                    f"Observed prediction shifted from '{op}' to '{vp}' under '{k}' transformation. "
+                    f"Changed tokens: {diff_str}. (Note: reflects observed input/output difference, not causal model reasoning.)"
+                ),
+            })
+        summary["examples"] = detailed_examples
+
+    return summary
 
 
 def preview_normalized_variants(text: str, n: int = 5, **kwargs) -> List[Dict[str, str]]:
