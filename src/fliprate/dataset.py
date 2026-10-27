@@ -98,6 +98,190 @@ def split_dataset(source, test_frac: float = 0.6, seed: int = 0, rules: Optional
     return dev, test
 
 
+# ---------------------------------------------------------------------------- Duplicate & Leakage Diagnostics
+@dataclass
+class DuplicateMatch:
+    row_a: int
+    row_b: int
+    text_a: str
+    text_b: str
+    label_a: Any
+    label_b: Any
+    match_type: str  # "exact" | "near_duplicate"
+    labels_conflict: bool
+
+
+@dataclass
+class DuplicateReport:
+    n_rows: int
+    exact_duplicates: List[DuplicateMatch] = field(default_factory=list)
+    near_duplicates: List[DuplicateMatch] = field(default_factory=list)
+    conflicting_pairs: List[DuplicateMatch] = field(default_factory=list)
+
+    @property
+    def has_duplicates(self) -> bool:
+        return bool(self.exact_duplicates or self.near_duplicates)
+
+    def summary(self) -> str:
+        lines = [
+            f"Dataset rows analyzed: {self.n_rows}",
+            f"Exact duplicates found: {len(self.exact_duplicates)} pair(s)",
+            f"Near-duplicate spelling variants: {len(self.near_duplicates)} pair(s)",
+            f"Conflicting label pairs: {len(self.conflicting_pairs)} pair(s)",
+        ]
+        if self.conflicting_pairs:
+            lines.append("Conflicting examples:")
+            for m in self.conflicting_pairs[:5]:
+                lines.append(f"  Rows {m.row_a} & {m.row_b}: '{m.text_a}' ({m.label_a}) vs '{m.text_b}' ({m.label_b})")
+        elif self.has_duplicates:
+            lines.append("First duplicate references:")
+            for m in (self.exact_duplicates + self.near_duplicates)[:5]:
+                lines.append(f"  Rows {m.row_a} & {m.row_b} ({m.match_type}): '{m.text_a}' vs '{m.text_b}'")
+        else:
+            lines.append("No duplicate rows or near-duplicate spelling groups detected.")
+        return "\n".join(lines)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "n_rows": self.n_rows,
+            "has_duplicates": self.has_duplicates,
+            "exact_duplicate_count": len(self.exact_duplicates),
+            "near_duplicate_count": len(self.near_duplicates),
+            "conflicting_count": len(self.conflicting_pairs),
+            "exact_duplicates": [m.__dict__ for m in self.exact_duplicates],
+            "near_duplicates": [m.__dict__ for m in self.near_duplicates],
+            "conflicting_pairs": [m.__dict__ for m in self.conflicting_pairs],
+        }
+
+
+def find_near_duplicates(source: Any, rules: Optional[RuleSet] = None) -> DuplicateReport:
+    """Find exact duplicates and near-duplicate spelling variants with explicit 1-indexed row references.
+
+    Preserves user datasets without silently dropping rows, providing explainable diagnostics.
+    """
+    rules = rules or DEFAULT_RULES
+    rows = load_dataset(source)
+    exact_matches: List[DuplicateMatch] = []
+    near_matches: List[DuplicateMatch] = []
+    conflicts: List[DuplicateMatch] = []
+
+    seen_exact: Dict[str, int] = {}
+    for i, (text, label) in enumerate(rows, start=1):
+        norm_key = text.strip().lower()
+        if norm_key in seen_exact:
+            prev_idx = seen_exact[norm_key]
+            prev_text, prev_label = rows[prev_idx - 1]
+            conflict = (label != prev_label)
+            m = DuplicateMatch(prev_idx, i, prev_text, text, prev_label, label, "exact", conflict)
+            exact_matches.append(m)
+            if conflict:
+                conflicts.append(m)
+        else:
+            seen_exact[norm_key] = i
+
+    groups = _groups(rows, rules)
+    for gkey, idxs in groups.items():
+        if len(idxs) > 1:
+            for a_pos in range(len(idxs)):
+                for b_pos in range(a_pos + 1, len(idxs)):
+                    ia, ib = idxs[a_pos], idxs[b_pos]
+                    ta, la = rows[ia]
+                    tb, lb = rows[ib]
+                    if ta.strip().lower() != tb.strip().lower():
+                        conflict = (la != lb)
+                        m = DuplicateMatch(ia + 1, ib + 1, ta, tb, la, lb, "near_duplicate", conflict)
+                        near_matches.append(m)
+                        if conflict and m not in conflicts:
+                            conflicts.append(m)
+
+    return DuplicateReport(len(rows), exact_matches, near_matches, conflicts)
+
+
+@dataclass
+class LeakageMatch:
+    train_row: int
+    test_row: int
+    train_text: str
+    test_text: str
+    train_label: Any
+    test_label: Any
+    leak_type: str  # "exact" | "near_variant"
+
+
+@dataclass
+class LeakageReport:
+    n_train: int
+    n_test: int
+    exact_leaks: List[LeakageMatch] = field(default_factory=list)
+    near_leaks: List[LeakageMatch] = field(default_factory=list)
+
+    @property
+    def has_leakage(self) -> bool:
+        return bool(self.exact_leaks or self.near_leaks)
+
+    def summary(self) -> str:
+        lines = [
+            f"Train rows: {self.n_train} | Test rows: {self.n_test}",
+            f"Exact train/test leaks: {len(self.exact_leaks)}",
+            f"Near-variant spelling leaks: {len(self.near_leaks)}",
+        ]
+        if self.has_leakage:
+            lines.append("First detected leaks:")
+            for m in (self.exact_leaks + self.near_leaks)[:5]:
+                lines.append(f"  Train row {m.train_row} vs Test row {m.test_row} ({m.leak_type}): '{m.train_text}' vs '{m.test_text}'")
+        else:
+            lines.append("Clean splits: no exact or spelling-variant train/test leakage detected.")
+        return "\n".join(lines)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "n_train": self.n_train,
+            "n_test": self.n_test,
+            "has_leakage": self.has_leakage,
+            "exact_leak_count": len(self.exact_leaks),
+            "near_leak_count": len(self.near_leaks),
+            "exact_leaks": [m.__dict__ for m in self.exact_leaks],
+            "near_leaks": [m.__dict__ for m in self.near_leaks],
+        }
+
+
+def check_leakage(train_source: Any, test_source: Any, rules: Optional[RuleSet] = None) -> LeakageReport:
+    """Check for exact and near-variant spelling leakage between train and test datasets.
+
+    Identifies training rows that overlap with or trivially spell-match test rows,
+    providing exact 1-indexed row references for explainability.
+    """
+    rules = rules or DEFAULT_RULES
+    train_rows = load_dataset(train_source)
+    test_rows = load_dataset(test_source)
+
+    train_exact: Dict[str, List[int]] = defaultdict(list)
+    train_groups: Dict[Tuple[str, ...], List[int]] = defaultdict(list)
+
+    for i, (t, _) in enumerate(train_rows, start=1):
+        train_exact[t.strip().lower()].append(i)
+        train_groups[rules.canonical_tokens(t)].append(i)
+
+    exact_leaks: List[LeakageMatch] = []
+    near_leaks: List[LeakageMatch] = []
+
+    for j, (t_test, l_test) in enumerate(test_rows, start=1):
+        norm_t = t_test.strip().lower()
+        if norm_t in train_exact:
+            for tr_idx in train_exact[norm_t]:
+                t_train, l_train = train_rows[tr_idx - 1]
+                exact_leaks.append(LeakageMatch(tr_idx, j, t_train, t_test, l_train, l_test, "exact"))
+
+        test_canon = rules.canonical_tokens(t_test)
+        if test_canon in train_groups:
+            for tr_idx in train_groups[test_canon]:
+                t_train, l_train = train_rows[tr_idx - 1]
+                if t_train.strip().lower() != norm_t:
+                    near_leaks.append(LeakageMatch(tr_idx, j, t_train, t_test, l_train, l_test, "near_variant"))
+
+    return LeakageReport(len(train_rows), len(test_rows), exact_leaks, near_leaks)
+
+
 # ---------------------------------------------------------------------------- SentiMix
 def _clean_tokens(tokens: List[str]) -> List[str]:
     """Drop @mentions and URLs (as other SentiMix papers do), keep hashtag words."""

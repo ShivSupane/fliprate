@@ -92,6 +92,13 @@ def load_dataset(
     clean_text_col = text_col.strip()
     clean_label_col = label_col.strip()
 
+    # Duck-typed support for pandas DataFrame or table-like objects without importing pandas
+    if hasattr(source, "to_dict") and hasattr(source, "columns"):
+        try:
+            source = source.to_dict(orient="records")
+        except Exception:
+            pass
+
     if isinstance(source, (str, os.PathLike)):
         # If it's a file on disk or path-like
         is_path = isinstance(source, os.PathLike) or ("\n" not in str(source) and os.path.exists(source))

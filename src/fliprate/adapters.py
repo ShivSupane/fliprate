@@ -159,6 +159,77 @@ def from_sklearn(pipeline: Any, name: str = "sklearn") -> SklearnAdapter:
     return SklearnAdapter(pipeline, name)
 
 
+try:
+    from sklearn.base import BaseEstimator, TransformerMixin
+    _SKLEARN_BASE_CLASSES = (BaseEstimator, TransformerMixin)
+except ImportError:
+    class _FallbackBaseEstimator:
+        def get_params(self, deep: bool = True) -> Dict[str, Any]:
+            return {
+                "rules": getattr(self, "rules", None),
+                "lowercase": getattr(self, "lowercase", True),
+            }
+
+        def set_params(self, **params: Any) -> Any:
+            for k, v in params.items():
+                setattr(self, k, v)
+            return self
+
+    class _FallbackTransformerMixin:
+        def fit_transform(self, X: Any, y: Any = None, **fit_params: Any) -> Any:
+            return self.fit(X, y, **fit_params).transform(X)
+
+    _SKLEARN_BASE_CLASSES = (_FallbackBaseEstimator, _FallbackTransformerMixin)
+
+
+class FlipRateNormalizer(*_SKLEARN_BASE_CLASSES):
+    """Scikit-learn compatible transformer for text normalization.
+
+    Can be placed directly in a scikit-learn Pipeline ahead of a vectorizer:
+        from fliprate import FlipRateNormalizer
+        from sklearn.pipeline import Pipeline
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.linear_model import LogisticRegression
+
+        pipe = Pipeline([
+            ('normalizer', FlipRateNormalizer()),
+            ('tfidf', TfidfVectorizer()),
+            ('clf', LogisticRegression()),
+        ])
+
+    Note: Normalization can alter model behavior and does not guarantee correctness.
+    Always evaluate downstream task impact using FlipRate evaluation tools.
+    """
+
+    def __init__(self, rules: Optional[Any] = None, lowercase: bool = True):
+        self.rules = rules
+        self.lowercase = lowercase
+
+    def fit(self, X: Any, y: Any = None) -> "FlipRateNormalizer":
+        """No-op fit method: does not learn from data or held-out labels."""
+        return self
+
+    def transform(self, X: Any) -> List[str]:
+        """Normalize all input text items preserving order and row count."""
+        from .normalization import normalize
+        # Handle numpy arrays, pandas Series, or iterables
+        if hasattr(X, "tolist"):
+            items = X.tolist()
+        elif hasattr(X, "values") and hasattr(X.values, "tolist"):
+            items = X.values.tolist()
+        else:
+            items = list(X)
+
+        return [
+            normalize(str(item) if not isinstance(item, str) else item,
+                      rules=self.rules, lowercase=self.lowercase).normalized
+            for item in items
+        ]
+
+    def fit_transform(self, X: Any, y: Any = None, **fit_params: Any) -> List[str]:
+        return self.fit(X, y, **fit_params).transform(X)
+
+
 class LLMClassifier(ModelAdapter):
     """Classify with any LLM through a function `complete(prompt) -> str` that you provide.
 

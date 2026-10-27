@@ -181,6 +181,17 @@ class FlipRate:
         opts.update(kwargs)
         return perturb(text, **opts)
 
+    def augment(self, dataset: Any, n_per_example: int = 1, **kwargs: Any) -> Any:
+        """Generate safe training-time augmented dataset using engine rules and seed."""
+        from .augmentation import augment
+        opts = {
+            "rules": self.rules,
+            "seed": self.seed,
+            "n_per_example": n_per_example,
+        }
+        opts.update(kwargs)
+        return augment(dataset, **opts)
+
     def assert_stable(
         self,
         dataset: Any,
