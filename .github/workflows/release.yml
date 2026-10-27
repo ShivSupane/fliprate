@@ -1,5 +1,6 @@
 name: release
 # Publishes to PyPI on a GitHub Release using trusted publishing (no stored password or token).
+# Trigger: GitHub Release published (this IS the explicit authorization to publish).
 on:
   release:
     types: [published]
@@ -11,6 +12,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      attestations: write
     steps:
       - uses: actions/checkout@v4
 
@@ -50,3 +52,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+          attestations: true
