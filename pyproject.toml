@@ -46,3 +46,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 fliprate = ["data/*.csv", "web/*.html", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
