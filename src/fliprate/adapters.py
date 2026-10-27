@@ -168,6 +168,7 @@ except ImportError:
             return {
                 "rules": getattr(self, "rules", None),
                 "lowercase": getattr(self, "lowercase", True),
+                "protected_terms": getattr(self, "protected_terms", None),
             }
 
         def set_params(self, **params: Any) -> Any:
@@ -192,7 +193,7 @@ class FlipRateNormalizer(*_SKLEARN_BASE_CLASSES):
         from sklearn.linear_model import LogisticRegression
 
         pipe = Pipeline([
-            ('normalizer', FlipRateNormalizer()),
+            ('normalizer', FlipRateNormalizer(protected_terms=['Tata Motors'])),
             ('tfidf', TfidfVectorizer()),
             ('clf', LogisticRegression()),
         ])
@@ -201,9 +202,15 @@ class FlipRateNormalizer(*_SKLEARN_BASE_CLASSES):
     Always evaluate downstream task impact using FlipRate evaluation tools.
     """
 
-    def __init__(self, rules: Optional[Any] = None, lowercase: bool = True):
+    def __init__(
+        self,
+        rules: Optional[Any] = None,
+        lowercase: bool = True,
+        protected_terms: Optional[Sequence[str]] = None,
+    ):
         self.rules = rules
         self.lowercase = lowercase
+        self.protected_terms = protected_terms
 
     def fit(self, X: Any, y: Any = None) -> "FlipRateNormalizer":
         """No-op fit method: does not learn from data or held-out labels."""
@@ -221,8 +228,12 @@ class FlipRateNormalizer(*_SKLEARN_BASE_CLASSES):
             items = list(X)
 
         return [
-            normalize(str(item) if not isinstance(item, str) else item,
-                      rules=self.rules, lowercase=self.lowercase).normalized
+            normalize(
+                str(item) if not isinstance(item, str) else item,
+                rules=self.rules,
+                lowercase=self.lowercase,
+                protected_terms=self.protected_terms,
+            ).normalized
             for item in items
         ]
 

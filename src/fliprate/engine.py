@@ -25,6 +25,7 @@ def assert_stable(
     rules: Optional[Any] = None,
     mode: str = "thorough",
     early_stop: bool = False,
+    protected_terms: Optional[Sequence[str]] = None,
     **kwargs: Any,
 ) -> Report:
     """Evaluate model robustness on a dataset and assert quality requirements pass.
@@ -53,6 +54,7 @@ def assert_stable(
         mode=mode,
         early_stop=early_stop,
         thresholds=thresholds,
+        protected_terms=protected_terms,
         **kwargs,
     )
 
@@ -92,6 +94,7 @@ class FlipRate:
             n_variants=8,
             seed=0,
             mode="thorough",
+            protected_terms=["Tata Motors", "UPI"],
         )
 
         res = engine.gate("mala product avadlaaa nahi")
@@ -109,6 +112,7 @@ class FlipRate:
         lowercase: bool = True,
         mode: str = "thorough",
         early_stop: bool = False,
+        protected_terms: Optional[Sequence[str]] = None,
     ) -> None:
         self.model = model
         self.rules = rules
@@ -118,6 +122,7 @@ class FlipRate:
         self.lowercase = lowercase
         self.mode = mode
         self.early_stop = early_stop
+        self.protected_terms = list(protected_terms) if protected_terms else None
 
     def _resolve_model(self, model_override: Optional[Any] = None) -> Any:
         m = model_override if model_override is not None else self.model
@@ -135,6 +140,7 @@ class FlipRate:
             "seed": self.seed,
             "mode": self.mode,
             "early_stop": self.early_stop,
+            "protected_terms": self.protected_terms,
         }
         opts.update(kwargs)
         return gate(m, text, **opts)
@@ -148,6 +154,7 @@ class FlipRate:
             "seed": self.seed,
             "mode": self.mode,
             "early_stop": self.early_stop,
+            "protected_terms": self.protected_terms,
         }
         opts.update(kwargs)
         return test(m, dataset, **opts)
@@ -163,20 +170,22 @@ class FlipRate:
         return protect(m, **opts)
 
     def normalize(self, text: str, **kwargs: Any) -> NormalizeResult:
-        """Normalize input text using engine's rules."""
+        """Normalize input text using engine's rules and protected terms."""
         opts: Dict[str, Any] = {
             "rules": self.rules,
             "lowercase": self.lowercase,
+            "protected_terms": self.protected_terms,
         }
         opts.update(kwargs)
         return normalize(text, **opts)
 
     def perturb(self, text: str, **kwargs: Any) -> List[Variant]:
-        """Generate safe variants of input text using engine's rules and seed."""
+        """Generate safe variants of input text using engine's rules, seed, and protected terms."""
         opts: Dict[str, Any] = {
             "rules": self.rules,
             "n": self.n_variants,
             "seed": self.seed,
+            "protected_terms": self.protected_terms,
         }
         opts.update(kwargs)
         return perturb(text, **opts)
@@ -207,6 +216,7 @@ class FlipRate:
             "rules": self.rules,
             "n_variants": self.n_variants,
             "seed": self.seed,
+            "protected_terms": self.protected_terms,
         }
         opts.update(kwargs)
         return assert_stable(

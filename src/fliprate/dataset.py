@@ -6,7 +6,7 @@ import hashlib
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 from .evaluation import Row, load_dataset
 from .rules import DEFAULT_RULES, WORD_RE, RuleSet, word_key
@@ -374,21 +374,165 @@ def _edit_distance(a: str, b: str, cap: int) -> int:
 
 @dataclass
 class Candidate:
-    spellings: List[str]          # most frequent first
-    counts: List[int]
-    risk: str                     # "", or why a human must look twice
+    spellings: List[str] = field(default_factory=list)          # most frequent / canonical first
+    counts: List[int] = field(default_factory=list)
+    risk: str = ""                                              # "", or why a human must look twice
+    language: str = "indic-romanized"
+    confidence: float = 0.8                                     # Heuristic ranking score (0.0 to 1.0)
+    reviewer_status: str = "pending"                            # "pending" | "approved" | "rejected"
+    evidence_source: str = "mined"
+    ruleset_version: str = "0.8.0"
+    notes: str = ""
+
+    @property
+    def canonical(self) -> str:
+        return self.spellings[0] if self.spellings else ""
+
+    @property
+    def variants(self) -> List[str]:
+        return self.spellings[1:] if len(self.spellings) > 1 else []
 
     @property
     def total(self) -> int:
         return sum(self.counts)
 
+    @property
+    def status(self) -> str:
+        return self.reviewer_status
 
-def mine_variants(texts: Iterable[str], min_count: int = 2, max_edit: int = 2,
-                  rules: Optional[RuleSet] = None) -> List[Candidate]:
+    @status.setter
+    def status(self, val: str) -> None:
+        self.reviewer_status = val
+
+    def approve(self, notes: str = "") -> "Candidate":
+        self.reviewer_status = "approved"
+        if notes:
+            self.notes = notes
+        return self
+
+    def reject(self, notes: str = "") -> "Candidate":
+        self.reviewer_status = "rejected"
+        if notes:
+            self.notes = notes
+        return self
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "canonical": self.canonical,
+            "variants": self.variants,
+            "spellings": list(self.spellings),
+            "counts": list(self.counts),
+            "total_count": self.total,
+            "risk": self.risk,
+            "language": self.language,
+            "confidence": round(self.confidence, 3),
+            "reviewer_status": self.reviewer_status,
+            "evidence_source": self.evidence_source,
+            "ruleset_version": self.ruleset_version,
+            "notes": self.notes,
+        }
+
+
+class CandidateRuleSet(list):
+    """Collection of mined candidate spelling rules awaiting human review.
+
+    Inherits from list for complete backward compatibility while adding governance
+    and lifecycle methods: approve, reject, save_reviewed_csv, and to_ruleset.
+    """
+
+    def approve(self, key_or_index: Union[str, int], notes: str = "") -> Optional[Candidate]:
+        """Approve a candidate by its canonical/variant form or list index."""
+        cand = self._find(key_or_index)
+        if cand:
+            cand.approve(notes)
+        return cand
+
+    def reject(self, key_or_index: Union[str, int], notes: str = "") -> Optional[Candidate]:
+        """Reject a candidate by its canonical/variant form or list index."""
+        cand = self._find(key_or_index)
+        if cand:
+            cand.reject(notes)
+        return cand
+
+    def _find(self, key_or_index: Union[str, int]) -> Optional[Candidate]:
+        if isinstance(key_or_index, int):
+            if 0 <= key_or_index < len(self):
+                return self[key_or_index]
+            raise IndexError(f"Candidate index {key_or_index} out of range (0..{len(self)-1})")
+        target = str(key_or_index).strip().lower()
+        for c in self:
+            if c.canonical.lower() == target or any(v.lower() == target for v in c.variants):
+                return c
+        return None
+
+    @property
+    def approved(self) -> List[Candidate]:
+        return [c for c in self if c.reviewer_status in ("approved", "approve", "yes", "y")]
+
+    @property
+    def rejected(self) -> List[Candidate]:
+        return [c for c in self if c.reviewer_status in ("rejected", "reject", "no", "n")]
+
+    @property
+    def pending(self) -> List[Candidate]:
+        return [
+            c
+            for c in self
+            if c.reviewer_status not in ("approved", "approve", "yes", "y", "rejected", "reject", "no", "n")
+        ]
+
+    def summary(self) -> str:
+        lines = [
+            f"CandidateRuleSet: {len(self)} total candidates",
+            f"  Approved: {len(self.approved)}",
+            f"  Rejected: {len(self.rejected)}",
+            f"  Pending:  {len(self.pending)}",
+        ]
+        return "\n".join(lines)
+
+    def save_reviewed_csv(self, path: Any) -> None:
+        """Write candidate rules to a CSV file compatible with RuleSet.from_csv.
+
+        Columns include `spellings`, `status`, `counts`, `risk`, `language`, `confidence`, `notes`.
+        """
+        import csv
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["spellings", "status", "counts", "risk", "language", "confidence", "evidence_source", "notes"])
+            for c in self:
+                w.writerow([
+                    "|".join(c.spellings),
+                    c.reviewer_status,
+                    "|".join(map(str, c.counts)),
+                    c.risk,
+                    c.language,
+                    f"{c.confidence:.3f}",
+                    c.evidence_source,
+                    c.notes,
+                ])
+
+    def to_ruleset(self, base: Optional[RuleSet] = None, approved_only: bool = True) -> RuleSet:
+        """Build an activated RuleSet from candidates.
+
+        By default (`approved_only=True`), only candidates explicitly approved
+        by human review are activated.
+        """
+        targets = self.approved if approved_only else self
+        groups = [tuple(c.spellings) for c in targets if len(c.spellings) >= 2]
+        return (base or DEFAULT_RULES).extended(groups=groups)
+
+
+def mine_variants(
+    texts: Iterable[str],
+    min_count: int = 2,
+    max_edit: int = 2,
+    rules: Optional[RuleSet] = None,
+) -> CandidateRuleSet:
     """Propose spelling groups from real messages for a HUMAN to approve. Never applied automatically.
 
     Words with the same consonant skeleton, the same first letter and a small edit distance are grouped.
     Short words collide easily (Marathi "mala" vs "mila"), so they are flagged.
+    Returns a CandidateRuleSet requiring human review.
     """
     rules = rules or DEFAULT_RULES
     raw_counts: Counter = Counter()
@@ -436,13 +580,21 @@ def mine_variants(texts: Iterable[str], min_count: int = 2, max_edit: int = 2,
                 continue  # already covered by an existing group
             spell = [key_forms[k].most_common(1)[0][0] for k in members]
             risks = []
+            conf = 0.85
             if any(len(k) <= 4 for k in members):
                 risks.append("short words collide easily")
+                conf = 0.50
             if any(s in rules.negations or s in rules.ambiguous for s in spell):
                 risks.append("contains a negation or ambiguous word")
-            out.append(Candidate(spell, [key_counts[k] for k in members], "; ".join(risks)))
+                conf = 0.25
+            out.append(Candidate(
+                spellings=spell,
+                counts=[key_counts[k] for k in members],
+                risk="; ".join(risks),
+                confidence=conf,
+            ))
     out.sort(key=lambda c: -c.total)
-    return out
+    return CandidateRuleSet(out)
 
 
 def write_candidates(cands: Sequence[Candidate], path) -> None:
@@ -451,7 +603,12 @@ def write_candidates(cands: Sequence[Candidate], path) -> None:
         w = csv.writer(f)
         w.writerow(["spellings", "counts", "risk", "status"])
         for c in cands:
-            w.writerow(["|".join(c.spellings), "|".join(map(str, c.counts)), c.risk, ""])
+            w.writerow([
+                "|".join(c.spellings),
+                "|".join(map(str, c.counts)),
+                c.risk,
+                c.reviewer_status if c.reviewer_status != "pending" else "",
+            ])
 
 
 # ------------------------------------------------------------------------------ audit

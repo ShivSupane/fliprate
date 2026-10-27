@@ -7,6 +7,7 @@ import unicodedata
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
+from .normalization import mask_protected_terms, unmask_protected_terms
 from .rules import (
     CROSS_SCRIPT_MAP,
     CROSS_SCRIPT_REV,
@@ -65,7 +66,11 @@ def _spelling(text: str, rng: random.Random, rules: RuleSet) -> Optional[str]:
 
 def _repetition(text: str, rng: random.Random, rules: RuleSet = DEFAULT_RULES) -> Optional[str]:
     parts = tokenize_keep(text)
-    idx = [i for i, p in enumerate(parts) if is_word(p) and len(p) >= 3 and any(c in _VOWELS for c in p)]
+    idx = [
+        i
+        for i, p in enumerate(parts)
+        if is_word(p) and len(p) >= 3 and any(c in _VOWELS for c in p) and not p.startswith("__FLIPPROT")
+    ]
     if not idx:
         return None
     i = rng.choice(idx)
@@ -180,11 +185,13 @@ def perturb(
     seed: int = 0,
     rules: Optional[RuleSet] = None,
     cross_script: bool = False,
+    protected_terms: Optional[Sequence[str]] = None,
 ) -> List[Variant]:
     """Return up to `n` distinct safe variants of `text` (deterministic for a given seed).
 
     Every variant is checked with `is_safe_variant`, so negations are never added or
-    removed. Fewer than `n` variants may be returned for short or already-noisy text.
+    removed. Protected terms (if provided) are left completely unchanged byte-for-byte.
+    Fewer than `n` variants may be returned for short or already-noisy text.
     """
     if not isinstance(text, str):
         raise TypeError(f"text must be str, got {type(text).__name__}")
@@ -218,12 +225,22 @@ def perturb(
         raise ValueError(f"Unknown perturbation kinds: {unknown}. Choose from {list(_APPLY.keys())}")
     if not text.strip():
         return []
+
+    masked_text, prot_masks = mask_protected_terms(text, protected_terms)
+
     rng = random.Random(seed)
     seen = {text}
     out: List[Variant] = []
+    base_input = masked_text if prot_masks else text
+
     for attempt in range(n * 15):
         kind = active_kinds[attempt % len(active_kinds)]
-        candidate = _APPLY[kind](text, rng, rules)
+        candidate = _APPLY[kind](base_input, rng, rules)
+        if candidate and prot_masks:
+            candidate = unmask_protected_terms(candidate, prot_masks)
+            # Guarantee every protected term is preserved in the variant byte-for-byte
+            if not all(term in candidate for term in prot_masks):
+                continue
         if candidate and candidate not in seen and rules.is_safe_variant(text, candidate, cross_script=cross_script):
             seen.add(candidate)
             out.append(Variant(candidate, kind))

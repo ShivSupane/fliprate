@@ -67,6 +67,7 @@ from .pipeline import (
 # ── Explainability & Debugging ───────────────────────────────────────────────
 from .explain import (
     explain_gate_decision,
+    explain_report_flips,
     preview_normalized_variants,
     print_rule_hits,
     show_why_it_flipped,
@@ -133,13 +134,17 @@ from .events import drain, make_event, to_sse
 # ── Training Augmentation & Diagnostics [v0.7.0] ─────────────────────────────
 from .augmentation import AugmentationResult, augment, compare_augmentation
 from .dataset import (
+    Candidate,
+    CandidateRuleSet,
     DuplicateMatch,
     DuplicateReport,
     LeakageMatch,
     LeakageReport,
     check_leakage,
     find_near_duplicates,
+    mine_variants,
 )
+from .normalization import mask_protected_terms, unmask_protected_terms
 
 
 def guard(model, text, **kwargs):
@@ -158,7 +163,7 @@ def learn_rules_from_texts(texts, **kwargs):
     return mine_variants(texts, **kwargs)
 
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 __author__ = "Shiv Supane"
 
 __all__ = [
@@ -183,6 +188,7 @@ __all__ = [
 
     # ── Explainability & Debugging ───────────────────────────────────────────
     "explain_gate_decision",
+    "explain_report_flips",
     "show_why_it_flipped",
     "preview_normalized_variants",
     "print_rule_hits",
@@ -255,6 +261,13 @@ __all__ = [
     "DuplicateMatch",
     "LeakageReport",
     "LeakageMatch",
+
+    # ── Governance & Rule Mining [v0.8.0] ────────────────────────────────────
+    "Candidate",
+    "CandidateRuleSet",
+    "mine_variants",
+    "mask_protected_terms",
+    "unmask_protected_terms",
 
     # ── Benchmarking & Quality Dashboard ─────────────────────────────────────
     "benchmark",
