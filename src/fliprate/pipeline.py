@@ -73,14 +73,24 @@ def check_model(model: Any, dataset: Any, **kwargs) -> Report:
     return test(model, dataset, **kwargs)
 
 
-def normalize_text(text: str, lowercase: bool = True, rules: Optional[Any] = None) -> str:
+def normalize_text(
+    text: str,
+    lowercase: bool = True,
+    rules: Optional[Any] = None,
+    protected_terms: Optional[Sequence[str]] = None,
+) -> str:
     """Simple string-in, string-out text normalizer.
 
     Example:
         clean = fr.normalize_text("Mala product avadlaaa nhi", lowercase=False)
         # -> "Mala product avadla nahi"
     """
-    return normalize(text, lowercase=lowercase, rules=rules).normalized
+    return normalize(
+        text,
+        lowercase=lowercase,
+        rules=rules,
+        protected_terms=protected_terms,
+    ).normalized
 
 
 def safe_predict(model: Any, text: str, on_review: str = "normalized", **kwargs) -> str:
@@ -114,6 +124,12 @@ class RuntimeGuardResult:
     should_route_to_human: bool
     reason: str
     metadata: Dict[str, Any]
+
+    @property
+    def flip_rate(self) -> float:
+        """Fraction of evaluated variants that flipped prediction."""
+        raw_stab = self.metadata.get("raw_stability")
+        return max(0.0, min(1.0, 1.0 - raw_stab)) if raw_stab is not None else 0.0
 
 
 def runtime_guard(model: Any, text: str, mode: str = "lenient", **kwargs) -> RuntimeGuardResult:
@@ -161,6 +177,11 @@ def evaluate_pipeline(model: Any, dataset: Any, save_path: Optional[str] = None,
     return report
 
 
-def make_protected_model(model: Any, rules: Optional[Any] = None, lowercase: bool = True) -> ProtectedModel:
+def make_protected_model(
+    model: Any,
+    rules: Optional[Any] = None,
+    lowercase: bool = True,
+    protected_terms: Optional[Sequence[str]] = None,
+) -> ProtectedModel:
     """Create a model wrapped with automatic normalization. Production alias for `protect()`."""
-    return protect(model, rules=rules, lowercase=lowercase)
+    return protect(model, rules=rules, lowercase=lowercase, protected_terms=protected_terms)

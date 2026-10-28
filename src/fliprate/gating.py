@@ -33,6 +33,13 @@ class Decision:
     stop_reason: Optional[str] = None
 
     @property
+    def flip_rate(self) -> float:
+        """Fraction of evaluated variants that flipped prediction (1 - raw_stability)."""
+        if self.raw_stability is None:
+            return 0.0
+        return max(0.0, min(1.0, 1.0 - self.raw_stability))
+
+    @property
     def is_safe(self) -> bool:
         """True if prediction survives safe variants (decision is PASS or TRANSFORM)."""
         return self.decision in (PASS, TRANSFORM)

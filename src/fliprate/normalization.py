@@ -22,6 +22,11 @@ class NormalizeResult:
     normalized: str
     changes: List[Tuple[str, str]] = field(default_factory=list)
 
+    @property
+    def changed(self) -> bool:
+        """True if any changes were made during normalization."""
+        return len(self.changes) > 0
+
     def __str__(self) -> str:
         return self.normalized
 

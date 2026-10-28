@@ -84,12 +84,23 @@ class Predictor:
 class ProtectedModel:
     """`model` with conservative normalization in front of it. This is the production-facing wrapper."""
 
-    def __init__(self, model: Callable, rules: Optional[RuleSet] = None, lowercase: bool = True):
-        self.model, self.rules, self.lowercase = model, rules, lowercase
+    def __init__(
+        self,
+        model: Callable,
+        rules: Optional[RuleSet] = None,
+        lowercase: bool = True,
+        protected_terms: Optional[Sequence[str]] = None,
+    ):
+        self.model, self.rules, self.lowercase, self.protected_terms = model, rules, lowercase, protected_terms
         self.name = f"protected({model_name(model)})"
 
     def _clean(self, text: str) -> str:
-        return normalize(text, lowercase=self.lowercase, rules=self.rules).normalized
+        return normalize(
+            text,
+            lowercase=self.lowercase,
+            rules=self.rules,
+            protected_terms=self.protected_terms,
+        ).normalized
 
     def __call__(self, text: str):
         return self.model(self._clean(text))
@@ -98,6 +109,11 @@ class ProtectedModel:
         return batch_predict(self.model, [self._clean(t) for t in texts])
 
 
-def protect(model: Callable, rules: Optional[RuleSet] = None, lowercase: bool = True) -> ProtectedModel:
+def protect(
+    model: Callable,
+    rules: Optional[RuleSet] = None,
+    lowercase: bool = True,
+    protected_terms: Optional[Sequence[str]] = None,
+) -> ProtectedModel:
     """Wrap `model` so every input is normalized first. Measure the effect with `fr.test(protect(model), data)`."""
-    return ProtectedModel(model, rules, lowercase)
+    return ProtectedModel(model, rules, lowercase, protected_terms=protected_terms)
