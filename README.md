@@ -478,7 +478,8 @@ Public API is frozen at 1.0.0 — future releases will be backward compatible.
 
 | Version | Highlight |
 |---|---|
-| **1.0.1** | Ergonomics properties, `protected_terms` pass-through, full executable showcase + Colab notebook |
+| **1.0.2** | Google Colab showcase notebook + docs refresh (real datasets, live HF/LLM models) |
+| **1.0.1** | Ergonomics properties, `protected_terms` pass-through, full executable showcase |
 | **1.0.0** | Stable release — API frozen, 414 tests passing |
 | 0.9.0 | Dataset audit, benchmark protocol, security policy, CLI exit codes |
 | 0.8.0 | Protected terms, rule governance, non-causal diagnosis |

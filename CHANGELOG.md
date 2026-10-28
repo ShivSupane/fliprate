@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.2 — Colab Showcase Notebook & Docs Refresh
+
+- **Google Colab notebook** (`examples/fliprate_colab_showcase.ipynb`): a browser-runnable
+  twin of the local showcase. It downloads the **real Dakshina + Aksharantar**
+  transliteration datasets from their official sources (Google Storage + Hugging Face),
+  runs a **live Hugging Face** multilingual sentiment model, and classifies text through
+  **live LLM APIs** (Google Gemini / OpenAI) via Colab Secrets — then fixes flips with
+  `fr.protect()`. All live sections degrade gracefully to a local fallback when a key or
+  download is missing, so the notebook always runs end-to-end. The downloaded dataset
+  rules are wired straight into `gate()`, `test()`, and the reproducible benchmark protocol.
+- **Docs refresh**: README gains a "Showcase & Colab notebook" section with an
+  Open-in-Colab badge and an updated project layout; `docs/QUICKSTART.md` and
+  `docs/PROJECT_OVERVIEW.md` link the Colab notebook (and the stale PROJECT_OVERVIEW
+  version/status header is corrected).
+- No core library code changed. The public API remains frozen at 1.0.0.
+- All 414 tests pass across Python 3.9 → 3.13.
+
 ## 1.0.1 — Ergonomics & Extended Showcase
 
 - **Ergonomics & Convenience Properties**:
