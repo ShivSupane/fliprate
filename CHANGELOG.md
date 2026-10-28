@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.1 — Ergonomics & Extended Showcase
+
+- **Ergonomics & Convenience Properties**:
+  - `Report`: Added `.confidence_interval` (alias for `flip_rate_ci`) and `.n_flips` (`len(flips)`).
+  - `Decision`: Added `.flip_rate` property (`1.0 - raw_stability`).
+  - `RuntimeGuardResult`: Added `.flip_rate` property.
+  - `BenchmarkSuite`: Added `.baseline` property (alias for `baseline_name`).
+  - `NormalizeResult`: Added `.changed` property (`bool(changes)`).
+- **Pass-through Parameters**:
+  - `normalize_text()` now accepts `protected_terms` parameter and forwards to `normalize()`.
+  - `make_protected_model()` now accepts `protected_terms` parameter.
+  - `ProtectedModel` and `protect()` now accept `protected_terms`.
+- **Showcase & Living Reference**:
+  - Complete, executable `scratch/fliprate_showcase.py` covering all 23 API modules end-to-end with deep explanations (WHAT, WHY, HOW, WHEN) and ASCII-safe Windows terminal support.
+- All 414 test cases pass across Python 3.9 → 3.13.
+
 ## 1.0.0 — Stable release: API frozen, contract supported
 
 This is the first production-stable release of FlipRate. The public API is now frozen;
