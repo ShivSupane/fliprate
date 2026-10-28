@@ -28,4 +28,4 @@ data/rules_from_aksharantar/
 
 # Local test outputs and dashboards
 results/
-
+scratch/_*
