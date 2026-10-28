@@ -1,7 +1,7 @@
 # FlipRate — Complete Project Overview
 
 **Author: Shiv Supane**  
-**Version: 1.0.1**  
+**Version: 1.0.2**  
 **Status: Production/Stable**  
 
 > See the runnable references: `scratch/fliprate_showcase.py` (local) and

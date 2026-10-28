@@ -7,10 +7,10 @@
 
 ---
 
-## This is an ergonomics & documentation release
+## This is an ergonomics & showcase release
 
-FlipRate 1.0.1 keeps the **frozen 1.0.0 API** and adds convenience properties,
-pass-through parameters, and a complete Colab-ready showcase. There are no
+FlipRate 1.0.1 keeps the **frozen 1.0.0 API** and adds convenience properties and
+pass-through parameters, plus a complete local executable showcase. There are no
 breaking changes — everything from 1.0.0 works unchanged.
 
 ---
@@ -30,37 +30,13 @@ breaking changes — everything from 1.0.0 works unchanged.
 
 ### Showcase & living reference
 - Complete, executable `scratch/fliprate_showcase.py` covering all 23 API modules end-to-end
-  with deep WHAT / WHY / HOW / WHEN explanations and ASCII-safe Windows terminal support
-- **New: Google Colab notebook** — `examples/fliprate_colab_showcase.ipynb`
-  - Browser-runnable twin of the local showcase
-  - Downloads the **real Dakshina + Aksharantar** transliteration datasets from their
-    official sources (Google Storage + Hugging Face)
-  - Runs a **live Hugging Face** multilingual sentiment model through the robustness gate
-  - Classifies text through **live LLM APIs** (Google Gemini / OpenAI) using Colab Secrets,
-    then fixes flips with `fr.protect()` — graceful local fallback when no key is set
-  - Wires the downloaded dataset spelling rules straight into `gate()`, `test()`, and the
-    reproducible benchmark protocol to show FlipRate's real power against real data
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ShivSupane/fliprate/blob/main/examples/fliprate_colab_showcase.ipynb)
-
-### Documentation
-- README updated with a Showcase & Colab notebook section and the 1.0.1 version entry
-- `docs/QUICKSTART.md` and `docs/PROJECT_OVERVIEW.md` now link the Colab notebook
+  with deep WHAT / WHY / HOW / WHEN explanations and ASCII-safe Windows terminal support.
 
 ---
 
 ## Migration from 1.0.0
 
 No changes required. All 1.0.0 imports, function signatures, and CLI commands work unchanged.
-
----
-
-## Known limitations
-
-Unchanged from 1.0.0 — transliteration support is focused on Devanagari-script
-languages and romanized code-mixed text; `LLMClassifier` requires you to supply a
-client / completion function (no API key is bundled); Redis-backed infrastructure
-remains optional.
 
 ---
 
