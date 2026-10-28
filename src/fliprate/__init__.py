@@ -73,10 +73,10 @@ from .explain import (
     show_why_it_flipped,
 )
 
-# ── Validation ───────────────────────────────────────────────────────────────
+# ── Validation ──────────────────────────────────────────────────────────
 from .validation import validate_dataset, validate_text
 
-# ── Model adapters ──────────────────────────────────────────────────────────
+# ── Model adapters ─────────────────────────────────────────────────────────
 from .adapters import (
     CallableAdapter,
     FlipRateNormalizer,
@@ -165,7 +165,7 @@ def learn_rules_from_texts(texts, **kwargs):
     return mine_variants(texts, **kwargs)
 
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __author__ = "Shiv Supane"
 
 __all__ = [
@@ -195,11 +195,11 @@ __all__ = [
     "preview_normalized_variants",
     "print_rule_hits",
 
-    # ── Validation ───────────────────────────────────────────────────────────
+    # ── Validation ─────────────────────────────────────────────────────────
     "validate_text",
     "validate_dataset",
 
-    # ── Test & Gate ──────────────────────────────────────────────────────────
+    # ── Test & Gate ────────────────────────────────────────────────────────
     "test",
     "iter_test",
     "gate",
@@ -279,7 +279,7 @@ __all__ = [
     "audit_dataset",
     "run_benchmark_protocol",
 
-    # ── Experiment ───────────────────────────────────────────────────────────
+    # ── Experiment ─────────────────────────────────────────────────────────
     "run_experiment",
     "ExperimentResult",
 
@@ -293,7 +293,7 @@ __all__ = [
     "RedisJobStore",
     "RedisRateLimiter",
 
-    # ── Data loading ─────────────────────────────────────────────────────────
+    # ── Data loading ────────────────────────────────────────────────────────
     "load_dataset",
     "read_csv_text",
 
@@ -306,7 +306,7 @@ __all__ = [
     "make_event",
     "to_sse",
 
-    # ── Version ──────────────────────────────────────────────────────────────
+    # ── Version ──────────────────────────────────────────────────────────
     "__version__",
     "__author__",
 ]
