@@ -1,8 +1,12 @@
 # FlipRate — Complete Project Overview
 
 **Author: Shiv Supane**  
-**Version: 0.2.1**  
-**Status: Alpha**
+**Version: 1.0.1**  
+**Status: Production/Stable**  
+
+> See the runnable references: `scratch/fliprate_showcase.py` (local) and
+> [`examples/fliprate_colab_showcase.ipynb`](../examples/fliprate_colab_showcase.ipynb)
+> (Google Colab — downloads real Dakshina + Aksharantar datasets and runs live HF + LLM models).
 
 ---
 

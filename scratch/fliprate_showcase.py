@@ -1,7 +1,7 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════════╗
 ║                     F L I P R A T E   —   C O M P L E T E   S H O W C A S E  ║
-║                              Version 1.0.0  •  Shiv Supane                     ║
+║                              Version 1.0.1  •  Shiv Supane                     ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 
 PURPOSE OF THIS FILE
@@ -22,6 +22,10 @@ try/except so the file still runs without those optional packages installed.
 
 Run it:
     python scratch/fliprate_showcase.py
+
+Colab-ready twin (downloads real Dakshina + Aksharantar datasets and runs live
+Hugging Face + LLM models with your own API keys):
+    examples/fliprate_colab_showcase.ipynb
 
 Author : Shiv Supane
 Repo   : https://github.com/ShivSupane/fliprate
@@ -897,28 +901,94 @@ try:
 except ImportError:
     print("  [HuggingFace not installed — install with: pip install 'fliprate[hf]']")
 
-# ── 10f. LLMClassifier — OpenAI / Gemini (optional) ─────────────────────────
+# ── 10f. LLMClassifier — OpenAI / Gemini / Anthropic ─────────────────────────
+import os
+
 print("""
-  ── LLM Classifier (OpenAI / Anthropic / Gemini) ─────────────────────────────
-  Requires: pip install openai   or   pip install anthropic
-
-  USAGE:
-    import openai
-    client = openai.OpenAI(api_key="YOUR_KEY")
-
-    clf = fr.LLMClassifier(
-        client=client,
-        labels=["positive", "negative", "neutral"],
-        model="gpt-4o-mini",
-        temperature=0.0,
-    )
-    result = fr.gate(clf, "bohot bura experience tha")
-
-  WHY:
-    LLMClassifier uses strict label extraction — it prompts the LLM to
-    respond with ONLY a label from your list, not free text.  This makes
-    LLM-based classifiers compatible with FlipRate's gate and benchmark.
+  ── LLM Classifier (Google Gemini / OpenAI / Anthropic) ───────────────────────
+  Accepts ANY text completion function: complete(prompt) -> str.
+  Strictly validates and extracts only designated labels, rejecting freeform chat.
+  Compatible with fr.gate(), fr.test(), fr.benchmark(), and fr.protect().
 """)
+
+def _get_llm_completion() -> tuple[Callable[[str], str], str]:
+    """Return an LLM completion function using live API keys if present, or a realistic simulator."""
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if gemini_key:
+        try:
+            from google import genai
+            client = genai.Client(api_key=gemini_key)
+            return (
+                lambda prompt: client.models.generate_content(
+                    model="gemini-2.5-flash", contents=prompt
+                ).text or "neutral",
+                "Google Gemini (Live API - gemini-2.5-flash)",
+            )
+        except Exception:
+            try:
+                import google.generativeai as gai
+                gai.configure(api_key=gemini_key)
+                model = gai.GenerativeModel("gemini-1.5-flash")
+                return (
+                    lambda prompt: model.generate_content(prompt).text or "neutral",
+                    "Google Gemini (Live API - gemini-1.5-flash)",
+                )
+            except Exception:
+                pass
+    if openai_key:
+        try:
+            import openai
+            client = openai.OpenAI(api_key=openai_key)
+            return (
+                lambda prompt: client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.0,
+                ).choices[0].message.content or "neutral",
+                "OpenAI (Live API - gpt-4o-mini)",
+            )
+        except Exception:
+            pass
+
+    def simulated_llm_complete(prompt: str) -> str:
+        low = prompt.lower()
+        if any(w in low for w in ["nahi", "nhi", "nahin", "kharab", "bura", "damage", "fake", "bekaar"]):
+            return "negative"
+        if any(w in low for w in ["accha", "achha", "superb", "mast", "badhiya", "fast", "khush"]):
+            return "positive"
+        return "neutral"
+
+    return simulated_llm_complete, "Simulated LLM (set GEMINI_API_KEY or OPENAI_API_KEY for live API calls)"
+
+llm_complete_fn, llm_provider_name = _get_llm_completion()
+llm_clf = fr.LLMClassifier(
+    complete=llm_complete_fn,
+    labels=["positive", "negative", "neutral"],
+    instruction="Classify this Indian customer support message into exactly one sentiment label.",
+    name="llm_sentiment_classifier",
+)
+
+result_llm = fr.gate(llm_clf, "bohot bura experience tha")
+show("fr.LLMClassifier — LLM-powered classification with strict label parsing", {
+    "provider": llm_provider_name,
+    "input": "bohot bura experience tha",
+    "decision": result_llm.decision,
+    "prediction": result_llm.prediction,
+    "flip_rate": round(result_llm.flip_rate, 4),
+    "why": (
+        "LLMClassifier wraps any completion endpoint (Gemini, OpenAI, Claude, Ollama), "
+        "enforces single-label parsing, and works seamlessly with fr.gate() and fr.protect()."
+    ),
+})
+
+protected_llm = fr.protect(llm_clf)
+pred_protected = protected_llm("mala product avadlaaa nhi bohotttt")
+show("fr.protect(llm_clf) — wrap LLM with FlipRate normalizer", {
+    "raw_input": "mala product avadlaaa nhi bohotttt",
+    "protected_pred": pred_protected,
+    "benefit": "Normalizes romanized variants BEFORE hitting LLM, stopping flips and cutting token costs!",
+})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1489,6 +1559,34 @@ print("""
     ruleset = fr.dakshina_rules("hi", dataset_dir="/path/to/dakshina/hi/")
     # ruleset is a RuleSet you can pass to fr.gate(..., rules=ruleset)
 """)
+
+# ── Hugging Face & Custom Datasets Integration ────────────────────────────────
+try:
+    import datasets
+    # Hugging Face datasets integration example
+    hf_sample = datasets.Dataset.from_dict({
+        "text": [
+            "ye phone bahut accha hai",
+            "battery backup bekaar nikla",
+            "delivery time pe aayi shukriya",
+            "kuch khas nahi normal product tha",
+        ],
+        "label": ["positive", "negative", "positive", "neutral"],
+    })
+    hf_csv_path = Path(__file__).parent / "_hf_sample_data.csv"
+    hf_sample.to_csv(str(hf_csv_path))
+    report_hf_data = fr.test(MODEL, str(hf_csv_path), n_variants=3, seed=42)
+    show("Hugging Face datasets -> FlipRate batch evaluation", {
+        "status"      : "Successfully evaluated Hugging Face Dataset via FlipRate",
+        "rows"        : len(hf_sample),
+        "flip_rate"   : round(report_hf_data.flip_rate, 4),
+        "accuracy"    : round(report_hf_data.accuracy, 4),
+        "why"         : "Easily load any Hugging Face NLP dataset (tweet_eval, glue, indic_glue) and evaluate with fr.test()",
+    })
+    if hf_csv_path.exists():
+        hf_csv_path.unlink()
+except ImportError:
+    print("  [Hugging Face 'datasets' not installed — install with: pip install datasets]")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
