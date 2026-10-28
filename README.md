@@ -63,6 +63,35 @@ pred = fr.safe_predict(my_model, "bohot accha product hai")
 
 ---
 
+## Showcase & Colab notebook
+
+FlipRate ships two living, executable references for the whole public API:
+
+**1. Local showcase** — `scratch/fliprate_showcase.py`
+
+A single Python file that walks every public function (23 sections) with deep
+WHAT / WHY / HOW / WHEN explanations. Runs with only the dev extras:
+
+```bash
+pip install "fliprate[dev,sklearn]"
+python scratch/fliprate_showcase.py
+```
+
+**2. Google Colab notebook** — [`examples/fliprate_colab_showcase.ipynb`](examples/fliprate_colab_showcase.ipynb)
+
+A one-click, browser-runnable version of the showcase that downloads the **real
+datasets** (Dakshina + Aksharantar) and runs **live models** — a Hugging Face
+multilingual sentiment model plus LLM classification through your own Gemini /
+OpenAI API key — so you can see FlipRate's robustness checks against actual
+models and real transliteration data.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ShivSupane/fliprate/blob/main/examples/fliprate_colab_showcase.ipynb)
+
+Inside the notebook you set two Colab secrets (`GEMINI_API_KEY`, `OPENAI_API_KEY`);
+sections degrade gracefully to a local fallback when a key is absent.
+
+---
+
 ## Why FlipRate?
 
 | What you need | FlipRate answer |
@@ -426,6 +455,11 @@ fliprate/
 │   ├── cli.py             # fliprate CLI entry point
 │   └── api.py             # FastAPI web console
 ├── tests/                 # 414 tests across all versions
+├── examples/
+│   ├── 01_basic_usage.py … 07_benchmarking_dashboard.py
+│   └── fliprate_colab_showcase.ipynb   # Colab notebook — real datasets + live models
+├── scratch/
+│   └── fliprate_showcase.py            # local executable API showcase (23 sections)
 ├── docs/
 │   ├── API_REFERENCE.md
 │   ├── DEPLOYMENT_GUIDE.md
@@ -444,6 +478,7 @@ Public API is frozen at 1.0.0 — future releases will be backward compatible.
 
 | Version | Highlight |
 |---|---|
+| **1.0.1** | Ergonomics properties, `protected_terms` pass-through, full executable showcase + Colab notebook |
 | **1.0.0** | Stable release — API frozen, 414 tests passing |
 | 0.9.0 | Dataset audit, benchmark protocol, security policy, CLI exit codes |
 | 0.8.0 | Protected terms, rule governance, non-causal diagnosis |

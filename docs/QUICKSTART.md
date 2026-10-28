@@ -25,6 +25,19 @@ pip install -e ".[dev,api,hf,sklearn]"
 
 ---
 
+## 1b. Try it in Colab — no setup required
+
+The fastest way to see FlipRate's real power is the
+[**Colab showcase notebook**](https://colab.research.google.com/github/ShivSupane/fliprate/blob/main/examples/fliprate_colab_showcase.ipynb)
+([source](../examples/fliprate_colab_showcase.ipynb)).
+
+It downloads the **real Dakshina + Aksharantar** transliteration datasets, runs a live
+Hugging Face sentiment model, and classifies text through your own Gemini / OpenAI API
+key (set as Colab Secrets) — all measured and hardened with FlipRate. A local twin lives
+at `scratch/fliprate_showcase.py`.
+
+---
+
 ## 2. Start the web console
 
 ```bash
