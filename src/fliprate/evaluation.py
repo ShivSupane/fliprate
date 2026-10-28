@@ -202,6 +202,16 @@ class Report:
     def macro_f1(self) -> float:
         return self.macro_f1_original
 
+    @property
+    def confidence_interval(self) -> Tuple[float, float]:
+        """Alias for flip_rate_ci."""
+        return self.flip_rate_ci
+
+    @property
+    def n_flips(self) -> int:
+        """Total number of variant flips observed."""
+        return len(self.flips)
+
     def summary(self) -> str:
         worst = max(self.by_kind.items(), key=lambda kv: kv[1]["flip_rate"], default=None)
         lines = [

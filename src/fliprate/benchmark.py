@@ -76,6 +76,11 @@ class BenchmarkSuite:
     metadata: Dict[str, Any] = field(default_factory=dict)
     dataset_audit: Dict[str, Any] = field(default_factory=dict)
 
+    @property
+    def baseline(self) -> Optional[str]:
+        """Alias for baseline_name."""
+        return self.baseline_name
+
     def summary(self) -> str:
         lines = [
             "=" * 70,
