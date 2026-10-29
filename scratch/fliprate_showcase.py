@@ -37,7 +37,10 @@ import json
 import sys
 import textwrap
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
+
+# Safe base directory for local scripts, Jupyter notebooks, or Google Colab
+BASE_DIR = Path(__file__).resolve().parent if '__file__' in globals() else Path.cwd()
 
 # Ensure UTF-8 output encoding on Windows consoles
 if sys.platform == "win32":
@@ -139,7 +142,7 @@ MODEL = _build_demo_model()
 
 # ── tiny CSV dataset for batch tests ──────────────────────────────────────────
 
-_CSV_PATH = Path(__file__).parent / "_showcase_data.csv"
+_CSV_PATH = BASE_DIR / "_showcase_data.csv"
 
 def _ensure_csv() -> str:
     """Write a small labeled CSV to disk (used by batch functions)."""
@@ -911,10 +914,22 @@ print("""
   Compatible with fr.gate(), fr.test(), fr.benchmark(), and fr.protect().
 """)
 
+def _get_api_key(name: str) -> Optional[str]:
+    """Retrieve API key from Colab Secrets, environment variables, or config."""
+    try:
+        from google.colab import userdata
+        val = userdata.get(name)
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.environ.get(name)
+
+
 def _get_llm_completion() -> tuple[Callable[[str], str], str]:
     """Return an LLM completion function using live API keys if present, or a realistic simulator."""
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-    openai_key = os.environ.get("OPENAI_API_KEY")
+    gemini_key = _get_api_key("GEMINI_API_KEY")
+    openai_key = _get_api_key("OPENAI_API_KEY")
     if gemini_key:
         try:
             from google import genai
@@ -1113,12 +1128,12 @@ show("BenchmarkSuite.to_dict() — fully serializable benchmark data", {
 })
 
 # save HTML dashboard
-out_html = Path(__file__).parent / "_benchmark_dashboard.html"
+out_html = BASE_DIR / "_benchmark_dashboard.html"
 suite.save(str(out_html))
 print(f"\n  ✓ Interactive HTML dashboard saved → {out_html}")
 
 # save Markdown
-out_md = Path(__file__).parent / "_benchmark_report.md"
+out_md = BASE_DIR / "_benchmark_report.md"
 suite.save(str(out_md))
 print(f"  ✓ Markdown report saved             → {out_md}")
 
@@ -1155,7 +1170,7 @@ print("""
 """)
 
 # Build a separate "train" CSV for leakage demo
-train_csv = Path(__file__).parent / "_showcase_train.csv"
+train_csv = BASE_DIR / "_showcase_train.csv"
 train_csv.write_text(
     "text,label\n"
     "delivery nahi aayi,negative\n"  # ← same as test row → leakage!
@@ -1573,7 +1588,7 @@ try:
         ],
         "label": ["positive", "negative", "positive", "neutral"],
     })
-    hf_csv_path = Path(__file__).parent / "_hf_sample_data.csv"
+    hf_csv_path = BASE_DIR / "_hf_sample_data.csv"
     hf_sample.to_csv(str(hf_csv_path))
     report_hf_data = fr.test(MODEL, str(hf_csv_path), n_variants=3, seed=42)
     show("Hugging Face datasets -> FlipRate batch evaluation", {
