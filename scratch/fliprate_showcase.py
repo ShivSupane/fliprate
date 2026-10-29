@@ -931,26 +931,22 @@ def _get_llm_completion() -> tuple[Callable[[str], str], str]:
     gemini_key = _get_api_key("GEMINI_API_KEY_1") or _get_api_key("GEMINI_API_KEY") or _get_api_key("GEMINI_API_KEY_2")
     openai_key = _get_api_key("OPENAI_API_KEY")
     if gemini_key:
-        try:
-            from google import genai
-            client = genai.Client(api_key=gemini_key)
-            return (
-                lambda prompt: client.models.generate_content(
-                    model="gemini-2.5-flash", contents=prompt
-                ).text or "neutral",
-                "Google Gemini (Live API - gemini-2.5-flash)",
-            )
-        except Exception:
+        def _safe_gemini_call(prompt: str) -> str:
             try:
-                import google.generativeai as gai
-                gai.configure(api_key=gemini_key)
-                model = gai.GenerativeModel("gemini-1.5-flash")
-                return (
-                    lambda prompt: model.generate_content(prompt).text or "neutral",
-                    "Google Gemini (Live API - gemini-1.5-flash)",
-                )
-            except Exception:
-                pass
+                from google import genai
+                client = genai.Client(api_key=gemini_key)
+                return client.models.generate_content(model="gemini-2.5-flash", contents=prompt).text or "neutral"
+            except Exception as e:
+                err_str = str(e)
+                if "401" in err_str or "UNAUTHENTICATED" in err_str or "ACCESS_TOKEN" in err_str:
+                    if not getattr(_safe_gemini_call, "_warned", False):
+                        print("\n[!] 401 UNAUTHENTICATED on Gemini: key is not an AI Studio key (starts with 'AIzaSy...').")
+                        print("    Get a free key from: https://aistudio.google.com/app/apikey")
+                        print("    Falling back gracefully to semantic simulator.\n")
+                        _safe_gemini_call._warned = True
+                return simulated_llm_complete(prompt)
+
+        return _safe_gemini_call, "Google Gemini (gemini-2.5-flash with resilient fallback)" 
     if openai_key:
         try:
             import openai
