@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.3 — Hardened PyPI Deployment & Release Pipeline Fix
+
+- **PyPI publish hardening**: Added `skip-existing: true` to `.github/workflows/release.yml`
+  (`pypa/gh-action-pypi-publish@release/v1`) so the workflow is idempotent — a re-run after a
+  transient network failure will no longer abort with "File already exists" if the artifact was
+  already uploaded.
+- **Version bump**: `1.0.2` → `1.0.3` in `pyproject.toml` and `src/fliprate/__init__.py`,
+  ensuring the new release tag `v1.0.3` produces a clean, distinct PyPI package entry.
+- No library code changed. The public API remains frozen at 1.0.0.
+- All 414 tests pass across Python 3.9 → 3.13.
+
 ## 1.0.2 — Colab Showcase Notebook & Docs Refresh
 
 - **Google Colab notebook** (`examples/fliprate_colab_showcase.ipynb`): a browser-runnable

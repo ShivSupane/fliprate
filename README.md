@@ -8,6 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 [![Tests](https://github.com/ShivSupane/fliprate/actions/workflows/ci.yml/badge.svg)](https://github.com/ShivSupane/fliprate/actions)
 [![Downloads](https://img.shields.io/pypi/dm/fliprate)](https://pypi.org/project/fliprate/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ShivSupane/fliprate/blob/main/examples/fliprate_colab_showcase.ipynb)
 
 Built by **[Shiv Supane](https://github.com/ShivSupane)**
 
@@ -241,7 +242,7 @@ clf = fr.HttpServiceAdapter("https://api.example.com/classify", timeout=5.0)
 
 # ── LLM (OpenAI / Anthropic / Gemini) ───────────────────────────
 clf = fr.LLMClassifier(
-    client=openai_client,
+    complete=lambda p: openai_client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": p}]).choices[0].message.content,
     labels=["positive", "negative", "neutral"],
 )
 ```
@@ -478,6 +479,7 @@ Public API is frozen at 1.0.0 — future releases will be backward compatible.
 
 | Version | Highlight |
 |---|---|
+| **1.0.3** | Hardened PyPI release workflow (`skip-existing`), showcase notebooks & docs |
 | **1.0.2** | Google Colab showcase notebook + docs refresh (real datasets, live HF/LLM models) |
 | **1.0.1** | Ergonomics properties, `protected_terms` pass-through, full executable showcase |
 | **1.0.0** | Stable release — API frozen, 414 tests passing |
