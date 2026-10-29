@@ -928,7 +928,7 @@ def _get_api_key(name: str) -> Optional[str]:
 
 def _get_llm_completion() -> tuple[Callable[[str], str], str]:
     """Return an LLM completion function using live API keys if present, or a realistic simulator."""
-    gemini_key = _get_api_key("GEMINI_API_KEY")
+    gemini_key = _get_api_key("GEMINI_API_KEY_1") or _get_api_key("GEMINI_API_KEY") or _get_api_key("GEMINI_API_KEY_2")
     openai_key = _get_api_key("OPENAI_API_KEY")
     if gemini_key:
         try:
