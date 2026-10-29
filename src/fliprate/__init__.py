@@ -165,7 +165,7 @@ def learn_rules_from_texts(texts, **kwargs):
     return mine_variants(texts, **kwargs)
 
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __author__ = "Shiv Supane"
 
 __all__ = [

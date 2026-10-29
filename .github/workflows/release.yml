@@ -53,3 +53,4 @@ jobs:
         with:
           verbose: true
           attestations: true
+          skip-existing: true
